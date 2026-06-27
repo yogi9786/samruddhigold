@@ -38,7 +38,7 @@ const AdminPanel: React.FC = () => {
     
     setUploading(true);
     try {
-      const response = await axios.post('http://127.0.0.1:8000/products/upload-image', formDataObj, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/products/upload-image`, formDataObj, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`
@@ -63,7 +63,7 @@ const AdminPanel: React.FC = () => {
       params.append('username', username);
       params.append('password', password);
       
-      const response = await axios.post('http://127.0.0.1:8000/auth/token', params, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/token`, params, {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       });
       
@@ -145,7 +145,7 @@ const AdminPanel: React.FC = () => {
     };
 
     try {
-      await axios.post('http://127.0.0.1:8000/products', payload, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/products`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMessage({ text: 'Product added successfully!', type: 'success' });
