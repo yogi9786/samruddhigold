@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     # MongoDB Settings
     MONGO_URI: str = "mongodb://localhost:27017"
     MONGO_DB_NAME: str = "samruddhi_db"
+    
+    # Admin Credentials
+    ADMIN_USERNAME: str = "siriadmin"
+    ADMIN_PASSWORD: str = "adminpassword"
 
     class Config:
         env_file = ".env"

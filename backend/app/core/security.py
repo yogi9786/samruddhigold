@@ -26,6 +26,10 @@ def get_password_hash(password: str) -> str:
 
 
 async def authenticate_user(username: str, password: str) -> Optional[dict]:
+    # Check if this is the admin user
+    if username == settings.ADMIN_USERNAME and password == settings.ADMIN_PASSWORD:
+        return {"username": settings.ADMIN_USERNAME, "is_admin": True}
+
     users_collection = get_user_collection()
     user = await users_collection.find_one({"username": username})
     if not user:
@@ -59,6 +63,11 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
         raise credentials_exception
 
     users_collection = get_user_collection()
+    
+    # If the user is the admin, return the mock admin profile
+    if username == settings.ADMIN_USERNAME:
+        return {"username": settings.ADMIN_USERNAME, "is_admin": True}
+        
     user = await users_collection.find_one({"username": username})
     if user is None:
         raise credentials_exception

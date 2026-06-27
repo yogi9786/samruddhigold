@@ -3,6 +3,8 @@ import { Truck, Store, Search, User, Heart, ShoppingBag, Menu, X, ChevronDown, C
 import logo from '../assets/samruddhi-logo.png';
 import LoginModal from './LoginModal';
 
+import { Link } from 'react-router-dom';
+
 const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -77,13 +79,13 @@ const Header: React.FC = () => {
           <div className="max-w-[1400px] mx-auto px-4 lg:px-10 xl:px-14 flex items-center justify-between py-3 lg:py-2">
             
             {/* Logo */}
-            <div className="flex-shrink-0 flex items-center cursor-pointer mr-6">
+            <Link to="/" className="flex-shrink-0 flex items-center cursor-pointer mr-6">
               <img
                 src={logo}
                 alt="Samruddhi Gold Palace"
                 className="h-16 md:h-20 lg:h-[4.5rem] object-contain"
               />
-            </div>
+            </Link>
 
             {/* Quick Delivery & Virtual Shopping */}
             <div className="hidden lg:flex items-center gap-6 text-[12px] lg:text-[11px] font-bold text-[#801416] mr-8 tracking-wide">
@@ -130,10 +132,10 @@ const Header: React.FC = () => {
                  <span className="absolute -top-2 -right-2 bg-[#801416] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">0</span>
                </div>
                {/* Cart */}
-               <div className="relative cursor-pointer hover:opacity-80">
+               <Link to="/shop" className="relative cursor-pointer hover:opacity-80">
                  <ShoppingBag size={22} strokeWidth={1.5} />
                  <span className="absolute -top-2 -right-2 bg-[#801416] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">0</span>
-               </div>
+               </Link>
             </div>
 
             {/* Mobile Actions */}
@@ -147,10 +149,10 @@ const Header: React.FC = () => {
               >
                 <User size={22} strokeWidth={1.5} />
               </button>
-              <button className="hover:opacity-80 transition relative">
+              <Link to="/shop" className="hover:opacity-80 transition relative">
                 <ShoppingBag size={22} strokeWidth={1.5} />
                 <span className="absolute -top-1 -right-1 bg-[#801416] text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center">0</span>
-              </button>
+              </Link>
               <button
                 className="hover:opacity-80 transition"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -164,7 +166,7 @@ const Header: React.FC = () => {
         {/* ── NAVIGATION BAR (Desktop) ── */}
         <nav className="hidden lg:flex w-full bg-[#FFF7F2] justify-center border-b border-[#5F1517]/10">
           <ul className="flex items-center gap-4 xl:gap-5 py-2.5 text-[13.5px] lg:text-[12.5px] font-medium text-[#801416] font-sans">
-            <li className="whitespace-nowrap"><a href="#gold" className="text-[#801416] no-underline hover:opacity-80 transition">New Arrivals</a></li>
+            <li className="whitespace-nowrap"><Link to="/shop" className="text-[#801416] no-underline hover:opacity-80 transition font-bold">Shop All</Link></li>
             <li className="whitespace-nowrap"><a href="https://wa.me/919900000000?text=Hi%20Samruddhi%20Gold%20Palace,%20I'm%20interested%20in%20your%20Express%20Delivery%20options." target="_blank" rel="noopener noreferrer" className="text-[#801416] no-underline hover:opacity-80 transition">Express Delivery</a></li>
             <li className="whitespace-nowrap"><a href="#gold" className="text-[#801416] no-underline hover:opacity-80 transition">Earrings</a></li>
             <li className="whitespace-nowrap"><a href="#gold" className="text-[#801416] no-underline hover:opacity-80 transition">Pendants</a></li>
@@ -198,7 +200,7 @@ const Header: React.FC = () => {
           <div className="lg:hidden absolute top-full left-0 w-full bg-[#FFF7F2] shadow-2xl flex flex-col z-50 max-h-[85vh] overflow-y-auto border-t border-[#5F1517]/10">
             <ul className="flex flex-col py-2 font-sans">
               <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
-                <a href="#gold" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">New Arrivals</a>
+                <Link to="/shop" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-bold text-sm no-underline">Shop All</Link>
               </li>
               <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
                 <a href="https://wa.me/919900000000?text=Hi%20Samruddhi%20Gold%20Palace,%20I%20have%20an%20enquiry%20about%20Express%20Delivery%20options." target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Express Delivery</a>

@@ -8,3 +8,9 @@ db = client[settings.MONGO_DB_NAME]
 
 def get_user_collection():
     return db["users"]
+
+def get_product_collection():
+    return db["products"]
+
+def get_contact_collection():
+    return db["contacts"]

@@ -111,44 +111,44 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden relative">
+      <div className="bg-[#FFF7F2] rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden relative border border-[#5F1517]/10">
         <button 
           onClick={resetAndClose}
-          className="absolute top-4 right-4 text-white hover:text-sam-gold transition z-10"
+          className="absolute top-5 right-5 text-[#5F1517]/50 hover:text-[#5F1517] transition z-10 bg-white/50 hover:bg-white rounded-full p-1.5 shadow-sm"
         >
-          <X size={24} />
+          <X size={20} />
         </button>
 
-        <div className="bg-sam-maroon px-8 py-6 text-center text-white relative">
-          <h2 className="text-2xl font-bold text-sam-gold">
+        <div className="px-8 pt-10 pb-6 text-center relative">
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#5F1517] mb-2 leading-tight">
             {isLoginMode ? 'Welcome Back' : 'Create Account'}
           </h2>
-          <p className="text-sm opacity-80 mt-1">
+          <p className="text-[14px] text-[#5F1517]/70 font-medium">
             {isLoginMode ? 'Sign in to your Samruddhi account' : 'Join Samruddhi Gold Palace today'}
           </p>
         </div>
 
-        <div className="px-8 py-8">
+        <div className="px-8 pb-10">
           {success ? (
             <div className="text-center py-8 animate-in fade-in zoom-in duration-300">
-              <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-[#5F1517]/10 text-[#5F1517] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#5F1517]/20">
                 <Lock size={32} />
               </div>
-              <h3 className="text-xl font-bold text-gray-800">{successMsg}</h3>
-              {isLoginMode && <p className="text-gray-500 mt-2">Welcome to Samruddhi Gold Palace.</p>}
+              <h3 className="text-xl font-bold text-[#5F1517]">{successMsg}</h3>
+              {isLoginMode && <p className="text-[#5F1517]/70 mt-2 font-medium">Welcome to Samruddhi Gold Palace.</p>}
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in duration-300">
               {error && (
-                <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm text-center font-medium">
+                <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-sm text-center font-medium">
                   {error}
                 </div>
               )}
 
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700">Username <span className="text-red-500">*</span></label>
+                <label className="text-sm font-semibold text-[#5F1517]">Username <span className="text-red-500">*</span></label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#5F1517]/40">
                     <User size={18} />
                   </div>
                   <input
@@ -156,7 +156,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
                     required
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-sam-gold/50 focus:border-sam-gold outline-none transition"
+                    className="w-full pl-10 pr-4 py-3 bg-white border border-[#E5D3B3] rounded-xl focus:bg-white focus:ring-2 focus:ring-[#5F1517]/20 focus:border-[#5F1517] outline-none transition text-[#5F1517] shadow-sm font-medium placeholder:text-gray-400 placeholder:font-normal"
                     placeholder="johndoe"
                   />
                 </div>
@@ -165,32 +165,32 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
               {!isLoginMode && (
                 <>
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-700">Full Name</label>
+                    <label className="text-sm font-semibold text-[#5F1517]">Full Name</label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#5F1517]/40">
                         <User size={18} />
                       </div>
                       <input
                         type="text"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-sam-gold/50 focus:border-sam-gold outline-none transition"
+                        className="w-full pl-10 pr-4 py-3 bg-white border border-[#E5D3B3] rounded-xl focus:bg-white focus:ring-2 focus:ring-[#5F1517]/20 focus:border-[#5F1517] outline-none transition text-[#5F1517] shadow-sm font-medium placeholder:text-gray-400 placeholder:font-normal"
                         placeholder="John Doe"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-700">Email Address</label>
+                    <label className="text-sm font-semibold text-[#5F1517]">Email Address</label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#5F1517]/40">
                         <Mail size={18} />
                       </div>
                       <input
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-sam-gold/50 focus:border-sam-gold outline-none transition"
+                        className="w-full pl-10 pr-4 py-3 bg-white border border-[#E5D3B3] rounded-xl focus:bg-white focus:ring-2 focus:ring-[#5F1517]/20 focus:border-[#5F1517] outline-none transition text-[#5F1517] shadow-sm font-medium placeholder:text-gray-400 placeholder:font-normal"
                         placeholder="john@example.com"
                       />
                     </div>
@@ -199,9 +199,9 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
               )}
 
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700">Password <span className="text-red-500">*</span></label>
+                <label className="text-sm font-semibold text-[#5F1517]">Password <span className="text-red-500">*</span></label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#5F1517]/40">
                     <Lock size={18} />
                   </div>
                   <input
@@ -209,7 +209,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-sam-gold/50 focus:border-sam-gold outline-none transition"
+                    className="w-full pl-10 pr-4 py-3 bg-white border border-[#E5D3B3] rounded-xl focus:bg-white focus:ring-2 focus:ring-[#5F1517]/20 focus:border-[#5F1517] outline-none transition text-[#5F1517] shadow-sm font-medium placeholder:text-gray-400 placeholder:font-normal"
                     placeholder="••••••••"
                   />
                 </div>
@@ -217,11 +217,11 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
 
               {isLoginMode && (
                 <div className="flex items-center justify-between text-sm pt-2">
-                  <label className="flex items-center space-x-2 text-gray-600 cursor-pointer">
-                    <input type="checkbox" className="rounded text-sam-maroon focus:ring-sam-gold border-gray-300 w-4 h-4 cursor-pointer" />
-                    <span>Remember me</span>
+                  <label className="flex items-center space-x-2 text-[#5F1517]/70 cursor-pointer hover:text-[#5F1517] transition-colors">
+                    <input type="checkbox" className="rounded text-[#5F1517] focus:ring-[#5F1517] border-gray-300 w-4 h-4 cursor-pointer" />
+                    <span className="font-medium">Remember me</span>
                   </label>
-                  <a href="#" className="text-sam-maroon hover:text-sam-gold font-semibold transition">
+                  <a href="#" className="text-[#5F1517]/70 hover:text-[#5F1517] font-semibold transition hover:underline">
                     Forgot password?
                   </a>
                 </div>
@@ -230,7 +230,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-sam-maroon text-sam-gold font-bold tracking-wider py-3.5 px-4 rounded-lg shadow-md hover:bg-red-900 hover:shadow-lg focus:ring-4 focus:ring-red-100 transition-all disabled:opacity-70 flex justify-center items-center mt-6 uppercase text-[13px]"
+                className="w-full bg-[#5F1517] text-white font-semibold tracking-wide py-3.5 px-4 rounded-full shadow-md hover:bg-[#801416] hover:shadow-lg focus:ring-4 focus:ring-[#5F1517]/20 transition-all disabled:opacity-70 flex justify-center items-center mt-6 text-[15px] border border-[#5F1517]"
               >
                 {loading ? 'Processing...' : (isLoginMode ? 'Sign In' : 'Create Account')}
               </button>
@@ -238,7 +238,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
           )}
 
           {!success && (
-            <div className="mt-8 text-center text-[13.5px] text-gray-600 border-t border-gray-100 pt-6">
+            <div className="mt-8 text-center text-[14px] text-[#5F1517]/80 border-t border-[#E5D3B3]/50 pt-6 font-medium">
               {isLoginMode ? "Don't have an account? " : "Already have an account? "}
               <button 
                 type="button"
@@ -247,7 +247,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
                   setError('');
                   setPassword('');
                 }} 
-                className="text-sam-maroon hover:text-sam-gold font-bold transition px-2 py-1 rounded hover:bg-red-50"
+                className="text-[#5F1517] font-bold transition hover:underline ml-1"
               >
                 {isLoginMode ? 'Sign Up Now' : 'Sign In'}
               </button>

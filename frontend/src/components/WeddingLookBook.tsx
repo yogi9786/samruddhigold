@@ -62,7 +62,7 @@ const doubled = [...lookbookItems, ...lookbookItems, ...lookbookItems]; // Tripl
 
 const WeddingLookBook = () => {
   return (
-    <section id="look-book" className="bg-transparent py-8 md:py-12 mt-8 md:mt-12 overflow-hidden w-full">
+    <section id="look-book" className="bg-[#FFF7F2] py-8 md:py-12 mt-8 md:mt-12 overflow-hidden w-full">
       <style>{`
         @keyframes scroll-infinite {
           0% { transform: translateX(0); }

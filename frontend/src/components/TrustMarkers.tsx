@@ -31,7 +31,7 @@ const TrustMarkers: React.FC = () => {
   ];
 
   return (
-    <div className="relative z-30 w-full bg-[#FFF7F2] py-12 md:py-16 border-t border-b border-[#5F1517]/10">
+    <div className="relative z-30 w-full bg-transparent py-12 md:py-16 border-t border-b border-[#5F1517]/10">
       <div className="max-w-[1400px] mx-auto px-4 lg:px-10 xl:px-14">
         {/* Scrollable container on mobile, flex grid on desktop */}
         <div className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-4 md:pb-0 justify-start md:justify-between gap-6 md:gap-4">

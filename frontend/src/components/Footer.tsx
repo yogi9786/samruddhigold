@@ -67,8 +67,8 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="text-xl font-serif font-medium mb-6 text-[#A56B25]">Customer Service</h3>
             <ul className="flex flex-col gap-3 text-[#FFF7F2]/80 text-sm">
-              <li><a href="#" className="hover:text-[#A56B25] transition-colors">About Us</a></li>
-              <li><a href="#" className="hover:text-[#A56B25] transition-colors">Contact Us</a></li>
+              <li><a href="/about" className="hover:text-[#A56B25] transition-colors">About Us</a></li>
+              <li><a href="/contact" className="hover:text-[#A56B25] transition-colors">Contact Us</a></li>
               <li><a href="#" className="hover:text-[#A56B25] transition-colors">Shipping & Returns</a></li>
               <li><a href="#" className="hover:text-[#A56B25] transition-colors">Terms & Conditions</a></li>
               <li><a href="#" className="hover:text-[#A56B25] transition-colors">Privacy Policy</a></li>
@@ -85,15 +85,11 @@ const Footer: React.FC = () => {
               </li>
               <li className="flex items-center gap-3">
                 <Phone size={18} className="text-[#A56B25] shrink-0" />
-                <a href="tel:+919900000000" className="hover:text-white transition-colors">+91 99000 00000</a>
+                <a href="tel:+919035085755" className="hover:text-white transition-colors">+91 90350 85755</a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={18} className="text-[#A56B25] shrink-0" />
-                <a href="mailto:info@samruddhigold.com" className="hover:text-white transition-colors">info@samruddhigold.com</a>
-              </li>
-              <li className="flex items-start gap-3">
-                <Clock size={18} className="text-[#A56B25] shrink-0 mt-0.5" />
-                <span>Mon - Sun: 10:30 AM - 8:30 PM</span>
+                <a href="mailto:sirisamruddhigoldpalace@gmail.com" className="hover:text-white transition-colors">sirisamruddhigoldpalace@gmail.com</a>
               </li>
             </ul>
           </div>
@@ -102,7 +98,15 @@ const Footer: React.FC = () => {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-[#FFF7F2]/20 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#FFF7F2]/60">
-          <p>&copy; {new Date().getFullYear()} Siri Samruddhi Gold Palace. All Rights Reserved.</p>
+          <div className="flex flex-col md:items-start gap-1">
+            <p>&copy; {new Date().getFullYear()} Siri Samruddhi Gold Palace. All Rights Reserved.</p>
+            <p>
+              Digital Marketing & Developed by{' '}
+              <a href="https://tekhportal.com/" target="_blank" rel="noopener noreferrer" className="text-[#A56B25] hover:text-white transition-colors">
+                Tekhportal
+              </a>
+            </p>
+          </div>
           <div className="flex items-center gap-4">
             <span>Crafted with purity</span>
             <span className="w-1.5 h-1.5 rounded-full bg-[#A56B25]"></span>
