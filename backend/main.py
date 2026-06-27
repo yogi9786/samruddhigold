@@ -11,9 +11,8 @@ app = FastAPI(
     title="Samruddhi Gold Palace API",
     version=settings.APP_VERSION,
     description="Backend API for Samruddhi Gold Palace jewellery e-commerce platform.",
-    docs_url="/docs",
-    redoc_url="/redoc",
-    root_path="/api"
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
 )
 
 # ── Middleware ────────────────────────────────────────────────────────────────
@@ -24,12 +23,16 @@ os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # ── Routers ───────────────────────────────────────────────────────────────────
-app.include_router(auth.router)
-app.include_router(users.router)
-app.include_router(products.router)
+from fastapi import APIRouter
+api_router = APIRouter(prefix="/api")
+api_router.include_router(auth.router)
+api_router.include_router(users.router)
+api_router.include_router(products.router)
 
 from app.routers import contact
-app.include_router(contact.router)
+api_router.include_router(contact.router)
+
+app.include_router(api_router)
 
 
 # ── Root endpoint ─────────────────────────────────────────────────────────────

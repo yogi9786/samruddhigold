@@ -30,7 +30,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
     try {
       if (isLoginMode) {
         // Sign In
-        const response = await fetch('http://127.0.0.1:8000/auth/token', {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/token`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -60,7 +60,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
 
       } else {
         // Sign Up
-        const response = await fetch('http://127.0.0.1:8000/users', {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/users`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
