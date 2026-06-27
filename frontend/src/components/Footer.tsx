@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Phone, Mail, Clock } from 'lucide-react';
+import { MapPin, Phone, Mail } from 'lucide-react';
 import { FaFacebook, FaYoutube, FaInstagram } from 'react-icons/fa';
 import logo from '../assets/samruddhi-logo.png';
 
