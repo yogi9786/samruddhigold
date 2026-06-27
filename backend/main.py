@@ -8,11 +8,12 @@ import os
 
 # ── App instance ──────────────────────────────────────────────────────────────
 app = FastAPI(
-    title=settings.APP_NAME,
+    title="Samruddhi Gold Palace API",
     version=settings.APP_VERSION,
     description="Backend API for Samruddhi Gold Palace jewellery e-commerce platform.",
     docs_url="/docs",
     redoc_url="/redoc",
+    root_path="/api"
 )
 
 # ── Middleware ────────────────────────────────────────────────────────────────
