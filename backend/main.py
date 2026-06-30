@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.middleware.cors import register_cors
-from app.routers import auth, users, products, contact
+from app.routers import auth, users, products, contact, categories, orders
 
 import os
 
@@ -38,6 +38,8 @@ api_router = APIRouter()
 api_router.include_router(auth.router)
 api_router.include_router(users.router)
 api_router.include_router(products.router)
+api_router.include_router(categories.router)
+api_router.include_router(orders.router)
 api_router.include_router(contact.router)
 
 app.include_router(api_router)

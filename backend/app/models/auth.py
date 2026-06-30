@@ -31,7 +31,10 @@ class UserInDB(UserBase):
 
 class UserResponse(UserBase):
     """Safe user model returned to the client (no password)."""
-    pass
+    id: str
+
+    class Config:
+        populate_by_name = True
 
 
 class UserCreate(UserBase):

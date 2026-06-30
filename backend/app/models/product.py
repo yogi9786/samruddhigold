@@ -52,6 +52,7 @@ class ProductBase(BaseModel):
     ready_to_dispatch: Optional[bool] = False
     transit_insurance: Optional[bool] = False
     image_url: Optional[str] = None
+    gallery_urls: Optional[List[str]] = None
     
     # Detailed sections
     price_breakup: Optional[PriceBreakup] = None

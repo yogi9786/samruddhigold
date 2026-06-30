@@ -14,3 +14,9 @@ def get_product_collection():
 
 def get_contact_collection():
     return db["contacts"]
+
+def get_category_collection():
+    return db["categories"]
+
+def get_order_collection():
+    return db["orders"]

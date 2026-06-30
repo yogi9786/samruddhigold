@@ -44,9 +44,12 @@ async def create_user(user: UserCreate):
 
     user_in_db = UserInDB(**user_dict, hashed_password=hashed_password)
     db_user_dict = user_in_db.model_dump()
-    await users_collection.insert_one(db_user_dict)
+    result = await users_collection.insert_one(db_user_dict)
 
-    return user_in_db
+    created_user = await users_collection.find_one({"_id": result.inserted_id})
+    created_user["id"] = str(created_user.pop("_id"))
+
+    return created_user
 
 
 @admin_router.get(
@@ -61,6 +64,8 @@ async def get_all_users(admin: dict = Depends(verify_admin)):
     """
     users_collection = get_user_collection()
     users = await users_collection.find().to_list(1000)
+    for user in users:
+        user["id"] = str(user.pop("_id"))
     return users
 
 
@@ -81,6 +86,7 @@ async def get_user(username: str, admin: dict = Depends(verify_admin)):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
+    user["id"] = str(user.pop("_id"))
     return user
 
 
@@ -88,6 +94,11 @@ async def get_user(username: str, admin: dict = Depends(verify_admin)):
     "/{username}",
     response_model=UserResponse,
     summary="Update a user (admin or self)"
+)
+@admin_router.patch(
+    "/{username}",
+    response_model=UserResponse,
+    summary="Partially update a user (admin or self)"
 )
 async def update_user(username: str, user_update: UserUpdate, current_user: dict = Depends(get_current_user)):
     """
@@ -120,6 +131,7 @@ async def update_user(username: str, user_update: UserUpdate, current_user: dict
         await users_collection.update_one({"username": username}, {"$set": update_data})
 
     updated_user = await users_collection.find_one({"username": username})
+    updated_user["id"] = str(updated_user.pop("_id"))
     return updated_user
 
 

@@ -135,6 +135,11 @@ async def create_product(product: ProductCreate, admin: dict = Depends(verify_ad
     response_model=ProductResponse,
     summary="Update a product (admin only)"
 )
+@admin_router.patch(
+    "/{product_id}",
+    response_model=ProductResponse,
+    summary="Partially update a product (admin only)"
+)
 async def update_product(product_id: str, product_update: ProductUpdate, admin: dict = Depends(verify_admin)):
     """
     **Admin only** — Requires Bearer token.
