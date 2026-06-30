@@ -72,3 +72,13 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
     if user is None:
         raise credentials_exception
     return user
+
+
+async def verify_admin(current_user: dict = Depends(get_current_user)) -> dict:
+    """Dependency to check if the current user is an admin."""
+    if not current_user.get("is_admin"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admin can perform this action"
+        )
+    return current_user

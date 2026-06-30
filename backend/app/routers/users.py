@@ -2,7 +2,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.core.security import get_password_hash, get_current_user
+from app.core.security import get_password_hash, get_current_user, verify_admin
 from app.core.database import get_user_collection
 from app.models.auth import UserResponse, UserCreate, UserUpdate, UserInDB
 
@@ -54,7 +54,7 @@ async def create_user(user: UserCreate):
     response_model=List[UserResponse],
     summary="List all users (admin only)"
 )
-async def get_all_users(current_user: dict = Depends(get_current_user)):
+async def get_all_users(admin: dict = Depends(verify_admin)):
     """
     **Admin only** — Requires Bearer token.
     Retrieve all registered users.
@@ -69,7 +69,7 @@ async def get_all_users(current_user: dict = Depends(get_current_user)):
     response_model=UserResponse,
     summary="Get a user by username (admin only)"
 )
-async def get_user(username: str, current_user: dict = Depends(get_current_user)):
+async def get_user(username: str, admin: dict = Depends(verify_admin)):
     """
     **Admin only** — Requires Bearer token.
     Get a specific user by username.
@@ -95,7 +95,7 @@ async def update_user(username: str, user_update: UserUpdate, current_user: dict
     Update a user profile. Users can only update their own profile.
     Admins can update any profile.
     """
-    if current_user.get("username") != username and current_user.get("username") != "admin":
+    if current_user.get("username") != username and not current_user.get("is_admin"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to update this user"
@@ -133,7 +133,7 @@ async def delete_user(username: str, current_user: dict = Depends(get_current_us
     **Requires Bearer token.**
     Delete a user. Users can only delete their own account. Admins can delete any.
     """
-    if current_user.get("username") != username and current_user.get("username") != "admin":
+    if current_user.get("username") != username and not current_user.get("is_admin"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to delete this user"

@@ -5,7 +5,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Request
 from bson import ObjectId
 
-from app.core.security import get_current_user
+from app.core.security import get_current_user, verify_admin
 from app.core.database import get_product_collection
 from app.models.product import ProductCreate, ProductUpdate, ProductResponse
 
@@ -25,13 +25,7 @@ UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
-def verify_admin(current_user: dict = Depends(get_current_user)):
-    if not current_user.get("is_admin"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admin can perform this action"
-        )
-    return current_user
+
 
 
 # ── Public Routes ─────────────────────────────────────────────────────────────
@@ -106,7 +100,12 @@ async def upload_image(
         shutil.copyfileobj(file.file, buffer)
 
     # Build URL dynamically from the request so it works on any host/domain
+    # In production behind Nginx, request.base_url might be 127.0.0.1, so we override it
     base_url = str(request.base_url).rstrip("/")
+    if "127.0.0.1" in base_url or "localhost" in base_url:
+        # Override with production URL if we detect local proxy IP
+        base_url = "http://147.93.110.125/api"
+        
     return {"url": f"{base_url}/uploads/{file.filename}"}
 
 
