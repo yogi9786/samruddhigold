@@ -1,6 +1,7 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from bson import ObjectId
 
 from app.core.security import get_password_hash, get_current_user, verify_admin
 from app.core.database import get_user_collection
@@ -70,17 +71,20 @@ async def get_all_users(admin: dict = Depends(verify_admin)):
 
 
 @admin_router.get(
-    "/{username}",
+    "/{user_id}",
     response_model=UserResponse,
-    summary="Get a user by username (admin only)"
+    summary="Get a user by ID (admin only)"
 )
-async def get_user(username: str, admin: dict = Depends(verify_admin)):
+async def get_user(user_id: str, admin: dict = Depends(verify_admin)):
     """
     **Admin only** — Requires Bearer token.
-    Get a specific user by username.
+    Get a specific user by ID.
     """
+    if not ObjectId.is_valid(user_id):
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+        
     users_collection = get_user_collection()
-    user = await users_collection.find_one({"username": username})
+    user = await users_collection.find_one({"_id": ObjectId(user_id)})
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -91,33 +95,36 @@ async def get_user(username: str, admin: dict = Depends(verify_admin)):
 
 
 @admin_router.put(
-    "/{username}",
+    "/{user_id}",
     response_model=UserResponse,
     summary="Update a user (admin or self)"
 )
 @admin_router.patch(
-    "/{username}",
+    "/{user_id}",
     response_model=UserResponse,
     summary="Partially update a user (admin or self)"
 )
-async def update_user(username: str, user_update: UserUpdate, current_user: dict = Depends(get_current_user)):
+async def update_user(user_id: str, user_update: UserUpdate, current_user: dict = Depends(get_current_user)):
     """
     **Requires Bearer token.**
     Update a user profile. Users can only update their own profile.
     Admins can update any profile.
     """
-    if current_user.get("username") != username and not current_user.get("is_admin"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to update this user"
-        )
+    if not ObjectId.is_valid(user_id):
+        raise HTTPException(status_code=400, detail="Invalid user ID")
 
     users_collection = get_user_collection()
-    user = await users_collection.find_one({"username": username})
+    user = await users_collection.find_one({"_id": ObjectId(user_id)})
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
+        )
+
+    if current_user.get("username") != user.get("username") and not current_user.get("is_admin"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to update this user"
         )
 
     update_data = user_update.model_dump(exclude_unset=True)
@@ -128,38 +135,41 @@ async def update_user(username: str, user_update: UserUpdate, current_user: dict
         del update_data["password"]
 
     if update_data:
-        await users_collection.update_one({"username": username}, {"$set": update_data})
+        await users_collection.update_one({"_id": ObjectId(user_id)}, {"$set": update_data})
 
-    updated_user = await users_collection.find_one({"username": username})
+    updated_user = await users_collection.find_one({"_id": ObjectId(user_id)})
     updated_user["id"] = str(updated_user.pop("_id"))
     return updated_user
 
 
 @admin_router.delete(
-    "/{username}",
+    "/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a user (admin or self)"
 )
-async def delete_user(username: str, current_user: dict = Depends(get_current_user)):
+async def delete_user(user_id: str, current_user: dict = Depends(get_current_user)):
     """
     **Requires Bearer token.**
     Delete a user. Users can only delete their own account. Admins can delete any.
     """
-    if current_user.get("username") != username and not current_user.get("is_admin"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to delete this user"
-        )
-
+    if not ObjectId.is_valid(user_id):
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+        
     users_collection = get_user_collection()
-    user = await users_collection.find_one({"username": username})
+    user = await users_collection.find_one({"_id": ObjectId(user_id)})
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
+        
+    if current_user.get("username") != user.get("username") and not current_user.get("is_admin"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to delete this user"
+        )
 
-    await users_collection.delete_one({"username": username})
+    await users_collection.delete_one({"_id": ObjectId(user_id)})
     return None
 
 
