@@ -11,7 +11,7 @@ const Header: React.FC = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
 
-  const fetchUserProfile = async (token: string) => {
+  const fetchUserProfile = async () => {
     try {
       const response = await api.get('/auth/me');
       setUser(response.data);
@@ -24,7 +24,7 @@ const Header: React.FC = () => {
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (token) {
-      fetchUserProfile(token);
+      fetchUserProfile();
     }
   }, []);
 
@@ -232,7 +232,7 @@ const Header: React.FC = () => {
       <LoginModal 
         isOpen={isLoginModalOpen} 
         onClose={() => setIsLoginModalOpen(false)} 
-        onLoginSuccess={(token) => fetchUserProfile(token)}
+        onLoginSuccess={() => fetchUserProfile()}
       />
     </>
   );
