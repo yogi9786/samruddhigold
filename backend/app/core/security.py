@@ -13,7 +13,7 @@ from app.core.database import get_user_collection
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # ── OAuth2 scheme ─────────────────────────────────────────────────────────────
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
 
 # ── Helper functions ──────────────────────────────────────────────────────────
 
