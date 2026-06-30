@@ -14,8 +14,9 @@ app = FastAPI(
     title="Samruddhi Gold Palace API",
     version=settings.APP_VERSION,
     description="Backend API for Samruddhi Gold Palace jewellery e-commerce platform.",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    root_path="/api"
 )
 
 # ──────────────────────────────────────────────────────────────────────────────
