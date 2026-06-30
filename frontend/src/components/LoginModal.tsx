@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Lock, Mail, User } from 'lucide-react';
+import api from '../api';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -30,23 +31,19 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
     try {
       if (isLoginMode) {
         // Sign In
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/token`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: new URLSearchParams({
+        const response = await api.post('/auth/token', 
+          new URLSearchParams({
             username: username,
             password: password,
           }),
-        });
+          {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            }
+          }
+        );
 
-        if (!response.ok) {
-          throw new Error('Invalid username or password');
-        }
-
-        const data = await response.json();
-        const token = data.access_token;
+        const token = response.data.access_token;
         
         localStorage.setItem('access_token', token);
         
@@ -60,23 +57,12 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
 
       } else {
         // Sign Up
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/users`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            username: username,
-            password: password,
-            email: email || undefined,
-            full_name: fullName || undefined,
-          }),
+        await api.post('/users', {
+          username: username,
+          password: password,
+          email: email || undefined,
+          full_name: fullName || undefined,
         });
-
-        if (!response.ok) {
-          const errData = await response.json();
-          throw new Error(errData.detail || 'Registration failed');
-        }
 
         setSuccessMsg('Account Created Successfully! Please Sign In.');
         setSuccess(true);
@@ -89,7 +75,11 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
         }, 2000);
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred');
+      if (err.response?.status === 401 && isLoginMode) {
+         setError('Invalid username or password');
+      } else {
+         setError(err.response?.data?.detail || err.message || 'An error occurred');
+      }
     } finally {
       setLoading(false);
     }

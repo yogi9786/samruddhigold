@@ -4,6 +4,7 @@ import logo from '../assets/samruddhi-logo.png';
 import LoginModal from './LoginModal';
 
 import { Link } from 'react-router-dom';
+import api from '../api';
 
 const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -12,20 +13,11 @@ const Header: React.FC = () => {
 
   const fetchUserProfile = async (token: string) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/me`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-      } else {
-        localStorage.removeItem('access_token');
-        setUser(null);
-      }
+      const response = await api.get('/auth/me');
+      setUser(response.data);
     } catch (error) {
       console.error('Failed to fetch user profile', error);
+      setUser(null);
     }
   };
 

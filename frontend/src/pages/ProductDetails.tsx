@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { ChevronDown, MapPin, Heart, ShoppingBag, Truck, ShieldCheck } from 'lucide-react';
@@ -13,7 +13,7 @@ const ProductDetails: React.FC = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/products/${id}`);
+        const response = await api.get(`/products/${id}`);
         setProduct(response.data);
       } catch (error) {
         console.error('Error fetching product:', error);

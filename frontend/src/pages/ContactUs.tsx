@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import BottomNav from '../components/BottomNav';
 import FloatingWhatsApp from '../components/FloatingWhatsApp';
 import { MapPin, Phone, Mail, Clock } from 'lucide-react';
+import api from '../api';
 
 const ContactUs: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -25,25 +26,15 @@ const ContactUs: React.FC = () => {
     e.preventDefault();
     setStatus('submitting');
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/contact`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
+      const response = await api.post('/contact', formData);
       
-      if (response.ok) {
+      if (response.status === 200 || response.status === 201) {
         setStatus('success');
         setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
-      } else {
-        const errorData = await response.json();
-        setErrorMessage(errorData.detail || 'Something went wrong. Please try again.');
-        setStatus('error');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Contact submission error:', error);
-      setErrorMessage('Failed to connect to the server. Please try again later.');
+      setErrorMessage(error.response?.data?.detail || 'Failed to connect to the server. Please try again later.');
       setStatus('error');
     }
   };

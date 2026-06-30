@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 
 const AdminPanel: React.FC = () => {
   const [token, setToken] = useState<string | null>(localStorage.getItem('admin_token'));
@@ -38,10 +38,9 @@ const AdminPanel: React.FC = () => {
     
     setUploading(true);
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/products/upload-image`, formDataObj, {
+      const response = await api.post('/products/upload-image', formDataObj, {
         headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'multipart/form-data'
         }
       });
       setFormData(prev => ({ ...prev, image_url: response.data.url }));
@@ -63,7 +62,7 @@ const AdminPanel: React.FC = () => {
       params.append('username', username);
       params.append('password', password);
       
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/token`, params, {
+      const response = await api.post('/auth/token', params, {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       });
       
@@ -145,9 +144,7 @@ const AdminPanel: React.FC = () => {
     };
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/products`, payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.post('/products', payload);
       setMessage({ text: 'Product added successfully!', type: 'success' });
       // Reset main fields
       setFormData(prev => ({ ...prev, name: '', sku: '', price: 0 }));

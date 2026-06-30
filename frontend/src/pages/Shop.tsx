@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
@@ -21,7 +21,7 @@ const Shop: React.FC = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/products`);
+        const response = await api.get('/products');
         setProducts(response.data);
       } catch (error) {
         console.error('Error fetching products:', error);
