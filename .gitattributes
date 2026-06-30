@@ -1,0 +1,5 @@
+# Enforce LF line endings for text files
+*.txt text eol=lf
+*.py  text eol=lf
+*.ts  text eol=lf
+*.tsx text eol=lf
