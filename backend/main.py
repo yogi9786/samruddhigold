@@ -33,7 +33,7 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 # ──────────────────────────────────────────────────────────────────────────────
 # API Router
 # ──────────────────────────────────────────────────────────────────────────────
-api_router = APIRouter(prefix="/api")
+api_router = APIRouter()
 
 api_router.include_router(auth.router)
 api_router.include_router(users.router)

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import api from '../api';
+import { adminApi } from '../api';
 
 const AdminPanel: React.FC = () => {
   const [token, setToken] = useState<string | null>(localStorage.getItem('admin_token'));
@@ -38,7 +38,7 @@ const AdminPanel: React.FC = () => {
     
     setUploading(true);
     try {
-      const response = await api.post('/products/upload-image', formDataObj, {
+      const response = await adminApi.post('/products/upload-image', formDataObj, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -62,7 +62,7 @@ const AdminPanel: React.FC = () => {
       params.append('username', username);
       params.append('password', password);
       
-      const response = await api.post('/auth/token', params, {
+      const response = await adminApi.post('/auth/token', params, {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       });
       
@@ -144,7 +144,7 @@ const AdminPanel: React.FC = () => {
     };
 
     try {
-      await api.post('/products', payload);
+      await adminApi.post('/products', payload);
       setMessage({ text: 'Product added successfully!', type: 'success' });
       // Reset main fields
       setFormData(prev => ({ ...prev, name: '', sku: '', price: 0 }));
