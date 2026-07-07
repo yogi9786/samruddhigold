@@ -1,4 +1,4 @@
-import { Play, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 const CollectionShowcase = () => {
   return (
