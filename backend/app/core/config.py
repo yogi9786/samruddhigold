@@ -14,9 +14,8 @@ class Settings(BaseSettings):
     # CORS origins (comma-separated in .env, e.g. "http://localhost:5173,https://yourdomain.com")
     ALLOWED_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
 
-    # MongoDB Settings
-    MONGO_URI: str = "mongodb://localhost:27017"
-    MONGO_DB_NAME: str = "samruddhi_db"
+    # Database Settings
+    DATABASE_URL: str = "postgresql+asyncpg://siriuser:change_this_later_123@localhost:5432/sirisamruddhi"
     
     # Admin Credentials
     ADMIN_USERNAME: str = "siriadmin"

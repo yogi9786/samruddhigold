@@ -1,13 +1,16 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
 from app.core.config import settings
-from app.core.database import get_user_collection
+from app.core.database import get_db
+from app.db.models import User as DBUser
 
 # ── Password hashing ──────────────────────────────────────────────────────────
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -25,30 +28,30 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-async def authenticate_user(username: str, password: str) -> Optional[dict]:
+async def authenticate_user(db: AsyncSession, username: str, password: str):
     # Check if this is the admin user
     if username == settings.ADMIN_USERNAME and password == settings.ADMIN_PASSWORD:
         return {"username": settings.ADMIN_USERNAME, "is_admin": True}
 
-    users_collection = get_user_collection()
-    user = await users_collection.find_one({"username": username})
+    result = await db.execute(select(DBUser).where(DBUser.username == username))
+    user = result.scalars().first()
     if not user:
         return None
-    if not verify_password(password, user["hashed_password"]):
+    if not verify_password(password, user.hashed_password):
         return None
     return user
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + (
+    expire = datetime.now(timezone.utc) + (
         expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
+async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -62,21 +65,22 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
     except JWTError:
         raise credentials_exception
 
-    users_collection = get_user_collection()
-    
     # If the user is the admin, return the mock admin profile
     if username == settings.ADMIN_USERNAME:
         return {"username": settings.ADMIN_USERNAME, "is_admin": True}
         
-    user = await users_collection.find_one({"username": username})
+    result = await db.execute(select(DBUser).where(DBUser.username == username))
+    user = result.scalars().first()
     if user is None:
         raise credentials_exception
     return user
 
 
-async def verify_admin(current_user: dict = Depends(get_current_user)) -> dict:
+async def verify_admin(current_user = Depends(get_current_user)):
     """Dependency to check if the current user is an admin."""
-    if not current_user.get("is_admin"):
+    # current_user might be a dict (admin) or a DBUser model
+    is_admin = current_user.get("is_admin") if isinstance(current_user, dict) else False
+    if not is_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only admin can perform this action"

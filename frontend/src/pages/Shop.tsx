@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../api';
+import api, { getImageUrl } from '../api';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
@@ -56,7 +56,7 @@ const Shop: React.FC = () => {
             <p className="text-xl font-serif">No masterpieces available at the moment.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-10">
             {products.map((product) => (
               <Link to={`/shop/${product.id}`} key={product.id} className="group flex flex-col bg-white rounded-none shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden border border-[var(--color-soft-gold)]/30 hover:border-[var(--color-primary)] relative">
                 
@@ -64,7 +64,7 @@ const Shop: React.FC = () => {
                 <div className="relative aspect-[4/5] overflow-hidden bg-gray-50 flex items-center justify-center">
                   {product.image_url ? (
                     <img 
-                      src={product.image_url} 
+                      src={getImageUrl(product.image_url)} 
                       alt={product.name} 
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out" 
                     />
@@ -90,16 +90,16 @@ const Shop: React.FC = () => {
                 </div>
                 
                 {/* Content Container */}
-                <div className="p-6 flex flex-col flex-grow text-center relative z-10 bg-white">
-                  <p className="text-[var(--color-text-dark)]/50 text-xs tracking-widest uppercase mb-2">{product.sku}</p>
-                  <h3 className="font-serif text-[var(--color-luxury)] text-xl mb-4 group-hover:text-[var(--color-royal)] transition-colors line-clamp-2 leading-snug">
+                <div className="p-3 md:p-6 flex flex-col flex-grow text-center relative z-10 bg-white">
+                  <p className="text-[var(--color-text-dark)]/50 text-[10px] md:text-xs tracking-widest uppercase mb-1 md:mb-2">{product.sku}</p>
+                  <h3 className="font-serif text-[var(--color-luxury)] text-sm md:text-xl mb-2 md:mb-4 group-hover:text-[var(--color-royal)] transition-colors line-clamp-2 leading-snug">
                     {product.name}
                   </h3>
                   <div className="mt-auto">
-                    <div className="flex items-center justify-center gap-3">
-                      <span className="text-[var(--color-luxury)] font-medium text-lg">₹{product.price.toLocaleString('en-IN')}</span>
+                    <div className="flex items-center justify-center gap-2 md:gap-3">
+                      <span className="text-[var(--color-luxury)] font-medium text-sm md:text-lg">₹{product.price.toLocaleString('en-IN')}</span>
                       {product.original_price && (
-                        <span className="text-[var(--color-text-dark)]/40 line-through text-sm">₹{product.original_price.toLocaleString('en-IN')}</span>
+                        <span className="text-[var(--color-text-dark)]/40 line-through text-[11px] md:text-sm">₹{product.original_price.toLocaleString('en-IN')}</span>
                       )}
                     </div>
                   </div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import api from '../api';
+import api, { getImageUrl } from '../api';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { ChevronDown, MapPin, Heart, ShoppingBag, Truck, ShieldCheck } from 'lucide-react';
@@ -15,9 +15,16 @@ const ProductDetails: React.FC = () => {
     const fetchProduct = async () => {
       try {
         const response = await api.get(`/products/${id}`);
-        setProduct(response.data);
-        if (response.data.image_url) {
-          setSelectedImage(response.data.image_url);
+        const productData = response.data;
+        if (productData.image_url) {
+          productData.image_url = getImageUrl(productData.image_url);
+        }
+        if (productData.gallery_urls) {
+          productData.gallery_urls = productData.gallery_urls.map((img: string) => getImageUrl(img));
+        }
+        setProduct(productData);
+        if (productData.image_url) {
+          setSelectedImage(productData.image_url);
         }
       } catch (error) {
         console.error('Error fetching product:', error);

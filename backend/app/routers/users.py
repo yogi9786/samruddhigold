@@ -1,11 +1,13 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from bson import ObjectId
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
 from app.core.security import get_password_hash, get_current_user, verify_admin
-from app.core.database import get_user_collection
-from app.models.auth import UserResponse, UserCreate, UserUpdate, UserInDB
+from app.core.database import get_db
+from app.models.auth import UserResponse, UserCreate, UserUpdate
+from app.db.models import User as DBUser
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Public User routes — No authentication required
@@ -26,13 +28,13 @@ router = APIRouter()
     status_code=status.HTTP_201_CREATED,
     summary="Register a new user (public)"
 )
-async def create_user(user: UserCreate):
+async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     """
     **Public endpoint** — No authentication required.
     Register a new user account with username and password.
     """
-    users_collection = get_user_collection()
-    existing_user = await users_collection.find_one({"username": user.username})
+    result = await db.execute(select(DBUser).where(DBUser.username == user.username))
+    existing_user = result.scalars().first()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -40,17 +42,14 @@ async def create_user(user: UserCreate):
         )
 
     hashed_password = get_password_hash(user.password)
-    user_dict = user.model_dump()
-    user_dict.pop("password")
+    user_dict = user.model_dump(exclude={"password"})
 
-    user_in_db = UserInDB(**user_dict, hashed_password=hashed_password)
-    db_user_dict = user_in_db.model_dump()
-    result = await users_collection.insert_one(db_user_dict)
+    db_user = DBUser(**user_dict, hashed_password=hashed_password)
+    db.add(db_user)
+    await db.commit()
+    await db.refresh(db_user)
 
-    created_user = await users_collection.find_one({"_id": result.inserted_id})
-    created_user["id"] = str(created_user.pop("_id"))
-
-    return created_user
+    return db_user
 
 
 @admin_router.get(
@@ -58,15 +57,13 @@ async def create_user(user: UserCreate):
     response_model=List[UserResponse],
     summary="List all users (admin only)"
 )
-async def get_all_users(admin: dict = Depends(verify_admin)):
+async def get_all_users(admin: dict = Depends(verify_admin), db: AsyncSession = Depends(get_db)):
     """
     **Admin only** — Requires Bearer token.
     Retrieve all registered users.
     """
-    users_collection = get_user_collection()
-    users = await users_collection.find().to_list(1000)
-    for user in users:
-        user["id"] = str(user.pop("_id"))
+    result = await db.execute(select(DBUser).limit(1000))
+    users = result.scalars().all()
     return users
 
 
@@ -75,22 +72,18 @@ async def get_all_users(admin: dict = Depends(verify_admin)):
     response_model=UserResponse,
     summary="Get a user by ID (admin only)"
 )
-async def get_user(user_id: str, admin: dict = Depends(verify_admin)):
+async def get_user(user_id: str, admin: dict = Depends(verify_admin), db: AsyncSession = Depends(get_db)):
     """
     **Admin only** — Requires Bearer token.
     Get a specific user by ID.
     """
-    if not ObjectId.is_valid(user_id):
-        raise HTTPException(status_code=400, detail="Invalid user ID")
-        
-    users_collection = get_user_collection()
-    user = await users_collection.find_one({"_id": ObjectId(user_id)})
+    result = await db.execute(select(DBUser).where(DBUser.id == user_id))
+    user = result.scalars().first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
-    user["id"] = str(user.pop("_id"))
     return user
 
 
@@ -104,24 +97,21 @@ async def get_user(user_id: str, admin: dict = Depends(verify_admin)):
     response_model=UserResponse,
     summary="Partially update a user (admin or self)"
 )
-async def update_user(user_id: str, user_update: UserUpdate, current_user: dict = Depends(get_current_user)):
+async def update_user(user_id: str, user_update: UserUpdate, current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     """
     **Requires Bearer token.**
     Update a user profile. Users can only update their own profile.
     Admins can update any profile.
     """
-    if not ObjectId.is_valid(user_id):
-        raise HTTPException(status_code=400, detail="Invalid user ID")
-
-    users_collection = get_user_collection()
-    user = await users_collection.find_one({"_id": ObjectId(user_id)})
+    result = await db.execute(select(DBUser).where(DBUser.id == user_id))
+    user = result.scalars().first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
 
-    if current_user.get("username") != user.get("username") and not current_user.get("is_admin"):
+    if current_user.get("username") != user.username and not current_user.get("is_admin"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to update this user"
@@ -134,12 +124,12 @@ async def update_user(user_id: str, user_update: UserUpdate, current_user: dict 
         update_data["hashed_password"] = hashed_password
         del update_data["password"]
 
-    if update_data:
-        await users_collection.update_one({"_id": ObjectId(user_id)}, {"$set": update_data})
-
-    updated_user = await users_collection.find_one({"_id": ObjectId(user_id)})
-    updated_user["id"] = str(updated_user.pop("_id"))
-    return updated_user
+    for key, value in update_data.items():
+        setattr(user, key, value)
+        
+    await db.commit()
+    await db.refresh(user)
+    return user
 
 
 @admin_router.delete(
@@ -147,29 +137,27 @@ async def update_user(user_id: str, user_update: UserUpdate, current_user: dict 
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a user (admin or self)"
 )
-async def delete_user(user_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_user(user_id: str, current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     """
     **Requires Bearer token.**
     Delete a user. Users can only delete their own account. Admins can delete any.
     """
-    if not ObjectId.is_valid(user_id):
-        raise HTTPException(status_code=400, detail="Invalid user ID")
-        
-    users_collection = get_user_collection()
-    user = await users_collection.find_one({"_id": ObjectId(user_id)})
+    result = await db.execute(select(DBUser).where(DBUser.id == user_id))
+    user = result.scalars().first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
         
-    if current_user.get("username") != user.get("username") and not current_user.get("is_admin"):
+    if current_user.get("username") != user.username and not current_user.get("is_admin"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to delete this user"
         )
 
-    await users_collection.delete_one({"_id": ObjectId(user_id)})
+    await db.delete(user)
+    await db.commit()
     return None
 
 

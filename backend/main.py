@@ -6,6 +6,18 @@ from app.middleware.cors import register_cors
 from app.routers import auth, users, products, contact, categories, orders
 
 import os
+from contextlib import asynccontextmanager
+from app.core.database import init_db
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Lifespan
+# ──────────────────────────────────────────────────────────────────────────────
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialize database tables on startup
+    await init_db()
+    yield
+    # Cleanup on shutdown (if needed)
 
 # ──────────────────────────────────────────────────────────────────────────────
 # FastAPI App
@@ -16,7 +28,8 @@ app = FastAPI(
     description="Backend API for Samruddhi Gold Palace jewellery e-commerce platform.",
     docs_url="/docs",
     redoc_url="/redoc",
-    root_path="/api"
+    root_path="/api",
+    lifespan=lifespan
 )
 
 # ──────────────────────────────────────────────────────────────────────────────

@@ -62,11 +62,11 @@ const doubled = [...lookbookItems, ...lookbookItems, ...lookbookItems]; // Tripl
 
 const WeddingLookBook = () => {
   return (
-    <section id="look-book" className="bg-[#FFF7F2] py-8 md:py-12 mt-8 md:mt-12 overflow-hidden w-full">
+    <section id="look-book" className="bg-[#FFF7F2] py-6 md:py-8 mt-4 md:mt-6 overflow-hidden w-full">
       <style>{`
         @keyframes scroll-infinite {
           0% { transform: translateX(0); }
-          100% { transform: translateX(-33.3333%); } /* Shifts exactly 1 original set */
+          100% { transform: translateX(-33.3333%); }
         }
         .animate-scroll-infinite {
           animation: scroll-infinite 35s linear infinite;
@@ -79,16 +79,16 @@ const WeddingLookBook = () => {
         }
       `}</style>
       
-      {/* Header */}
-      <div className="flex flex-col items-start md:items-center text-left md:text-center px-4 md:px-10 mb-10 md:mb-16 max-w-7xl mx-auto">
-        <p className="font-sans text-[#801416] mb-3 uppercase tracking-[0.25em] text-[13px] font-semibold">
+      {/* Header — centred on all breakpoints */}
+      <div className="flex flex-col items-center text-center px-4 md:px-10 mb-6 md:mb-10 max-w-7xl mx-auto">
+        <p className="font-sans text-[#801416] mb-3 uppercase tracking-[0.25em] text-[12px] font-semibold">
           Editorial
         </p>
-        <h2 className="font-serif text-[36px] md:text-[46px] font-bold mb-5 text-[#5F1517] leading-tight">
+        <h2 className="font-serif text-[28px] md:text-[38px] lg:text-[46px] font-bold mb-4 text-[#5F1517] leading-tight">
           Wedding <span className="italic text-[#801416] font-light">Look</span> Book
         </h2>
-        <div className="w-16 md:w-24 h-[1px] bg-[#801416]/40 mb-6" />
-        <p className="font-sans text-[#5F1517]/70 max-w-full lg:max-w-2xl leading-relaxed font-medium text-[14px] md:text-[16px]">
+        <div className="w-16 md:w-24 h-[1px] bg-[#801416]/40 mb-5" />
+        <p className="font-sans text-[#5F1517]/70 max-w-lg leading-relaxed font-medium text-[13px] md:text-[15px]">
           Discover uniquely crafted pieces that celebrate heritage craftsmanship and contemporary aesthetics for today's bride
         </p>
       </div>

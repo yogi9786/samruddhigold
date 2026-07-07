@@ -32,11 +32,11 @@ const InstagramFeed: React.FC = () => {
         </div>
 
         {/* Reels Grid */}
-        <div className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar gap-4 pb-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-6 md:pb-0">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 pb-4 md:pb-0">
           {reels.map((reelId, index) => (
             <div
               key={index}
-              className="bg-black rounded-xl shadow-sm border border-[#5F1517]/10 overflow-hidden relative shrink-0 snap-center w-[280px] sm:w-[320px] md:w-full aspect-[9/16]"
+              className="bg-black rounded-xl shadow-sm border border-[#5F1517]/10 overflow-hidden relative w-full aspect-[9/16]"
             >
               <iframe
                 src={`https://www.instagram.com/p/${reelId}/embed/?hidecaption=true`}

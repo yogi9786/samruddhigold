@@ -2,6 +2,20 @@ import axios from 'axios';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://147.93.110.125/api';
 
+export const getImageUrl = (url?: string) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  if (url.startsWith('/api/')) {
+    return `${BASE_URL.replace(/\/api$/, '')}${url}`;
+  }
+  if (url.startsWith('/')) {
+    return `${BASE_URL.replace(/\/api$/, '')}${url}`;
+  }
+  return `${BASE_URL}/uploads/${url}`;
+};
+
 // ─── User API ────────────────────────────────────────────────────────────────
 // Used by all user-facing components (login, signup, products, contact, header).
 // Attaches access_token automatically when present.

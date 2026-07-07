@@ -1,10 +1,12 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
-from bson import ObjectId
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
 from app.core.security import verify_admin
-from app.core.database import get_category_collection
+from app.core.database import get_db
 from app.models.category import CategoryCreate, CategoryUpdate, CategoryResponse
+from app.db.models import Category as DBCategory
 
 public_router = APIRouter(prefix="/categories", tags=["📂 Categories — Public"])
 admin_router = APIRouter(prefix="/categories", tags=["🔐 Admin — Category Management"])
@@ -17,11 +19,9 @@ router = APIRouter()
     response_model=List[CategoryResponse],
     summary="Get all categories (public)"
 )
-async def get_all_categories():
-    collection = get_category_collection()
-    categories = await collection.find().to_list(1000)
-    for cat in categories:
-        cat["id"] = str(cat.pop("_id"))
+async def get_all_categories(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(DBCategory).limit(1000))
+    categories = result.scalars().all()
     return categories
 
 @public_router.get(
@@ -29,14 +29,11 @@ async def get_all_categories():
     response_model=CategoryResponse,
     summary="Get a category by ID (public)"
 )
-async def get_category(category_id: str):
-    if not ObjectId.is_valid(category_id):
-        raise HTTPException(status_code=400, detail="Invalid category ID")
-    collection = get_category_collection()
-    cat = await collection.find_one({"_id": ObjectId(category_id)})
+async def get_category(category_id: str, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(DBCategory).where(DBCategory.id == category_id))
+    cat = result.scalars().first()
     if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
-    cat["id"] = str(cat.pop("_id"))
     return cat
 
 # ── Admin Routes ──────────────────────────────────────────────────────────────
@@ -47,12 +44,12 @@ async def get_category(category_id: str):
     status_code=status.HTTP_201_CREATED,
     summary="Create a new category (admin only)"
 )
-async def create_category(category: CategoryCreate, admin: dict = Depends(verify_admin)):
-    collection = get_category_collection()
-    result = await collection.insert_one(category.model_dump())
-    created = await collection.find_one({"_id": result.inserted_id})
-    created["id"] = str(created.pop("_id"))
-    return created
+async def create_category(category: CategoryCreate, admin: dict = Depends(verify_admin), db: AsyncSession = Depends(get_db)):
+    db_cat = DBCategory(**category.model_dump())
+    db.add(db_cat)
+    await db.commit()
+    await db.refresh(db_cat)
+    return db_cat
 
 @admin_router.put(
     "/{category_id}",
@@ -64,35 +61,34 @@ async def create_category(category: CategoryCreate, admin: dict = Depends(verify
     response_model=CategoryResponse,
     summary="Partially update a category (admin only)"
 )
-async def update_category(category_id: str, category_update: CategoryUpdate, admin: dict = Depends(verify_admin)):
-    if not ObjectId.is_valid(category_id):
-        raise HTTPException(status_code=400, detail="Invalid category ID")
-    collection = get_category_collection()
+async def update_category(category_id: str, category_update: CategoryUpdate, admin: dict = Depends(verify_admin), db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(DBCategory).where(DBCategory.id == category_id))
+    cat = result.scalars().first()
+    if not cat:
+        raise HTTPException(status_code=404, detail="Category not found")
+        
     update_data = category_update.model_dump(exclude_unset=True)
     if update_data:
-        result = await collection.update_one(
-            {"_id": ObjectId(category_id)},
-            {"$set": update_data}
-        )
-        if result.matched_count == 0:
-            raise HTTPException(status_code=404, detail="Category not found")
+        for key, value in update_data.items():
+            setattr(cat, key, value)
+        await db.commit()
+        await db.refresh(cat)
     
-    updated = await collection.find_one({"_id": ObjectId(category_id)})
-    updated["id"] = str(updated.pop("_id"))
-    return updated
+    return cat
 
 @admin_router.delete(
     "/{category_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a category (admin only)"
 )
-async def delete_category(category_id: str, admin: dict = Depends(verify_admin)):
-    if not ObjectId.is_valid(category_id):
-        raise HTTPException(status_code=400, detail="Invalid category ID")
-    collection = get_category_collection()
-    result = await collection.delete_one({"_id": ObjectId(category_id)})
-    if result.deleted_count == 0:
+async def delete_category(category_id: str, admin: dict = Depends(verify_admin), db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(DBCategory).where(DBCategory.id == category_id))
+    cat = result.scalars().first()
+    if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
+        
+    await db.delete(cat)
+    await db.commit()
     return None
 
 router.include_router(public_router)

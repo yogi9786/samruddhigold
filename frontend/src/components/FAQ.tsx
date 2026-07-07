@@ -21,6 +21,26 @@ const faqs = [
   {
     question: "Can I customize a piece of jewelry?",
     answer: "Absolutely! Our expert artisans can help you design and craft a bespoke piece. Book an appointment or visit our store to discuss your ideas."
+  },
+  {
+    question: "Do you offer jewelry repair services?",
+    answer: "Yes, we provide professional jewelry repair, polishing, and resizing services at all our store locations."
+  },
+  {
+    question: "How can I verify the purity of the gold?",
+    answer: "All our gold jewelry is 100% BIS Hallmarked, ensuring the highest standards of purity and authenticity. You can check the hallmark symbol on each piece."
+  },
+  {
+    question: "Do you have a gold exchange or upgrade policy?",
+    answer: "Yes, we offer competitive exchange rates for your old gold jewelry when you upgrade to new pieces from our collection. Please visit our store for a valuation."
+  },
+  {
+    question: "Is it safe to buy jewelry online from your store?",
+    answer: "Absolutely. Our website uses secure payment gateways, and all our shipments are fully insured until they safely reach your doorstep."
+  },
+  {
+    question: "How do I track my online order?",
+    answer: "Once your order is dispatched, you will receive a tracking link via email and SMS to monitor its delivery status in real-time."
   }
 ];
 

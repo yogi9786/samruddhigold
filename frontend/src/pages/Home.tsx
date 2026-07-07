@@ -6,6 +6,7 @@ import HeroSlider from '../components/HeroSlider';
 import BottomNav from '../components/BottomNav';
 import FloatingWhatsApp from '../components/FloatingWhatsApp';
 import CategoryGrid from '../components/CategoryGrid';
+import BestSellersBanner from '../components/BestSellersBanner';
 import PromoBanner from '../components/PromoBanner';
 import GenderCategories from '../components/GenderCategories';
 import CollectionShowcase from '../components/CollectionShowcase';
@@ -16,7 +17,10 @@ import TrustMarkers from '../components/TrustMarkers';
 import InstagramFeed from '../components/InstagramFeed';
 import Footer from '../components/Footer';
 import GoogleReviews from '../components/GoogleReviews';
+import FeaturedProducts from '../components/FeaturedProducts';
+import SignatureJewellery from '../components/SignatureJewellery';
 import FAQ from '../components/FAQ';
+import BrandTypography from '../components/BrandTypography';
 
 const Home: React.FC = () => {
   return (
@@ -29,26 +33,31 @@ const Home: React.FC = () => {
         </div>
       </ScrollReveal>
 
+     
+
       <div className="w-full max-w-7xl mx-auto flex flex-col mt-4">
-        {/* Mobile Quick Category Row */}
+        {/* Mobile Quick Category Row (Very small) */}
         <CategoriesRow />
 
-        {/* Section Heading for Categories */}
-        <ScrollReveal>
-          <div className="text-center mt-12 lg:mt-16 mb-8 px-4">
-            <h2 className="text-[32px] lg:text-[42px] font-serif text-[#5F1517] mb-6">Curated Classics</h2>
-          </div>
-        </ScrollReveal>
-
-        {/* Dynamic Category Grid */}
-        <ScrollReveal delay={100}>
-          <CategoryGrid />
-        </ScrollReveal>
 
         {/* Promotional Banner */}
         <ScrollReveal delay={150}>
           <PromoBanner />
         </ScrollReveal>
+
+        {/* Featured Products Showcase */}
+      <FeaturedProducts />
+
+       <ScrollReveal delay={150}>
+        <BestSellersBanner />
+      </ScrollReveal>
+
+      {/* Decorative Divider */}
+      <div className="w-full flex justify-center items-center py-6 md:py-10">
+        <div className="w-24 md:w-32 h-[1px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent opacity-60"></div>
+        <div className="w-2 h-2 rounded-full bg-[#D4AF37] mx-4 shadow-[0_0_8px_rgba(212,175,55,0.6)]"></div>
+        <div className="w-24 md:w-32 h-[1px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent opacity-60"></div>
+      </div>
 
         {/* Gender/Age Categories */}
         <ScrollReveal>
@@ -66,8 +75,46 @@ const Home: React.FC = () => {
         <WeddingLookBook />
       </ScrollReveal>
 
-      {/* 3D Hover Gallery (Hidden on mobile) */}
+            {/* 3D Hover Gallery (Hidden on mobile) */}
       <HoverGallery />
+
+      {/* Brand Typography — scroll zoom reveal, above shop by category */}
+      <BrandTypography />
+
+
+      {/* Curated Classics — Premium Section Header */}
+      <ScrollReveal>
+        <div className="text-center mt-6 lg:mt-10 mb-6 px-4">
+          {/* Ornamental eyebrow */}
+          <div className="flex items-center justify-center gap-4 mb-5">
+            <span className="block w-10 md:w-16 h-[1px] bg-[#D4AF37]" />
+            <span className="font-sans text-[10px] md:text-[11px] text-[#D4AF37] tracking-[4px] uppercase font-semibold">
+              Explore Our World
+            </span>
+            <span className="block w-10 md:w-16 h-[1px] bg-[#D4AF37]" />
+          </div>
+          {/* Main headline */}
+          <h2 className="font-serif text-[34px] md:text-[48px] lg:text-[56px] text-[#5F1517] leading-[1.1] tracking-tight mb-5">
+            Curated Classics
+          </h2>
+          {/* Subtext */}
+          <p className="font-sans text-[13px] md:text-[15px] text-[#5F1517]/60 max-w-xl mx-auto leading-relaxed font-light">
+            A handpicked selection of our finest gold, diamond &amp; heritage jewellery —
+            crafted for those who appreciate the extraordinary.
+          </p>
+        </div>
+      </ScrollReveal>
+
+      {/* Dynamic Category Grid */}
+      <ScrollReveal delay={100}>
+        <CategoryGrid />
+      </ScrollReveal>
+
+      {/* Signature Jewellery Grid */}
+      <SignatureJewellery />
+
+      {/* Featured Products Showcase */}
+      <FeaturedProducts />
 
       <ScrollReveal>
         <TrustMarkers />

@@ -1,10 +1,13 @@
-from fastapi import APIRouter, HTTPException, status
-from app.models.contact import ContactCreate, ContactResponse
-from app.core.database import get_contact_collection
+from fastapi import APIRouter, HTTPException, status, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from datetime import datetime, timezone
 
-router = APIRouter(prefix="/contact", tags=["📬 Contact — Public"])
+from app.models.contact import ContactCreate, ContactResponse
+from app.core.database import get_db
+from app.db.models import Contact as DBContact
 
+router = APIRouter(prefix="/contact", tags=["📬 Contact — Public"])
 
 @router.post(
     "",
@@ -12,19 +15,17 @@ router = APIRouter(prefix="/contact", tags=["📬 Contact — Public"])
     status_code=status.HTTP_201_CREATED,
     summary="Submit contact form (public)"
 )
-async def submit_contact(contact: ContactCreate):
+async def submit_contact(contact: ContactCreate, db: AsyncSession = Depends(get_db)):
     """
     **Public endpoint** — No authentication required.
     Submit a contact/enquiry form. The message is saved for the admin to review.
     """
-    contact_collection = get_contact_collection()
-
     contact_dict = contact.model_dump()
     contact_dict["created_at"] = datetime.now(timezone.utc)
 
-    result = await contact_collection.insert_one(contact_dict)
+    db_contact = DBContact(**contact_dict)
+    db.add(db_contact)
+    await db.commit()
+    await db.refresh(db_contact)
 
-    created_contact = await contact_collection.find_one({"_id": result.inserted_id})
-    created_contact["id"] = str(created_contact.pop("_id"))
-
-    return created_contact
+    return db_contact

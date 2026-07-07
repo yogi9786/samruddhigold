@@ -1,0 +1,66 @@
+import uuid
+from datetime import datetime, timezone
+from sqlalchemy import Column, String, Boolean, Float, DateTime, JSON, Text
+from app.core.database import Base
+
+def generate_uuid():
+    return uuid.uuid4().hex
+
+class User(Base):
+    __tablename__ = "users"
+    id = Column(String, primary_key=True, default=generate_uuid)
+    username = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=True)
+    full_name = Column(String, nullable=True)
+    hashed_password = Column(String, nullable=False)
+    disabled = Column(Boolean, default=False)
+
+class Category(Base):
+    __tablename__ = "categories"
+    id = Column(String, primary_key=True, default=generate_uuid)
+    name = Column(String, index=True, nullable=False)
+    description = Column(Text, nullable=True)
+    image_url = Column(String, nullable=True)
+
+class Contact(Base):
+    __tablename__ = "contacts"
+    id = Column(String, primary_key=True, default=generate_uuid)
+    name = Column(String, nullable=False)
+    email = Column(String, nullable=False)
+    phone = Column(String, nullable=True)
+    subject = Column(String, nullable=False)
+    message = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+class Product(Base):
+    __tablename__ = "products"
+    id = Column(String, primary_key=True, default=generate_uuid)
+    name = Column(String, nullable=False, index=True)
+    sku = Column(String, nullable=False, unique=True, index=True)
+    price = Column(Float, nullable=False)
+    original_price = Column(Float, nullable=True)
+    discount_text = Column(String, nullable=True)
+    ready_to_dispatch = Column(Boolean, default=False)
+    transit_insurance = Column(Boolean, default=False)
+    image_url = Column(String, nullable=True)
+    gallery_urls = Column(JSON, nullable=True)
+    
+    # Store nested details as JSON for flexibility, similar to NoSQL structure
+    price_breakup = Column(JSON, nullable=True)
+    basic_info = Column(JSON, nullable=True)
+    stone_info = Column(JSON, nullable=True)
+    other_info = Column(JSON, nullable=True)
+    return_policy = Column(JSON, nullable=True)
+
+class Order(Base):
+    __tablename__ = "orders"
+    id = Column(String, primary_key=True, default=generate_uuid)
+    items = Column(JSON, nullable=False)
+    total_amount = Column(Float, nullable=False)
+    shipping_address = Column(Text, nullable=False)
+    contact_phone = Column(String, nullable=False)
+    payment_method = Column(String, nullable=False)
+    user_username = Column(String, nullable=False)
+    status = Column(String, default="Pending")
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
