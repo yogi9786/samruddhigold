@@ -18,7 +18,7 @@ from app.db.models import *  # Import all models to ensure they are registered w
 config = context.config
 
 # Set the sqlalchemy.url dynamically from settings
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+config.set_main_option("sqlalchemy.url", str(settings.DATABASE_URL).replace('%', '%%'))
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:
