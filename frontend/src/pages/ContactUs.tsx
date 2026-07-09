@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import BottomNav from '../components/BottomNav';
 import FloatingWhatsApp from '../components/FloatingWhatsApp';
 import { MapPin, Phone, Mail, Clock } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
 import api from '../api';
 
 const ContactUs: React.FC = () => {
@@ -80,7 +81,17 @@ const ContactUs: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="text-lg font-serif text-[#5F1517] mb-1">Call Us</h4>
-                  <a href="tel:+919035085755" className="text-gray-600 hover:text-[#A56B25]">+91 90350 85755</a>
+                  <a href="tel:+919035085397" className="text-gray-600 hover:text-[#A56B25]">+91 90350 85397</a>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-[#25D366] text-white rounded-full flex items-center justify-center shrink-0">
+                  <FaWhatsapp size={24} />
+                </div>
+                <div>
+                  <h4 className="text-lg font-serif text-[#5F1517] mb-1">WhatsApp Call & Chat</h4>
+                  <a href="https://wa.me/919035085397" className="text-gray-600 hover:text-[#25D366]">+91 90350 85397</a>
                 </div>
               </div>
               

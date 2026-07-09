@@ -1,6 +1,6 @@
 import React from 'react';
 import { MapPin, Phone, Mail } from 'lucide-react';
-import { FaFacebook, FaYoutube, FaInstagram } from 'react-icons/fa';
+import { FaFacebook, FaYoutube, FaInstagram, FaWhatsapp } from 'react-icons/fa';
 import logo from '../assets/samruddhi-logo.png';
 
 const Footer: React.FC = () => {
@@ -85,7 +85,11 @@ const Footer: React.FC = () => {
               </li>
               <li className="flex items-center gap-3">
                 <Phone size={18} className="text-[#A56B25] shrink-0" />
-                <a href="tel:+919035085755" className="hover:text-white transition-colors">+91 90350 85755</a>
+                <a href="tel:+919035085397" className="hover:text-white transition-colors">+91 90350 85397</a>
+              </li>
+              <li className="flex items-center gap-3">
+                <FaWhatsapp size={18} className="text-[#A56B25] shrink-0" />
+                <a href="https://wa.me/919035085397" className="hover:text-white transition-colors">WhatsApp Call & Chat: +91 90350 85397</a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={18} className="text-[#A56B25] shrink-0" />
