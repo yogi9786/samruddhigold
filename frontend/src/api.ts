@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://sirisamruddhigold.com/api';
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://sirisamruddhigold.com/api';
 
 export const getImageUrl = (url?: string) => {
   if (!url) return '';
