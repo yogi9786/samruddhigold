@@ -93,7 +93,7 @@ async def upload_image(
     base_url = str(request.base_url).rstrip("/")
     if "127.0.0.1" in base_url or "localhost" in base_url:
         # Override with production URL if we detect local proxy IP
-        base_url = "http://sirisamruddhigold.com/api"
+        base_url = "https://sirisamruddhigold.com"
         
     return {"url": f"{base_url}/uploads/{file.filename}"}
 
@@ -112,6 +112,10 @@ async def upload_gallery_images(
     **Admin only** — Requires Bearer token.
     Upload multiple images for a product gallery. Returns list of public URLs.
     """
+    base_url = str(request.base_url).rstrip("/")
+    if "127.0.0.1" in base_url or "localhost" in base_url:
+        base_url = "https://sirisamruddhigold.com"
+
     urls = []
     for file in files:
         if not file.content_type.startswith("image/"):
@@ -120,10 +124,6 @@ async def upload_gallery_images(
         file_path = os.path.join(UPLOAD_DIR, file.filename)
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-
-        base_url = str(request.base_url).rstrip("/")
-        if "127.0.0.1" in base_url or "localhost" in base_url:
-            base_url = "http://sirisamruddhigold.com/api"
 
         urls.append(f"{base_url}/uploads/{file.filename}")
 
