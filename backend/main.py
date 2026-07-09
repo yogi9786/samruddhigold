@@ -45,7 +45,7 @@ os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 app.include_router(store_api_router)
-app.include_router(admin_api_router, prefix="/admin")
+app.include_router(admin_api_router)
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Health Check

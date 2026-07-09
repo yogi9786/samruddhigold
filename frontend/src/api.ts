@@ -47,7 +47,7 @@ api.interceptors.response.use(
 // Used exclusively by AdminPanel.
 // Injects admin_token and redirects to '/' on 401.
 export const adminApi = axios.create({
-  baseURL: `${BASE_URL}/admin`,
+  baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
 });
 
