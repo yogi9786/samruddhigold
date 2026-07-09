@@ -75,3 +75,11 @@ class Order(Base):
     status = Column(String, default="Pending")
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+class MetalPrice(Base):
+    __tablename__ = "metal_prices"
+    id = Column(String, primary_key=True)  # e.g., "gold_22k", "gold_24k", "silver"
+    name = Column(String, nullable=False)
+    price = Column(Float, nullable=False)
+    unit = Column(String, default="1g")
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

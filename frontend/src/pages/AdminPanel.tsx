@@ -18,7 +18,7 @@ interface Product {
   status?: string; stock?: number; weight?: string; tags?: string; vendor?: string; seo_title?: string; seo_description?: string;
 }
 
-type Section = 'dashboard' | 'all-products' | 'add-product' | 'all-categories' | 'add-category' | 'orders' | 'customers' | 'users' | 'change-password' | 'settings';
+type Section = 'dashboard' | 'all-products' | 'add-product' | 'all-categories' | 'add-category' | 'orders' | 'customers' | 'users' | 'change-password' | 'settings' | 'metal-prices';
 
 const emptyProduct = {
   name: '', sku: '', price: 0, original_price: 0, discount_text: '',
@@ -207,6 +207,8 @@ const AdminPanel: React.FC = () => {
   // Stats
   const [stats, setStats] = useState({ products: 0, categories: 0, orders: 0, revenue: 0, onSale: 0, pending: 0, customers: 0 });
 
+  const [metalPrices, setMetalPrices] = useState<any[]>([]);
+
   // ─── Fetch ──────────────────────────────────────────────────────────────────
   const fetchProducts = useCallback(async () => {
     setLoading(l => ({ ...l, products: true }));
@@ -250,7 +252,20 @@ const AdminPanel: React.FC = () => {
     finally { setLoading(l => ({ ...l, users: false })); }
   }, []);
 
-  const refreshAll = useCallback(() => { fetchProducts(); fetchCategories(); fetchOrders(); fetchUsers(); }, [fetchProducts, fetchCategories, fetchOrders, fetchUsers]);
+  const fetchMetalPrices = useCallback(async () => {
+    try {
+      const r = await adminApi.get('/metal-prices');
+      setMetalPrices(r.data);
+    } catch { showToast('Failed to load metal rates', 'error'); }
+  }, []);
+
+  const refreshAll = useCallback(() => { 
+    fetchProducts(); 
+    fetchCategories(); 
+    fetchOrders(); 
+    fetchUsers(); 
+    fetchMetalPrices(); 
+  }, [fetchProducts, fetchCategories, fetchOrders, fetchUsers, fetchMetalPrices]);
 
   useEffect(() => { 
     if (token) refreshAll(); 
@@ -448,6 +463,49 @@ const AdminPanel: React.FC = () => {
       setPwMsg({ text: 'Password changed! Restart server to persist.', type: 'success' });
       showToast('Password changed successfully!'); setPw({ cur: '', nw: '', conf: '' });
     } catch (err: any) { setPwMsg({ text: err.response?.data?.detail || 'Failed', type: 'error' }); }
+  };
+
+  // ─── Metal Prices Handlers ──────────────────────────────────────────────────
+  const [mForm, setMForm] = useState({ id: '', name: '', price: 0, unit: '1g' });
+  const [editMId, setEditMId] = useState<string | null>(null);
+
+  const handleMInput = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setMForm(prev => ({ ...prev, [name]: name === 'price' ? Number(value) : value }));
+  };
+
+  const handleMetalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editMId) {
+        await adminApi.put(`/metal-prices/${editMId}`, { price: mForm.price, name: mForm.name, unit: mForm.unit });
+        showToast('Metal rate updated successfully!');
+      } else {
+        await adminApi.post('/metal-prices', mForm);
+        showToast('Metal rate added successfully!');
+      }
+      setMForm({ id: '', name: '', price: 0, unit: '1g' });
+      setEditMId(null);
+      fetchMetalPrices();
+    } catch (err: any) {
+      showToast('Error: ' + (err.response?.data?.detail || err.message), 'error');
+    }
+  };
+
+  const deleteMetalPrice = async (id: string) => {
+    if (!confirm('Delete this metal rate? It will no longer display in the header.')) return;
+    try {
+      await adminApi.delete(`/metal-prices/${id}`);
+      fetchMetalPrices();
+      showToast('Metal rate deleted successfully!');
+    } catch (err: any) {
+      showToast('Delete failed: ' + (err.response?.data?.detail || err.message), 'error');
+    }
+  };
+
+  const startEditMetal = (mp: any) => {
+    setMForm({ id: mp.id, name: mp.name, price: mp.price, unit: mp.unit });
+    setEditMId(mp.id);
   };
 
   // ─── Filtered Products ───────────────────────────────────────────────────────
@@ -1216,6 +1274,100 @@ const AdminPanel: React.FC = () => {
     </div>
   );
 
+  // ─── METAL PRICES MANAGEMENT ────────────────────────────────────────────────
+  const renderMetalPrices = () => (
+    <div className="animate-fade-in pb-10">
+      <div className="flex items-center gap-4 mb-6">
+        <h2 className="text-3xl font-bold text-[#5F1517] tracking-tight" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>Metal Rates Manager</h2>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Form Card */}
+        <div className="lg:col-span-1">
+          <form onSubmit={handleMetalSubmit}>
+            <SCard icon="🪙" title={editMId ? 'Edit Rate' : 'Add New Rate'}>
+              <div className="space-y-4">
+                {!editMId && (
+                  <Field 
+                    label="Rate ID (slug)" 
+                    name="id" 
+                    value={mForm.id} 
+                    onChange={handleMInput} 
+                    required 
+                    placeholder="e.g. gold_22k, gold_24k, silver" 
+                    hint="Lowercase, letters/underscores only. Used as unique key." 
+                  />
+                )}
+                {editMId && (
+                  <div>
+                    <label className="block text-xs font-semibold text-[#5F1517]/70 uppercase tracking-widest mb-1.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Rate ID</label>
+                    <input type="text" value={mForm.id} readOnly className="w-full px-4 py-3 border border-[#D4AF37]/30 rounded-xl text-sm bg-[#FFF7F2] text-[#5F1517]/50 focus:outline-none" />
+                  </div>
+                )}
+                <Field label="Metal Name" name="name" value={mForm.name} onChange={handleMInput} required placeholder="e.g. Gold 22 KT" />
+                <Field label="Price per Gram (₹)" name="price" type="number" value={mForm.price} onChange={handleMInput} required placeholder="e.g. 13230" />
+                <Field label="Unit" name="unit" value={mForm.unit} onChange={handleMInput} required placeholder="e.g. 1g" />
+                
+                <div className="pt-3 flex gap-2">
+                  <button type="submit" className="flex-1 py-3 bg-gradient-to-r from-[#5F1517] to-[#801416] text-[#D4AF37] text-xs font-bold rounded-xl uppercase tracking-widest hover:brightness-110 transition shadow">
+                    {editMId ? 'Save' : 'Add Rate'}
+                  </button>
+                  {editMId && (
+                    <button type="button" onClick={() => { setEditMId(null); setMForm({ id: '', name: '', price: 0, unit: '1g' }); }} className="px-4 py-3 bg-white border border-gray-300 rounded-xl text-xs font-semibold hover:bg-gray-50 transition">
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </div>
+            </SCard>
+          </form>
+        </div>
+
+        {/* List Card */}
+        <div className="lg:col-span-2">
+          <SCard icon="📋" title="Daily Live Rates">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-[#D4AF37]/20 bg-[#FFF7F2]/50 text-[10px] font-bold text-[#5F1517]/50 uppercase tracking-[0.15em]">
+                    <th className="px-4 py-3">Metal / ID</th>
+                    <th className="px-4 py-3">Price / Unit</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 text-sm font-semibold">
+                  {metalPrices.map((mp) => (
+                    <tr key={mp.id} className="hover:bg-[#FFF7F2]/40 transition-colors">
+                      <td className="px-4 py-4">
+                        <div className="text-[#5F1517] font-bold">{mp.name}</div>
+                        <div className="text-[10px] text-[#5F1517]/40 font-mono mt-0.5">{mp.id}</div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="text-[#5F1517] font-bold">₹{mp.price.toLocaleString('en-IN')}</div>
+                        <div className="text-[10px] text-[#5F1517]/50 uppercase tracking-widest font-semibold mt-0.5">Per {mp.unit}</div>
+                      </td>
+                      <td className="px-4 py-4 text-right">
+                        <div className="flex gap-2 justify-end">
+                          <button onClick={() => startEditMetal(mp)} className="px-3 py-1.5 text-[10px] font-bold text-[#5F1517] bg-white border border-[#D4AF37]/30 hover:bg-[#D4AF37]/10 hover:border-[#D4AF37] rounded-lg transition uppercase tracking-widest shadow-sm">Edit</button>
+                          <button onClick={() => deleteMetalPrice(mp.id)} className="px-3 py-1.5 text-[10px] font-bold text-red-600 bg-white border border-red-200 hover:bg-red-50 hover:border-red-300 rounded-lg transition uppercase tracking-widest shadow-sm">Delete</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {metalPrices.length === 0 && (
+                    <tr>
+                      <td colSpan={3} className="text-center py-8 text-gray-400 font-medium">No rates defined. Add one above!</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </SCard>
+        </div>
+      </div>
+    </div>
+  );
+
   // ─── CHANGE PASSWORD ──────────────────────────────────────────────────────────
   const renderChangePw = () => (
     <div className="max-w-xl animate-fade-in">
@@ -1282,6 +1434,7 @@ const AdminPanel: React.FC = () => {
           <NavItem id="add-product" icon="➕" label={editPId ? 'Edit Product' : 'Add Product'} />
           <NavItem id="all-categories" icon="📂" label="Collections" count={stats.categories} />
           <NavItem id="add-category" icon="🗂️" label={editCId ? 'Edit Collection' : 'Add Collection'} />
+          <NavItem id="metal-prices" icon="🪙" label="Metal Rates" />
           <NavLabel label="Commerce" />
           <NavItem id="orders" icon="📦" label="Orders" count={stats.pending} />
           <NavItem id="customers" icon="🛍️" label="Customers" count={stats.customers} />
@@ -1311,7 +1464,7 @@ const AdminPanel: React.FC = () => {
             </button>
             <div>
               <h1 className="text-base sm:text-lg font-bold text-[#5F1517] capitalize tracking-tight" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>
-                {section === 'all-products' ? 'Products' : section === 'add-product' ? (editPId ? 'Edit Product' : 'Add Product') : section === 'all-categories' ? 'Collections' : section === 'add-category' ? (editCId ? 'Edit Collection' : 'Add Collection') : section === 'change-password' ? 'Security Settings' : section === 'customers' ? 'Customers' : section === 'users' ? 'All Users' : section.charAt(0).toUpperCase() + section.slice(1)}
+                {section === 'all-products' ? 'Products' : section === 'add-product' ? (editPId ? 'Edit Product' : 'Add Product') : section === 'all-categories' ? 'Collections' : section === 'add-category' ? (editCId ? 'Edit Collection' : 'Add Collection') : section === 'change-password' ? 'Security Settings' : section === 'customers' ? 'Customers' : section === 'users' ? 'All Users' : section === 'metal-prices' ? 'Metal Rates' : section.charAt(0).toUpperCase() + section.slice(1)}
               </h1>
               <p className="text-[9px] sm:text-[10px] font-bold text-[#5F1517]/40 uppercase tracking-[0.2em] mt-0.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Siri Samruddhi Gold Palace</p>
             </div>
@@ -1335,10 +1488,14 @@ const AdminPanel: React.FC = () => {
           {section === 'customers' && renderCustomers()}
           {section === 'users' && renderUsers()}
           {section === 'change-password' && renderChangePw()}
+          {section === 'metal-prices' && renderMetalPrices()}
         </div>
       </main>
     </div>
   );
 };
+
+
+
 
 export default AdminPanel;

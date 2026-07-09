@@ -10,6 +10,8 @@ const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [metalPrices, setMetalPrices] = useState<any[]>([]);
+  const [showMetalPrices, setShowMetalPrices] = useState(false);
 
   const fetchUserProfile = async () => {
     try {
@@ -20,6 +22,18 @@ const Header: React.FC = () => {
       setUser(null);
     }
   };
+
+  useEffect(() => {
+    const fetchRates = async () => {
+      try {
+        const res = await api.get('/metal-prices');
+        setMetalPrices(res.data);
+      } catch (err) {
+        console.error('Failed to fetch metal rates:', err);
+      }
+    };
+    fetchRates();
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -65,9 +79,32 @@ const Header: React.FC = () => {
                 <span className="text-royal font-sans font-medium text-[13px] lg:text-[12px] tracking-wide">Our Branch: Yelahanka, Udupi, Kolar</span>
              </div>
              <div className="flex items-center gap-5 text-[12px] lg:text-[11px] text-[#801416] font-medium">
-                <span className="flex items-center gap-1 cursor-pointer hover:opacity-80">
-                  <span className="text-[#A56B25]">🪙</span> GOLD 22 KT/1g - ₹ 13,230 <ChevronDown size={12}/>
-                </span>
+                <div 
+                  className="relative flex items-center gap-1 cursor-pointer hover:opacity-80 py-1"
+                  onMouseEnter={() => setShowMetalPrices(true)}
+                  onMouseLeave={() => setShowMetalPrices(false)}
+                >
+                  <span className="text-[#A56B25]">🪙</span> 
+                  {metalPrices.find(p => p.id === 'gold_22k') 
+                    ? `TODAY'S GOLD RATE`
+                    : 'GOLD 22 KT/1g - ₹ 13,230'
+                  }
+                  <ChevronDown size={12}/>
+                  
+                  {showMetalPrices && metalPrices.length > 0 && (
+                    <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-[#D4AF37]/20 rounded-2xl shadow-xl p-4 text-[#5F1517] z-50 animate-fade-in">
+                      <h4 className="font-bold text-[10px] uppercase tracking-wider text-[#D4AF37] mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>Daily Metal Rates</h4>
+                      <div className="flex flex-col gap-2.5">
+                        {metalPrices.map(mp => (
+                          <div key={mp.id} className="flex justify-between items-center text-xs font-semibold py-1 border-b border-gray-100 last:border-0">
+                            <span>{mp.name} / {mp.unit}</span>
+                            <span className="font-mono text-[#801416]">₹{mp.price.toLocaleString('en-IN')}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <span className="flex items-center gap-1 cursor-pointer hover:opacity-80">
                   <MapPin size={14} />
                 </span>

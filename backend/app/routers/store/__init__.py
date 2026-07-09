@@ -6,6 +6,7 @@ from app.api.products import public_router as products_router
 from app.api.categories import public_router as categories_router
 from app.api.orders import user_router as orders_router
 from app.api.contact import router as contact_router
+from app.api.metal_price import public_router as metal_prices_router
 
 store_api_router = APIRouter()
 store_api_router.include_router(auth_router)
@@ -14,3 +15,4 @@ store_api_router.include_router(products_router)
 store_api_router.include_router(categories_router)
 store_api_router.include_router(orders_router)
 store_api_router.include_router(contact_router)
+store_api_router.include_router(metal_prices_router)

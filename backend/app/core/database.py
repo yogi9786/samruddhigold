@@ -32,8 +32,22 @@ async def init_db():
             # await conn.run_sync(Base.metadata.drop_all)
             await conn.run_sync(Base.metadata.create_all)
         logger.info("Database tables created successfully")
+        
+        # Seed default metal prices if none exist
+        async with async_session() as session:
+            from sqlalchemy.future import select
+            result = await session.execute(select(models.MetalPrice))
+            existing = result.scalars().all()
+            if not existing:
+                session.add_all([
+                    models.MetalPrice(id="gold_22k", name="Gold 22 KT", price=13230.0, unit="1g"),
+                    models.MetalPrice(id="gold_24k", name="Gold 24 KT", price=14430.0, unit="1g"),
+                    models.MetalPrice(id="silver", name="Silver", price=95.0, unit="1g"),
+                ])
+                await session.commit()
+                logger.info("Metal prices seeded successfully")
     except Exception as e:
-        logger.error(f"Error creating database tables: {e}")
+        logger.error(f"Error creating database tables or seeding: {e}")
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
