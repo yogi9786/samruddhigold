@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { adminApi, getImageUrl } from '../api';
+import api, { adminApi, getImageUrl } from '../api';
 import logo from '../assets/samruddhi-logo.png';
 
 // ─── Brand Colors ─────────────────────────────────────────────────────────────
@@ -266,7 +266,7 @@ const AdminPanel: React.FC = () => {
     try {
       const params = new URLSearchParams();
       params.append('username', loginU); params.append('password', loginP);
-      const r = await adminApi.post('/auth/token', params, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+      const r = await api.post('/auth/token', params, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
       const tok = r.data.access_token;
       setToken(tok); localStorage.setItem('admin_token', tok); setLoginErr('');
     } catch { setLoginErr('Invalid credentials. Please try again.'); }
