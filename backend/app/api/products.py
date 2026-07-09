@@ -88,14 +88,7 @@ async def upload_image(
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    # Build URL dynamically from the request so it works on any host/domain
-    # In production behind Nginx, request.base_url might be 127.0.0.1, so we override it
-    base_url = str(request.base_url).rstrip("/")
-    if "127.0.0.1" in base_url or "localhost" in base_url:
-        # Override with production URL if we detect local proxy IP
-        base_url = "https://sirisamruddhigold.com/api"
-        
-    return {"url": f"{base_url}/uploads/{file.filename}"}
+    return {"url": f"/api/uploads/{file.filename}"}
 
 
 @admin_router.post(
@@ -112,10 +105,6 @@ async def upload_gallery_images(
     **Admin only** — Requires Bearer token.
     Upload multiple images for a product gallery. Returns list of public URLs.
     """
-    base_url = str(request.base_url).rstrip("/")
-    if "127.0.0.1" in base_url or "localhost" in base_url:
-        base_url = "https://sirisamruddhigold.com"
-
     urls = []
     for file in files:
         if not file.content_type.startswith("image/"):
@@ -125,7 +114,7 @@ async def upload_gallery_images(
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        urls.append(f"{base_url}/uploads/{file.filename}")
+        urls.append(f"/api/uploads/{file.filename}")
 
     return {"urls": urls}
 
