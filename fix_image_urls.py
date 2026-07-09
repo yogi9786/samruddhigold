@@ -27,8 +27,8 @@ updated_count = 0
 
 for p in products:
     img_url = p.get("image_url")
-    if img_url and "sirisamruddhigold.com/api/uploads" in img_url:
-        new_url = img_url.replace("http://", "https://").replace("/api/uploads", "/uploads")
+    if img_url and "sirisamruddhigold.com/uploads" in img_url:
+        new_url = img_url.replace("sirisamruddhigold.com/uploads", "sirisamruddhigold.com/api/uploads")
         
         # update product
         update_res = requests.put(f"{BASE_URL}/products/{p['id']}", headers=headers, json={
