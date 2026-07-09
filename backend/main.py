@@ -38,31 +38,15 @@ app = FastAPI(
 # ──────────────────────────────────────────────────────────────────────────────
 register_cors(app)
 
-from fastapi.responses import FileResponse
-import os
+# ──────────────────────────────────────────────────────────────────────────────
+# Static Files & Uploads
+# ──────────────────────────────────────────────────────────────────────────────
+from app.api.uploads import router as uploads_router
+app.include_router(uploads_router)
 
-os.makedirs("uploads", exist_ok=True)
-@app.get("/uploads/{filename}")
-@app.get("/api/uploads/{filename}")
-async def serve_upload(filename: str):
-    file_path = os.path.join("uploads", filename)
-    if os.path.exists(file_path):
-        return FileResponse(file_path)
-    from fastapi import HTTPException
-    raise HTTPException(status_code=404, detail="Not Found")
 
-@app.get("/debug-uploads")
-def debug_uploads():
-    import os
-    files = os.listdir("uploads") if os.path.exists("uploads") else []
-    return {"cwd": os.getcwd(), "uploads_dir_exists": os.path.exists("uploads"), "files": files}
 
-async def serve_upload(filename: str):
-    file_path = os.path.join("uploads", filename)
-    if os.path.exists(file_path):
-        return FileResponse(file_path)
-    from fastapi import HTTPException
-    raise HTTPException(status_code=404, detail="Not Found")
+
 
 app.include_router(store_api_router)
 app.include_router(admin_api_router)
