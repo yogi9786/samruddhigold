@@ -103,7 +103,7 @@ const WeddingLookBook = () => {
           {doubled.map((item, idx) => (
             <a
               key={`${item.id}-${idx}`}
-              href={`https://wa.me/919900000000?text=Hi%20Samruddhi%20Gold%20Palace,%20I'm%20interested%20in%20the%20${encodeURIComponent(item.title)}%20(${encodeURIComponent(item.tag)})%20look%20from%20your%20Wedding%20Look%20Book.`}
+              href={`https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I'm%20interested%20in%20the%20${encodeURIComponent(item.title)}%20(${encodeURIComponent(item.tag)})%20look%20from%20your%20Wedding%20Look%20Book.`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex-shrink-0 group w-[240px] md:w-[280px] bg-white rounded-3xl p-3 shadow-sm border border-[#5F1517]/5 no-underline block"

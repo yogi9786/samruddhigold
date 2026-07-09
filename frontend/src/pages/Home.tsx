@@ -1,6 +1,5 @@
 import React from 'react';
 import Header from '../components/Header';
-import TopBanner from '../components/TopBanner';
 import CategoriesRow from '../components/CategoriesRow';
 import HeroSlider from '../components/HeroSlider';
 import BottomNav from '../components/BottomNav';
@@ -25,7 +24,6 @@ import BrandTypography from '../components/BrandTypography';
 const Home: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col w-full bg-transparent pb-16 lg:pb-0 overflow-x-hidden">
-      <TopBanner />
       <Header />
       <ScrollReveal delay={100}>
         <div className="w-full">

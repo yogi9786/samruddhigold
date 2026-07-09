@@ -126,27 +126,73 @@ const categories = [
       </svg>
     ),
   },
+  {
+    id: 11,
+    name: 'Pendants',
+    href: '#pendants',
+    icon: (
+      <svg viewBox="0 0 40 40" fill="none" className="w-5 h-5">
+        <path d="M20 12 L26 22 L20 32 L14 22 Z" stroke="#C82A3A" strokeWidth="2" strokeLinejoin="round" fill="none" />
+        <circle cx="20" cy="9" r="2" stroke="#C82A3A" strokeWidth="1.5" fill="none" />
+      </svg>
+    ),
+  },
+  {
+    id: 12,
+    name: 'Chains',
+    href: '#chains',
+    icon: (
+      <svg viewBox="0 0 40 40" fill="none" className="w-5 h-5">
+        <rect x="8" y="18" width="10" height="4" rx="2" stroke="#C82A3A" strokeWidth="2" fill="none" />
+        <rect x="16" y="18" width="10" height="4" rx="2" stroke="#C82A3A" strokeWidth="2" fill="none" />
+        <rect x="24" y="18" width="10" height="4" rx="2" stroke="#C82A3A" strokeWidth="2" fill="none" />
+      </svg>
+    ),
+  },
+  {
+    id: 13,
+    name: 'Silver Items',
+    href: '#silver-items',
+    icon: (
+      <svg viewBox="0 0 40 40" fill="none" className="w-5 h-5">
+        <path d="M12 24 Q20 34 28 24 L26 14 Q20 10 14 14 Z" stroke="#C82A3A" strokeWidth="2" fill="none" />
+        <path d="M14 14 Q20 18 26 14" stroke="#C82A3A" strokeWidth="1.5" fill="none" />
+      </svg>
+    ),
+  },
+  {
+    id: 14,
+    name: 'Kids Jewellery',
+    href: '#kids',
+    icon: (
+      <svg viewBox="0 0 40 40" fill="none" className="w-5 h-5 md:w-6 md:h-6">
+        <circle cx="20" cy="22" r="6" stroke="#C82A3A" strokeWidth="2" fill="none" />
+        <circle cx="14" cy="16" r="3" stroke="#C82A3A" strokeWidth="1.5" fill="none" />
+        <circle cx="26" cy="16" r="3" stroke="#C82A3A" strokeWidth="1.5" fill="none" />
+      </svg>
+    ),
+  }
 ];
 
 const CategoriesRow: React.FC = () => {
   return (
     <div className="w-full bg-[#FFF7F2] py-3 px-2 md:px-4 border-b border-[#D4AF37]/15 mb-2">
       <div className="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full">
-        <div className="flex flex-row gap-3 md:gap-4 min-w-max lg:min-w-0 lg:flex-wrap lg:justify-center mx-auto px-1">
+        <div className="flex flex-row gap-3 md:gap-5 min-w-max lg:min-w-0 lg:flex-wrap lg:justify-center mx-auto px-1">
           {categories.map((cat) => (
             <a
               key={cat.id}
               href={cat.href}
-              className="flex flex-col items-center gap-1.5 cursor-pointer group no-underline flex-shrink-0"
+              className="flex flex-col items-center gap-1.5 md:gap-2 cursor-pointer group no-underline flex-shrink-0"
             >
-              {/* Very small Circle icon */}
-              <div className="w-[38px] h-[38px] md:w-[44px] md:h-[44px] rounded-full border border-[#D4AF37]/50 p-[2px] group-hover:border-[#C82A3A] transition-colors duration-300">
+              {/* Circle icon */}
+              <div className="w-[46px] h-[46px] md:w-[56px] md:h-[56px] rounded-full border border-[#D4AF37]/50 p-[2px] md:p-[3px] group-hover:border-[#C82A3A] transition-colors duration-300">
                 <div className="w-full h-full rounded-full bg-gradient-to-br from-white to-[#FFF7EC] flex items-center justify-center group-hover:shadow-sm transition-shadow duration-300">
-                  {cat.icon}
+                  {React.cloneElement(cat.icon as React.ReactElement<any>, { className: 'w-6 h-6 md:w-7 md:h-7' })}
                 </div>
               </div>
-              {/* Small Label */}
-              <span className="text-[9px] md:text-[10px] font-sans font-medium text-[#801416] group-hover:text-[#5F1517] transition-colors text-center leading-tight whitespace-nowrap">
+              {/* Label */}
+              <span className="text-[10px] md:text-[11px] font-sans font-medium text-[#801416] group-hover:text-[#5F1517] transition-colors text-center leading-tight whitespace-nowrap">
                 {cat.name}
               </span>
             </a>

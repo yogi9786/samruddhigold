@@ -10,7 +10,7 @@ import imgEarring     from '../assets/gen/cat_earrings_1782214875918.png';
 import imgPendant     from '../assets/gen/cat_pendants_1782214847919.png';
 import imgMangalsutra from '../assets/gen/cat_mangalsutra_1782214906170.png';
 
-const WHATSAPP = "919900000000";
+const WHATSAPP = "919035085397";
 
 const cards = [
   { id: 1, name: "Necklace Set",   category: "Gold",    image: imgNecklace,    badge: "Bestseller" },
@@ -34,16 +34,27 @@ const PromoBanner: React.FC = () => {
     <div className="w-full max-w-7xl mx-auto px-4 mb-10 lg:mb-20">
 
       {/* ── Section label ── */}
-      <div className="flex items-center justify-center gap-4 mb-8">
-        <span className="block w-10 md:w-16 h-[1px] bg-[#D4AF37]" />
-        <span className="font-sans text-[10px] md:text-[11px] text-[#D4AF37] tracking-[4px] uppercase font-semibold">
+      <div className="text-center mt-6 lg:mt-10 mb-8 md:mb-12 px-4">
+        {/* Ornamental eyebrow */}
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <span className="block w-10 md:w-16 h-[1px] bg-[#D4AF37]" />
+          <span className="font-sans text-[10px] md:text-[11px] text-[#D4AF37] tracking-[4px] uppercase font-semibold">
+            Discover Excellence
+          </span>
+          <span className="block w-10 md:w-16 h-[1px] bg-[#D4AF37]" />
+        </div>
+        {/* Main headline */}
+        <h2 className="font-serif text-[34px] md:text-[48px] lg:text-[56px] text-[#5F1517] leading-[1.1] tracking-tight mb-5">
           Our Collection
-        </span>
-        <span className="block w-10 md:w-16 h-[1px] bg-[#D4AF37]" />
+        </h2>
+        {/* Subtext */}
+        <p className="font-sans text-[13px] md:text-[15px] text-[#5F1517]/60 max-w-xl mx-auto leading-relaxed font-light">
+          A timeless selection of gold, diamond, and heritage jewellery to celebrate your most precious moments.
+        </p>
       </div>
 
       {/* ── Main Grid ── */}
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4 md:gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-4 md:gap-6 lg:gap-5">
 
         {/* ── LEFT: Feature Card ── */}
         <a
@@ -54,7 +65,7 @@ const PromoBanner: React.FC = () => {
           style={{
             background: 'linear-gradient(160deg, #3d0c0e 0%, #1a0a09 100%)',
             borderRadius: 0,
-            minHeight: '360px',
+            minHeight: '380px',
           }}
         >
           {/* Gold corner accents */}
@@ -73,7 +84,7 @@ const PromoBanner: React.FC = () => {
           </div>
 
           {/* Content */}
-          <div className="relative z-10 flex flex-col justify-between h-full p-5 md:p-6" style={{ minHeight: '360px' }}>
+          <div className="relative z-10 flex flex-col justify-between h-full p-5 md:p-6" style={{ minHeight: '380px' }}>
             {/* Top badge */}
             <div className="self-start">
               <span className="bg-[#D4AF37] text-[#1a0a09] text-[9px] font-bold uppercase tracking-[2.5px] px-3 py-1.5">
@@ -83,12 +94,12 @@ const PromoBanner: React.FC = () => {
 
             {/* Bottom text */}
             <div>
-              <p className="font-sans text-[#D4AF37]/70 text-[10px] tracking-[3px] uppercase mb-2">Bridal · Gold</p>
-              <h3 className="font-serif text-white text-[22px] md:text-[26px] leading-tight mb-4">
+              <p className="font-sans text-[#D4AF37]/70 text-[11px] tracking-[3px] uppercase mb-2">Bridal · Gold</p>
+              <h3 className="font-serif text-white text-[28px] md:text-[32px] leading-tight mb-4 drop-shadow-md">
                 Royal Bridal<br />
                 <span className="italic text-[#D4AF37]">Jewellery Set</span>
               </h3>
-              <div className="inline-flex items-center gap-2 border border-[#D4AF37]/60 text-[#D4AF37] text-[10px] tracking-[2px] uppercase font-semibold px-4 py-2 group-hover:bg-[#D4AF37] group-hover:text-[#1a0a09] transition-colors duration-300">
+              <div className="inline-flex items-center gap-2 border border-[#D4AF37]/60 bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] md:text-[11px] tracking-[2px] uppercase font-semibold px-4 py-2 hover:bg-[#D4AF37] hover:text-[#1a0a09] transition-colors duration-300 backdrop-blur-sm">
                 <span>Enquire Now</span>
                 <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -99,7 +110,7 @@ const PromoBanner: React.FC = () => {
         </a>
 
         {/* ── RIGHT: 3×2 Product Card Grid ── */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 lg:gap-5">
           {cards.map((card) => (
             <a
               key={card.id}
@@ -128,15 +139,15 @@ const PromoBanner: React.FC = () => {
 
               {/* Hover overlay with enquire */}
               <div className="absolute inset-0 bg-gradient-to-t from-[#1a0a09]/75 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-350 flex items-end justify-center pb-4">
-                <span className="font-sans text-white text-[9px] tracking-[2px] uppercase font-semibold border-b border-white/50 pb-0.5">
+                <span className="font-sans text-white text-[9px] md:text-[10px] tracking-[2px] uppercase font-semibold border-b border-white/50 pb-0.5">
                   Enquire →
                 </span>
               </div>
 
               {/* Label */}
-              <div className="p-2.5 md:p-3 border-t border-[#D4AF37]/15">
-                <p className="font-sans text-[8px] md:text-[9px] text-[#D4AF37] tracking-[2px] uppercase mb-0.5">{card.category}</p>
-                <h4 className="font-serif text-[#5F1517] text-[12px] md:text-[13px] leading-snug group-hover:text-[#801416] transition-colors">
+              <div className="p-3 md:p-4 border-t border-[#D4AF37]/15">
+                <p className="font-sans text-[9px] md:text-[10px] text-[#D4AF37] tracking-[2px] uppercase mb-1">{card.category}</p>
+                <h4 className="font-serif text-[#5F1517] text-[14px] md:text-[15px] leading-snug group-hover:text-[#801416] transition-colors">
                   {card.name}
                 </h4>
               </div>

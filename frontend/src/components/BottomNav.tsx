@@ -12,11 +12,11 @@ const BottomNav: React.FC = () => {
         <LayoutGrid size={22} strokeWidth={1.5} />
         <span className="text-[10px] font-medium">Categories</span>
       </a>
-      <a href="https://wa.me/919900000000?text=Hi%20Samruddhi%20Gold%20Palace,%20I%20am%20interested%20in%20learning%20more%20about%20your%20Gold%2520Scheme." target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1 text-[#801416] hover:text-[#5F1517] transition no-underline">
+      <a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I%20am%20interested%20in%20learning%20more%20about%20your%20Gold%2520Scheme." target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1 text-[#801416] hover:text-[#5F1517] transition no-underline">
         <Coins size={22} strokeWidth={1.5} />
         <span className="text-[10px] font-medium">Gold Scheme</span>
       </a>
-      <a href="https://wa.me/919900000000?text=Hi%20Samruddhi%20Gold%20Palace,%20I%20need%20some%20help%20and%20support." target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1 text-[#801416] hover:text-[#5F1517] transition no-underline">
+      <a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I%20need%20some%20help%20and%20support." target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1 text-[#801416] hover:text-[#5F1517] transition no-underline">
         <HelpCircle size={22} strokeWidth={1.5} />
         <span className="text-[10px] font-medium">Help</span>
       </a>

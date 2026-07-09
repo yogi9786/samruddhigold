@@ -3,7 +3,8 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.middleware.cors import register_cors
-from app.routers import auth, users, products, contact, categories, orders
+from app.routers.store import store_api_router
+from app.routers.admin import admin_api_router
 
 import os
 from contextlib import asynccontextmanager
@@ -43,19 +44,8 @@ register_cors(app)
 os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
-# ──────────────────────────────────────────────────────────────────────────────
-# API Router
-# ──────────────────────────────────────────────────────────────────────────────
-api_router = APIRouter()
-
-api_router.include_router(auth.router)
-api_router.include_router(users.router)
-api_router.include_router(products.router)
-api_router.include_router(categories.router)
-api_router.include_router(orders.router)
-api_router.include_router(contact.router)
-
-app.include_router(api_router)
+app.include_router(store_api_router)
+app.include_router(admin_api_router, prefix="/admin")
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Health Check

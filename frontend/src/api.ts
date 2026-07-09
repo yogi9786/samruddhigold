@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://147.93.110.125/api';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://sirisamruddhigold.com/api';
 
 export const getImageUrl = (url?: string) => {
   if (!url) return '';
@@ -47,7 +47,7 @@ api.interceptors.response.use(
 // Used exclusively by AdminPanel.
 // Injects admin_token and redirects to '/' on 401.
 export const adminApi = axios.create({
-  baseURL: BASE_URL,
+  baseURL: `${BASE_URL}/admin`,
   headers: { 'Content-Type': 'application/json' },
 });
 

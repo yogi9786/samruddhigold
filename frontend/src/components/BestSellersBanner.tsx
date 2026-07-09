@@ -22,7 +22,7 @@ const BestSellersBanner: React.FC = () => {
           <div className="absolute -top-4 -right-4 md:-top-6 md:-right-6 w-24 h-24 md:w-32 md:h-32 bg-[#D4AF37] rounded-full flex items-center justify-center shadow-xl animate-[spin_20s_linear_infinite]">
             <svg viewBox="0 0 100 100" className="w-full h-full text-[#110A08]">
               <path id="circlePath" d="M 50, 50 m -35, 0 a 35,35 0 1,1 70,0 a 35,35 0 1,1 -70,0" fill="transparent" />
-              <text fontSize="10.5" fontWeight="bold" letterSpacing="2.5" fill="currentColor">
+              <text fontSize="10" fontWeight="bold" letterSpacing="2.5" fill="currentColor">
                 <textPath href="#circlePath" startOffset="0%">
                   • BEST SELLERS • EXCLUSIVE COLLECTION 
                 </textPath>
@@ -44,8 +44,8 @@ const BestSellersBanner: React.FC = () => {
           </p>
           
           {/* Main Title */}
-          <h2 className="font-serif text-white text-[56px] md:text-[84px] leading-[0.95] tracking-wide mb-6">
-            BEST <br /> SELLERS
+          <h2 className="font-serif text-white text-[40px] md:text-[84px] leading-[0.95] tracking-wide mb-6">
+            BEST SELLERS
           </h2>
 
           {/* Added Content */}

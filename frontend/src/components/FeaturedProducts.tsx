@@ -61,7 +61,7 @@ const FeaturedProducts: React.FC = () => {
           {products.map((product) => (
             <Link to={`/shop/${product.id}`} key={product.id} className="group flex flex-col bg-white rounded-none shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden border border-[#E5D3B3]/50 hover:border-[#5F1517] relative">
               
-              <div className="relative aspect-[4/5] overflow-hidden bg-gray-50 flex items-center justify-center">
+              <div className="relative aspect-square overflow-hidden bg-gray-50 flex items-center justify-center">
                 {product.image_url ? (
                   <img 
                     src={getImageUrl(product.image_url)} 

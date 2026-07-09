@@ -30,6 +30,13 @@ class BasicInfo(BaseModel):
 class StoneInfo(BaseModel):
     stone_1_name: Optional[str] = None
     stone_1_weight: Optional[str] = None
+    diamond_type: Optional[str] = None
+    diamond_clarity: Optional[str] = None
+    diamond_color: Optional[str] = None
+    total_diamond_weight: Optional[str] = None
+    no_of_diamonds: Optional[str] = None
+    stone_shape: Optional[str] = None
+    stone_setting: Optional[str] = None
 
 class OtherInfo(BaseModel):
     chain_included: Optional[str] = None
@@ -37,6 +44,10 @@ class OtherInfo(BaseModel):
     gold_certification: Optional[str] = None
     metal_finish: Optional[str] = None
     occasion: Optional[str] = None
+    hallmark: Optional[str] = None
+    gender: Optional[str] = None
+    ring_size: Optional[str] = None
+    bangle_size: Optional[str] = None
 
 class ReturnPolicy(BaseModel):
     return_days: Optional[str] = None
@@ -53,6 +64,17 @@ class ProductBase(BaseModel):
     transit_insurance: Optional[bool] = False
     image_url: Optional[str] = None
     gallery_urls: Optional[List[str]] = None
+    category_id: Optional[str] = None
+    is_on_sale: Optional[bool] = False
+    sale_price: Optional[float] = None
+    sale_label: Optional[str] = None
+    status: Optional[str] = 'active'   # active | draft | archived
+    stock: Optional[int] = 0
+    weight: Optional[str] = None
+    tags: Optional[str] = None
+    vendor: Optional[str] = None
+    seo_title: Optional[str] = None
+    seo_description: Optional[str] = None
     
     # Detailed sections
     price_breakup: Optional[PriceBreakup] = None
@@ -75,6 +97,18 @@ class ProductUpdate(BaseModel):
     ready_to_dispatch: Optional[bool] = None
     transit_insurance: Optional[bool] = None
     image_url: Optional[str] = None
+    gallery_urls: Optional[List[str]] = None
+    category_id: Optional[str] = None
+    is_on_sale: Optional[bool] = None
+    sale_price: Optional[float] = None
+    sale_label: Optional[str] = None
+    status: Optional[str] = None
+    stock: Optional[int] = None
+    weight: Optional[str] = None
+    tags: Optional[str] = None
+    vendor: Optional[str] = None
+    seo_title: Optional[str] = None
+    seo_description: Optional[str] = None
     price_breakup: Optional[PriceBreakup] = None
     basic_info: Optional[BasicInfo] = None
     stone_info: Optional[StoneInfo] = None

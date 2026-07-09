@@ -58,7 +58,7 @@ const Footer: React.FC = () => {
               <li><a href="#gold" className="hover:text-[#A56B25] transition-colors">Gold Jewellery</a></li>
               <li><a href="#diamond" className="hover:text-[#A56B25] transition-colors">Diamond Collection</a></li>
               <li><a href="#look-book" className="hover:text-[#A56B25] transition-colors">Wedding Look Book</a></li>
-              <li><a href="https://wa.me/919900000000" className="hover:text-[#A56B25] transition-colors">Jewellery Purchase Plan</a></li>
+              <li><a href="https://wa.me/919035085397" className="hover:text-[#A56B25] transition-colors">Jewellery Purchase Plan</a></li>
               <li><a href="#" className="hover:text-[#A56B25] transition-colors">Today's Gold Rate</a></li>
             </ul>
           </div>

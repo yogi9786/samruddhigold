@@ -35,8 +35,29 @@ const Header: React.FC = () => {
 
   return (
     <>
-      <header className="w-full flex flex-col font-sans relative z-40 bg-[#FFF7F2]">
-        
+      <header className="w-full flex flex-col font-sans sticky top-0 z-50 bg-[#FFF7F2] shadow-sm">
+
+        {/* ── STICKY TOP MARQUEE BANNER ── */}
+        <div className="w-full bg-[#5F1517] text-white text-[11px] md:text-[12px] py-1.5 overflow-hidden font-medium font-sans relative flex items-center">
+          <style>{`
+            @keyframes topMarquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+            .top-marquee { animation: topMarquee 30s linear infinite; display: flex; width: max-content; white-space: nowrap; }
+            .top-marquee:hover { animation-play-state: paused; }
+          `}</style>
+          <div className="top-marquee cursor-default">
+            {[
+              "🎉 Up to 100% Free Making Charges*",
+              "🎉 Free Gold Coin on Purchase of Every ₹2.5 Lakh",
+              "🎉 Samruddhi Golden Flexi Offer – Rate Protection for 90 Days",
+              "🎉 Up to 100% Free Making Charges*",
+              "🎉 Free Gold Coin on Purchase of Every ₹2.5 Lakh",
+              "🎉 Samruddhi Golden Flexi Offer – Rate Protection for 90 Days",
+            ].map((offer, i) => (
+              <span key={i} className="px-8 tracking-wide">{offer}</span>
+            ))}
+          </div>
+        </div>
+
         {/* Secondary Top Bar (White) */}
         <div className="hidden lg:block w-full bg-[#FFF7F2] border-b border-[#5F1517]/10">
           <div className="max-w-[1400px] mx-auto px-4 lg:px-10 xl:px-14 flex items-center justify-between py-1.5">
@@ -61,7 +82,7 @@ const Header: React.FC = () => {
                   </div>
                   INR
                 </span>
-                <span className="cursor-pointer hover:opacity-80">Need help?</span>
+                <a href="/shop" className="flex items-center gap-1 cursor-pointer hover:opacity-80 no-underline text-[#801416] font-medium text-[11px]">New Arrivals</a>
              </div>
           </div>
         </div>
@@ -131,7 +152,7 @@ const Header: React.FC = () => {
             </div>
 
             {/* Mobile Actions */}
-            <div className="lg:hidden flex items-center gap-4 text-[#801416]">
+            <div className="lg:hidden flex items-center gap-3.5 text-[#801416]">
               <button className="hover:opacity-80 transition">
                 <Search size={22} strokeWidth={1.5} />
               </button>
@@ -141,6 +162,7 @@ const Header: React.FC = () => {
               >
                 <User size={22} strokeWidth={1.5} />
               </button>
+              {/* Shop icon — next to account */}
               <Link to="/shop" className="hover:opacity-80 transition relative">
                 <ShoppingBag size={22} strokeWidth={1.5} />
                 <span className="absolute -top-1 -right-1 bg-[#801416] text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center">0</span>
@@ -159,33 +181,31 @@ const Header: React.FC = () => {
         <nav className="hidden lg:flex w-full bg-[#FFF7F2] justify-center border-b border-[#5F1517]/10">
           <ul className="flex items-center gap-4 xl:gap-5 py-2.5 text-[13.5px] lg:text-[12.5px] font-medium text-[#801416] font-sans">
             <li className="whitespace-nowrap"><Link to="/shop" className="text-[#801416] no-underline hover:opacity-80 transition font-bold">Shop All</Link></li>
-            <li className="whitespace-nowrap"><a href="https://wa.me/919900000000?text=Hi%20Samruddhi%20Gold%20Palace,%20I'm%20interested%20in%20your%20Express%20Delivery%20options." target="_blank" rel="noopener noreferrer" className="text-[#801416] no-underline hover:opacity-80 transition">Express Delivery</a></li>
+            <li className="whitespace-nowrap"><a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I'm%20interested%20in%20your%20Express%20Delivery%20options." target="_blank" rel="noopener noreferrer" className="text-[#801416] no-underline hover:opacity-80 transition">Express Delivery</a></li>
             <li className="whitespace-nowrap"><a href="#gold" className="text-[#801416] no-underline hover:opacity-80 transition">Earrings</a></li>
             <li className="whitespace-nowrap"><a href="#gold" className="text-[#801416] no-underline hover:opacity-80 transition">Pendants</a></li>
             <li className="whitespace-nowrap"><a href="#gold" className="text-[#801416] no-underline hover:opacity-80 transition">Rings</a></li>
             <li className="whitespace-nowrap"><a href="#diamond" className="text-[#801416] no-underline hover:opacity-80 transition">Diamond Jewellery</a></li>
             <li className="whitespace-nowrap"><a href="#categories-section" className="text-[#801416] no-underline hover:opacity-80 transition">More Jewellery</a></li>
-            <li className="whitespace-nowrap"><a href="https://wa.me/919900000000?text=Hi%20Samruddhi%20Gold%20Palace,%20I'm%20looking%20for%20gifting%20recommendations." target="_blank" rel="noopener noreferrer" className="text-[#801416] no-underline hover:opacity-80 transition">Gifting</a></li>
+            <li className="whitespace-nowrap"><a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I'm%20looking%20for%20gifting%20recommendations." target="_blank" rel="noopener noreferrer" className="text-[#801416] no-underline hover:opacity-80 transition">Gifting</a></li>
             <li className="whitespace-nowrap"><a href="#look-book" className="text-[#801416] no-underline hover:opacity-80 transition">Wedding Collections</a></li>
-            <li className="whitespace-nowrap"><a href="https://wa.me/919900000000?text=Hi%20Samruddhi%20Gold%20Palace,%20I'd%20like%20to%20know%20more%20about%20your%20current%20offers." target="_blank" rel="noopener noreferrer" className="text-[#801416] no-underline hover:opacity-80 transition">Offers</a></li>
-            <li className="whitespace-nowrap"><a href="https://wa.me/919900000000?text=Hi%20Samruddhi%20Gold%20Palace,%20please%20share%20today's%20gold%20rate." target="_blank" rel="noopener noreferrer" className="text-[#801416] no-underline hover:opacity-80 transition">Today's Gold Rate</a></li>
+            <li className="whitespace-nowrap"><a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I'd%20like%20to%20know%20more%20about%20your%20current%20offers." target="_blank" rel="noopener noreferrer" className="text-[#801416] no-underline hover:opacity-80 transition">Offers</a></li>
+            <li className="whitespace-nowrap"><a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20please%20share%20today's%20gold%20rate." target="_blank" rel="noopener noreferrer" className="text-[#801416] no-underline hover:opacity-80 transition">Today's Gold Rate</a></li>
             <li className="ml-2">
               <a 
-                href="https://wa.me/919900000000?text=Hi%20Samruddhi%20Gold%20Palace,%20I%20would%20like%20to%20know%20more%20about%20your%20Jewellery%20Purchase%20Plan."
+                href={`https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I%20would%20like%20a%20Live%20Video%20Call%20to%20see%20your%20jewellery.`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-[#801416] text-white px-4 py-1.5 rounded-full text-[12.5px] font-medium tracking-wide shadow-sm hover:opacity-90 transition no-underline inline-block"
+                className="inline-flex items-center gap-2 bg-[#25D366] text-white px-4 py-1.5 rounded-full text-[12px] font-bold tracking-wide shadow-sm hover:opacity-90 transition no-underline"
               >
-                Jewellery Purchase Plan
+                <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span></span>
+                Live Video Call
               </a>
             </li>
           </ul>
         </nav>
         
-        {/* Red Banner Below Nav */}
-        <div className="hidden lg:block w-full bg-[#721013] text-center py-1.5 text-white text-[13px] font-medium tracking-wide">
-           Flat 20% off on VA, for Online Gold Jewellery
-        </div>
+
 
         {/* ── MOBILE DRAWER ── */}
         {isMobileMenuOpen && (
@@ -195,7 +215,7 @@ const Header: React.FC = () => {
                 <Link to="/shop" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-bold text-sm no-underline">Shop All</Link>
               </li>
               <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
-                <a href="https://wa.me/919900000000?text=Hi%20Samruddhi%20Gold%20Palace,%20I%20have%20an%20enquiry%20about%20Express%20Delivery%20options." target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Express Delivery</a>
+                <a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I%20have%20an%20enquiry%20about%20Express%20Delivery%20options." target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Express Delivery</a>
               </li>
               <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
                 <a href="#gold" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Earrings</a>
@@ -213,21 +233,26 @@ const Header: React.FC = () => {
                 <a href="#categories-section" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">More Jewellery</a>
               </li>
               <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
-                <a href="https://wa.me/919900000000?text=Hi%20Samruddhi%20Gold%20Palace,%20I'm%20looking%20for%20gifting%20recommendations." target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Gifting</a>
+                <a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I'm%20looking%20for%20gifting%20recommendations." target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Gifting</a>
               </li>
               <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
                 <a href="#look-book" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Wedding Collections</a>
               </li>
               <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
-                <a href="https://wa.me/919900000000?text=Hi%20Samruddhi%20Gold%20Palace,%20I'd%20like%20to%20know%20more%20about%20your%20current%20offers." target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Offers</a>
+                <a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I'd%20like%20to%20know%20more%20about%20your%20current%20offers." target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Offers</a>
               </li>
               <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
-                <a href="https://wa.me/919900000000?text=Hi%20Samruddhi%20Gold%20Palace,%20please%20share%20today's%20gold%20rate." target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Today's Gold Rate</a>
+                <a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20please%20share%20today's%20gold%20rate." target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Today's Gold Rate</a>
               </li>
             </ul>
           </div>
         )}
       </header>
+
+      {/* Red Offer Banner — NOT sticky, scrolls with content */}
+      <div className="w-full bg-[#721013] text-center py-1.5 text-white text-[12px] md:text-[13px] font-medium tracking-wide">
+        Flat 20% off on VA, for Online Gold Jewellery
+      </div>
 
       <LoginModal 
         isOpen={isLoginModalOpen} 

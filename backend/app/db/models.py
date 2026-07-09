@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Boolean, Float, DateTime, JSON, Text
+from sqlalchemy import Column, String, Boolean, Float, DateTime, JSON, Text, Integer
 from app.core.database import Base
 
 def generate_uuid():
@@ -44,6 +44,17 @@ class Product(Base):
     transit_insurance = Column(Boolean, default=False)
     image_url = Column(String, nullable=True)
     gallery_urls = Column(JSON, nullable=True)
+    category_id = Column(String, nullable=True, index=True)
+    is_on_sale = Column(Boolean, default=False)
+    sale_price = Column(Float, nullable=True)
+    sale_label = Column(String, nullable=True)
+    status = Column(String, default="active")
+    stock = Column(Integer, default=0)
+    weight = Column(String, nullable=True)
+    tags = Column(String, nullable=True)
+    vendor = Column(String, nullable=True)
+    seo_title = Column(String, nullable=True)
+    seo_description = Column(String, nullable=True)
     
     # Store nested details as JSON for flexibility, similar to NoSQL structure
     price_breakup = Column(JSON, nullable=True)

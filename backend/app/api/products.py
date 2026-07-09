@@ -93,9 +93,41 @@ async def upload_image(
     base_url = str(request.base_url).rstrip("/")
     if "127.0.0.1" in base_url or "localhost" in base_url:
         # Override with production URL if we detect local proxy IP
-        base_url = "http://147.93.110.125/api"
+        base_url = "http://sirisamruddhigold.com/api"
         
     return {"url": f"{base_url}/uploads/{file.filename}"}
+
+
+@admin_router.post(
+    "/upload-gallery",
+    response_model=dict,
+    summary="Upload multiple product gallery images (admin only)"
+)
+async def upload_gallery_images(
+    request: Request,
+    files: List[UploadFile] = File(...),
+    admin: dict = Depends(verify_admin),
+):
+    """
+    **Admin only** — Requires Bearer token.
+    Upload multiple images for a product gallery. Returns list of public URLs.
+    """
+    urls = []
+    for file in files:
+        if not file.content_type.startswith("image/"):
+            raise HTTPException(status_code=400, detail=f"File '{file.filename}' must be an image")
+
+        file_path = os.path.join(UPLOAD_DIR, file.filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        base_url = str(request.base_url).rstrip("/")
+        if "127.0.0.1" in base_url or "localhost" in base_url:
+            base_url = "http://sirisamruddhigold.com/api"
+
+        urls.append(f"{base_url}/uploads/{file.filename}")
+
+    return {"urls": urls}
 
 
 @admin_router.post(
