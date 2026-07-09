@@ -38,14 +38,25 @@ app = FastAPI(
 # ──────────────────────────────────────────────────────────────────────────────
 register_cors(app)
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Static Files
-# ──────────────────────────────────────────────────────────────────────────────
 from fastapi.responses import FileResponse
 import os
 
 os.makedirs("uploads", exist_ok=True)
 @app.get("/uploads/{filename}")
+@app.get("/api/uploads/{filename}")
+async def serve_upload(filename: str):
+    file_path = os.path.join("uploads", filename)
+    if os.path.exists(file_path):
+        return FileResponse(file_path)
+    from fastapi import HTTPException
+    raise HTTPException(status_code=404, detail="Not Found")
+
+@app.get("/debug-uploads")
+def debug_uploads():
+    import os
+    files = os.listdir("uploads") if os.path.exists("uploads") else []
+    return {"cwd": os.getcwd(), "uploads_dir_exists": os.path.exists("uploads"), "files": files}
+
 async def serve_upload(filename: str):
     file_path = os.path.join("uploads", filename)
     if os.path.exists(file_path):
