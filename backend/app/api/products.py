@@ -93,7 +93,7 @@ async def upload_image(
     base_url = str(request.base_url).rstrip("/")
     if "127.0.0.1" in base_url or "localhost" in base_url:
         # Override with production URL if we detect local proxy IP
-        base_url = "https://sirisamruddhigold.com"
+        base_url = "https://sirisamruddhigold.com/api"
         
     return {"url": f"{base_url}/uploads/{file.filename}"}
 
