@@ -4,7 +4,7 @@ import logo from '../assets/samruddhi-logo.png';
 import LoginModal from './LoginModal';
 
 import { Link } from 'react-router-dom';
-import api from '../api';
+import api, { getCart, getWishlist } from '../api';
 
 const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -12,16 +12,50 @@ const Header: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [metalPrices, setMetalPrices] = useState<any[]>([]);
   const [showMetalPrices, setShowMetalPrices] = useState(false);
+  
+  const [cartCount, setCartCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
 
   const fetchUserProfile = async () => {
     try {
       const response = await api.get('/auth/me');
       setUser(response.data);
+      if (response.data && response.data.id) {
+        localStorage.setItem('user_id', response.data.id);
+      }
+      fetchCounts();
     } catch (error) {
       console.error('Failed to fetch user profile', error);
       setUser(null);
     }
   };
+
+  const fetchCounts = async () => {
+    try {
+      const [cartRes, wishRes] = await Promise.all([
+        getCart(),
+        getWishlist()
+      ]);
+      setCartCount(cartRes.data.length || 0);
+      setWishlistCount(wishRes.data.length || 0);
+    } catch (err) {
+      console.error('Failed to fetch counts:', err);
+    }
+  };
+
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      if (localStorage.getItem('access_token')) {
+        fetchCounts();
+      }
+    };
+    window.addEventListener('cartUpdated', handleCartUpdate);
+    window.addEventListener('wishlistUpdated', handleCartUpdate);
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+      window.removeEventListener('wishlistUpdated', handleCartUpdate);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchRates = async () => {
@@ -44,7 +78,10 @@ const Header: React.FC = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
+    localStorage.removeItem('user_id');
     setUser(null);
+    setCartCount(0);
+    setWishlistCount(0);
   };
 
   return (
@@ -177,14 +214,18 @@ const Header: React.FC = () => {
                  </div>
                )}
                {/* Heart */}
-               <div className="relative cursor-pointer hover:opacity-80">
+               <Link to="/wishlist" className="relative cursor-pointer hover:opacity-80">
                  <Heart size={22} strokeWidth={1.5} />
-                 <span className="absolute -top-2 -right-2 bg-[#801416] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">0</span>
-               </div>
+                 {wishlistCount > 0 && (
+                   <span className="absolute -top-2 -right-2 bg-[#801416] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{wishlistCount}</span>
+                 )}
+               </Link>
                {/* Cart */}
-               <Link to="/shop" className="relative cursor-pointer hover:opacity-80">
+               <Link to="/cart" className="relative cursor-pointer hover:opacity-80">
                  <ShoppingBag size={22} strokeWidth={1.5} />
-                 <span className="absolute -top-2 -right-2 bg-[#801416] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">0</span>
+                 {cartCount > 0 && (
+                   <span className="absolute -top-2 -right-2 bg-[#801416] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{cartCount}</span>
+                 )}
                </Link>
             </div>
 
@@ -200,9 +241,11 @@ const Header: React.FC = () => {
                 <User size={22} strokeWidth={1.5} />
               </button>
               {/* Shop icon — next to account */}
-              <Link to="/shop" className="hover:opacity-80 transition relative">
+              <Link to="/cart" className="hover:opacity-80 transition relative">
                 <ShoppingBag size={22} strokeWidth={1.5} />
-                <span className="absolute -top-1 -right-1 bg-[#801416] text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center">0</span>
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-[#801416] text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center">{cartCount}</span>
+                )}
               </Link>
               <button
                 className="hover:opacity-80 transition"

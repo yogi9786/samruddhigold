@@ -1,14 +1,14 @@
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Union
 from pydantic import BaseModel, Field
 
 # ── Nested Models for Product Details ─────────────────────────────────────────
 
 class PriceBreakup(BaseModel):
     metal_value: Optional[float] = None
-    gold_rate: Optional[str] = None
-    gold_weight: Optional[str] = None
+    gold_rate: Optional[Union[str, float]] = None
+    gold_weight: Optional[Union[str, float]] = None
     stone_value: Optional[float] = None
-    stone_weight: Optional[str] = None
+    stone_weight: Optional[Union[str, float]] = None
     making_charges_value: Optional[float] = None
     making_charges_discount: Optional[float] = None
     making_charges_final: Optional[float] = None
@@ -25,16 +25,16 @@ class BasicInfo(BaseModel):
     metal: Optional[str] = None
     metal_purity: Optional[str] = None
     width: Optional[str] = None
-    approx_gross_weight: Optional[str] = None
+    approx_gross_weight: Optional[Union[str, float]] = None
 
 class StoneInfo(BaseModel):
     stone_1_name: Optional[str] = None
-    stone_1_weight: Optional[str] = None
+    stone_1_weight: Optional[Union[str, float]] = None
     diamond_type: Optional[str] = None
     diamond_clarity: Optional[str] = None
     diamond_color: Optional[str] = None
-    total_diamond_weight: Optional[str] = None
-    no_of_diamonds: Optional[str] = None
+    total_diamond_weight: Optional[Union[str, float]] = None
+    no_of_diamonds: Optional[Union[str, int]] = None
     stone_shape: Optional[str] = None
     stone_setting: Optional[str] = None
 
@@ -46,8 +46,8 @@ class OtherInfo(BaseModel):
     occasion: Optional[str] = None
     hallmark: Optional[str] = None
     gender: Optional[str] = None
-    ring_size: Optional[str] = None
-    bangle_size: Optional[str] = None
+    ring_size: Optional[Union[str, float, int]] = None
+    bangle_size: Optional[Union[str, float, int]] = None
 
 class ReturnPolicy(BaseModel):
     return_days: Optional[str] = None
@@ -75,6 +75,8 @@ class ProductBase(BaseModel):
     vendor: Optional[str] = None
     seo_title: Optional[str] = None
     seo_description: Optional[str] = None
+    description: Optional[str] = None
+    quantity: Optional[int] = 1
     
     # Detailed sections
     price_breakup: Optional[PriceBreakup] = None
@@ -109,6 +111,8 @@ class ProductUpdate(BaseModel):
     vendor: Optional[str] = None
     seo_title: Optional[str] = None
     seo_description: Optional[str] = None
+    description: Optional[str] = None
+    quantity: Optional[int] = None
     price_breakup: Optional[PriceBreakup] = None
     basic_info: Optional[BasicInfo] = None
     stone_info: Optional[StoneInfo] = None
@@ -121,3 +125,4 @@ class ProductResponse(ProductBase):
 
     class Config:
         populate_by_name = True
+        from_attributes = True

@@ -1,10 +1,10 @@
 import React from 'react';
 import { FaInstagram } from 'react-icons/fa';
 
-import instareel1 from '../assets/instareel1.png';
-import instareel2 from '../assets/instareel2.png';
-import instareel3 from '../assets/instareel3.png';
-import instareel4 from '../assets/instareel4.png';
+import instareel1 from '../assets/instareel1.webp';
+import instareel2 from '../assets/instareel2.webp';
+import instareel3 from '../assets/instareel3.webp';
+import instareel4 from '../assets/instareel4.webp';
 
 const InstagramFeed: React.FC = () => {
   const reels = [

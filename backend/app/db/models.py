@@ -55,6 +55,8 @@ class Product(Base):
     vendor = Column(String, nullable=True)
     seo_title = Column(String, nullable=True)
     seo_description = Column(String, nullable=True)
+    description = Column(Text, nullable=True)
+    quantity = Column(Integer, default=1)
     
     # Store nested details as JSON for flexibility, similar to NoSQL structure
     price_breakup = Column(JSON, nullable=True)
@@ -83,3 +85,18 @@ class MetalPrice(Base):
     price = Column(Float, nullable=False)
     unit = Column(String, default="1g")
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+class CartItem(Base):
+    __tablename__ = "cart_items"
+    id = Column(String, primary_key=True, default=generate_uuid)
+    user_id = Column(String, nullable=False, index=True)
+    product_id = Column(String, nullable=False, index=True)
+    quantity = Column(Integer, default=1)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+class WishlistItem(Base):
+    __tablename__ = "wishlist_items"
+    id = Column(String, primary_key=True, default=generate_uuid)
+    user_id = Column(String, nullable=False, index=True)
+    product_id = Column(String, nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

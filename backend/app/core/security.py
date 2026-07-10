@@ -67,7 +67,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
 
     # If the user is the admin, return the mock admin profile
     if username == settings.ADMIN_USERNAME:
-        return {"username": settings.ADMIN_USERNAME, "is_admin": True}
+        return {"username": settings.ADMIN_USERNAME, "is_admin": True, "id": "admin"}
         
     result = await db.execute(select(DBUser).where(DBUser.username == username))
     user = result.scalars().first()

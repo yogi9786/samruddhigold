@@ -19,3 +19,4 @@ class CategoryResponse(CategoryBase):
 
     class Config:
         populate_by_name = True
+        from_attributes = True

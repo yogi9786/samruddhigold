@@ -16,6 +16,7 @@ interface Product {
   is_on_sale?: boolean; sale_price?: number; sale_label?: string;
   price_breakup?: any; basic_info?: any; stone_info?: any; other_info?: any; return_policy?: any;
   status?: string; stock?: number; weight?: string; tags?: string; vendor?: string; seo_title?: string; seo_description?: string;
+  description?: string; quantity?: number;
 }
 
 type Section = 'dashboard' | 'all-products' | 'add-product' | 'all-categories' | 'add-category' | 'orders' | 'customers' | 'users' | 'change-password' | 'settings' | 'metal-prices';
@@ -27,6 +28,7 @@ const emptyProduct = {
   is_on_sale: false, sale_price: 0, sale_label: '',
   status: 'active', stock: 0, weight: '', tags: '', vendor: '',
   seo_title: '', seo_description: '',
+  description: '', quantity: 1,
   // Price Breakup
   metal_value: 0, gold_rate: '', gold_weight: '', stone_value: 0, stone_weight: '',
   making_charges_value: 0, making_charges_discount: 0, making_charges_final: 0,
@@ -275,6 +277,80 @@ const AdminPanel: React.FC = () => {
   const customers = users.filter(u => orders.some(o => o.user_username === u.username));
   useEffect(() => { setStats(s => ({ ...s, customers: customers.length })); }, [customers.length]);
 
+  // Auto price calculation based on daily live rates & category purity
+  useEffect(() => {
+    const selectedCat = categories.find(c => c.id === pForm.category_id);
+    const catNameLower = selectedCat ? selectedCat.name.toLowerCase() : '';
+    
+    let rateKey = 'gold_22k';
+    if (catNameLower.includes('silver')) {
+      rateKey = 'silver';
+    } else if (catNameLower.includes('24k') || pForm.metal_purity?.toLowerCase().includes('24')) {
+      rateKey = 'gold_24k';
+    } else if (catNameLower.includes('18k') || pForm.metal_purity?.toLowerCase().includes('18')) {
+      rateKey = 'gold_18k';
+    }
+
+    const rateItem = metalPrices.find(m => m.id === rateKey) || metalPrices.find(m => m.id.includes('gold')) || metalPrices[0];
+    const goldRateVal = rateItem ? rateItem.price : 13275;
+
+    const goldWeight = Number(pForm.gold_weight) || 0;
+    const metalVal = Math.round(goldRateVal * goldWeight);
+    const stoneVal = Number(pForm.stone_value) || 0;
+    const makingChargesBase = Number(pForm.making_charges_value) || 0;
+    const makingChargesDisc = Number(pForm.making_charges_discount) || 0;
+    const makingChargesFinalVal = Math.max(0, makingChargesBase - makingChargesDisc);
+
+    const subTotalVal = metalVal + stoneVal + makingChargesBase;
+    const subTotalFinalVal = metalVal + stoneVal + makingChargesFinalVal;
+
+    const gstVal = Math.round(subTotalVal * 0.03);
+    const gstFinalVal = Math.round(subTotalFinalVal * 0.03);
+
+    const grandTotalVal = subTotalVal + gstVal;
+    const grandTotalFinalVal = subTotalFinalVal + gstFinalVal;
+
+    setPForm(prev => {
+      if (
+        prev.metal_value === metalVal &&
+        prev.gold_rate === String(goldRateVal) &&
+        prev.making_charges_final === makingChargesFinalVal &&
+        prev.sub_total_value === subTotalVal &&
+        prev.sub_total_final === subTotalFinalVal &&
+        prev.tax_value === gstVal &&
+        prev.tax_final === gstFinalVal &&
+        prev.grand_total_value === grandTotalVal &&
+        prev.grand_total_final === grandTotalFinalVal &&
+        prev.price === grandTotalFinalVal &&
+        prev.original_price === grandTotalVal
+      ) {
+        return prev;
+      }
+      return {
+        ...prev,
+        metal_value: metalVal,
+        gold_rate: String(goldRateVal),
+        making_charges_final: makingChargesFinalVal,
+        sub_total_value: subTotalVal,
+        sub_total_final: subTotalFinalVal,
+        tax_value: gstVal,
+        tax_final: gstFinalVal,
+        grand_total_value: grandTotalVal,
+        grand_total_final: grandTotalFinalVal,
+        price: grandTotalFinalVal,
+        original_price: grandTotalVal,
+      };
+    });
+  }, [
+    pForm.category_id,
+    pForm.metal_purity,
+    pForm.gold_weight,
+    pForm.stone_value,
+    pForm.making_charges_value,
+    pForm.making_charges_discount,
+    metalPrices,
+  ]);
+
   // ─── Auth ───────────────────────────────────────────────────────────────────
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -328,6 +404,7 @@ const AdminPanel: React.FC = () => {
     is_on_sale: pForm.is_on_sale, sale_price: pForm.sale_price || null, sale_label: pForm.sale_label,
     status: pForm.status, stock: pForm.stock, weight: pForm.weight, tags: pForm.tags, vendor: pForm.vendor,
     seo_title: pForm.seo_title, seo_description: pForm.seo_description,
+    description: pForm.description, quantity: pForm.quantity,
     price_breakup: { metal_value: pForm.metal_value, gold_rate: pForm.gold_rate, gold_weight: pForm.gold_weight, stone_value: pForm.stone_value, stone_weight: pForm.stone_weight, making_charges_value: pForm.making_charges_value, making_charges_discount: pForm.making_charges_discount, making_charges_final: pForm.making_charges_final, sub_total_value: pForm.sub_total_value, sub_total_final: pForm.sub_total_final, tax_value: pForm.tax_value, tax_final: pForm.tax_final, grand_total_value: pForm.grand_total_value, grand_total_final: pForm.grand_total_final },
     basic_info: { height: pForm.height, material: pForm.material, metal: pForm.metal, metal_purity: pForm.metal_purity, width: pForm.width, approx_gross_weight: pForm.approx_gross_weight },
     stone_info: { stone_1_name: pForm.stone_1_name, stone_1_weight: pForm.stone_1_weight, diamond_type: pForm.diamond_type, diamond_clarity: pForm.diamond_clarity, diamond_color: pForm.diamond_color, total_diamond_weight: pForm.total_diamond_weight, no_of_diamonds: pForm.no_of_diamonds, stone_shape: pForm.stone_shape, stone_setting: pForm.stone_setting },
@@ -365,6 +442,7 @@ const AdminPanel: React.FC = () => {
       status: p.status || 'active', stock: p.stock || 0, weight: p.weight || '',
       tags: p.tags || '', vendor: p.vendor || '',
       seo_title: p.seo_title || '', seo_description: p.seo_description || '',
+      description: p.description || '', quantity: p.quantity || 1,
       
       metal_value: p.price_breakup?.metal_value || 0, gold_rate: p.price_breakup?.gold_rate || '',
       gold_weight: p.price_breakup?.gold_weight || '', stone_value: p.price_breakup?.stone_value || 0,
@@ -826,200 +904,269 @@ const AdminPanel: React.FC = () => {
   );
 
   // ─── ADD / EDIT PRODUCT ───────────────────────────────────────────────────────
-  const renderProductForm = () => (
-    <div className="animate-fade-in pb-10">
-      <div className="flex items-center gap-4 mb-6 flex-wrap">
-        <button onClick={() => { setSection('all-products'); setEditPId(null); setPForm({ ...emptyProduct }); }}
-          className="p-2 text-[#5F1517]/50 hover:text-[#5F1517] bg-white border border-[#D4AF37]/20 hover:border-[#D4AF37] shadow-sm rounded-xl transition">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-        </button>
-        <div>
-          <h2 className="text-3xl font-bold text-[#5F1517] tracking-tight" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>{editPId ? 'Edit Product' : 'Add New Product'}</h2>
-          {editPId && <span className="text-[10px] uppercase font-bold tracking-widest text-[#5F1517]/40 mt-1 block" style={{ fontFamily: 'Montserrat, sans-serif' }}>ID: {editPId}</span>}
+  const renderProductForm = () => {
+    const selectedCat = categories.find(c => c.id === pForm.category_id);
+    const catNameLower = selectedCat ? selectedCat.name.toLowerCase() : '';
+    const isRing = catNameLower.includes('ring');
+    const isBangle = catNameLower.includes('bangle') || catNameLower.includes('kangan') || catNameLower.includes('kada');
+    const isChain = catNameLower.includes('chain') || catNameLower.includes('necklace') || catNameLower.includes('mangalsutra');
+
+    return (
+      <div className="animate-fade-in pb-10">
+        <div className="flex items-center gap-4 mb-6 flex-wrap">
+          <button onClick={() => { setSection('all-products'); setEditPId(null); setPForm({ ...emptyProduct }); }}
+            className="p-2 text-[#5F1517]/50 hover:text-[#5F1517] bg-white border border-[#D4AF37]/20 hover:border-[#D4AF37] shadow-sm rounded-xl transition">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+          </button>
+          <div>
+            <h2 className="text-3xl font-bold text-[#5F1517] tracking-tight" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>{editPId ? 'Edit Product' : 'Add New Product'}</h2>
+            {editPId && <span className="text-[10px] uppercase font-bold tracking-widest text-[#5F1517]/40 mt-1 block" style={{ fontFamily: 'Montserrat, sans-serif' }}>ID: {editPId}</span>}
+          </div>
+          <div className="ml-auto flex gap-3">
+            {editPId && pSnapshot.current && (
+              <button type="button" onClick={handleRollbackProduct}
+                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517]/70 text-xs font-bold uppercase tracking-widest rounded-xl hover:border-[#D4AF37] hover:text-[#5F1517] transition" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                ↩ Revert
+              </button>
+            )}
+            <button onClick={fetchProducts} className="px-3 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517]/70 rounded-xl hover:border-[#D4AF37] hover:text-[#5F1517] transition" title="Refresh Data">↺</button>
+          </div>
         </div>
-        <div className="ml-auto flex gap-3">
-          {editPId && pSnapshot.current && (
-            <button type="button" onClick={handleRollbackProduct}
-              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517]/70 text-xs font-bold uppercase tracking-widest rounded-xl hover:border-[#D4AF37] hover:text-[#5F1517] transition" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-              ↩ Revert
-            </button>
-          )}
-          <button onClick={fetchProducts} className="px-3 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517]/70 rounded-xl hover:border-[#D4AF37] hover:text-[#5F1517] transition" title="Refresh Data">↺</button>
-        </div>
-      </div>
-      
-      <Alert msg={pMsg} />
-      
-      <form onSubmit={handleProductSubmit}>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            
-            {/* General Info */}
-            <SCard icon="📋" title="General Information">
-              <div className="space-y-4">
-                <Field label="Product Title" name="name" value={pForm.name} onChange={handlePInput} required placeholder="e.g. 22K Gold Antique Choker" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Field label="SKU (Stock Keeping Unit)" name="sku" value={pForm.sku} onChange={handlePInput} required hint="Unique product code" />
+        
+        <Alert msg={pMsg} />
+        
+        <form onSubmit={handleProductSubmit}>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              
+              {/* General Info */}
+              <SCard icon="📋" title="General Information">
+                <div className="space-y-4">
+                  <Field label="Product Title" name="name" value={pForm.name} onChange={handlePInput} required placeholder="e.g. 22K Gold Antique Choker" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Field label="SKU (Stock Keeping Unit)" name="sku" value={pForm.sku} onChange={handlePInput} required hint="Unique product code" />
+                    <div>
+                      <label className="block text-xs font-semibold text-[#5F1517]/70 uppercase tracking-widest mb-1.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Collection / Category</label>
+                      <select name="category_id" value={pForm.category_id} onChange={handlePInput}
+                        className="w-full px-4 py-3 border border-[#D4AF37]/30 shadow-sm rounded-xl text-sm font-medium focus:outline-none focus:border-[#D4AF37] bg-white" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                        <option value="">— Select Collection —</option>
+                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Field label="Quantity / Inventory" name="quantity" type="number" value={pForm.quantity} onChange={handlePInput} required placeholder="e.g. 5" />
+                    <Field label="Vendor / Brand" name="vendor" value={pForm.vendor} onChange={handlePInput} placeholder="Siri Samruddhi Gold" />
+                  </div>
+                  <Field label="Product Description" name="description" value={pForm.description} onChange={handlePInput} rows={4} placeholder="Enter a premium detailed description of this item..." />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Field label="Tags" name="tags" value={pForm.tags} onChange={handlePInput} placeholder="wedding, necklace, bridal" hint="Comma separated" />
+                    <Field label="SEO Title" name="seo_title" value={pForm.seo_title} onChange={handlePInput} placeholder="Meta title for Google" />
+                  </div>
+                  <Field label="SEO Description" name="seo_description" value={pForm.seo_description} onChange={handlePInput} rows={2} hint="Meta description for search engines (150-160 chars)" />
+                </div>
+              </SCard>
+
+              {/* Images */}
+              <SCard icon="🖼️" title="Media & Gallery">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <ImgUpload label="Primary Thumbnail" url={pForm.image_url} onUpload={uploadMain}
+                    onClear={() => setPForm(p => ({ ...p, image_url: '' }))}
+                    onChange={e => setPForm(p => ({ ...p, image_url: e.target.value }))}
+                    loading={uploadingMain} name="image_url" />
+                  
                   <div>
-                    <label className="block text-xs font-semibold text-[#5F1517]/70 uppercase tracking-widest mb-1.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Collection / Category</label>
-                    <select name="category_id" value={pForm.category_id} onChange={handlePInput}
-                      className="w-full px-4 py-3 border border-[#D4AF37]/30 shadow-sm rounded-xl text-sm font-medium focus:outline-none focus:border-[#D4AF37] bg-white" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                      <option value="">— Select Collection —</option>
-                      {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
+                    <label className="block text-xs font-semibold text-[#5F1517]/70 uppercase tracking-widest mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>Product Gallery</label>
+                    <label className={`flex flex-col items-center justify-center w-full border-2 border-dashed ${uploadingGallery ? 'border-[#D4AF37] bg-[#FFF7F2]' : 'border-[#D4AF37]/40 hover:border-[#D4AF37] hover:bg-[#FFF7F2]/50'} rounded-2xl p-6 cursor-pointer transition-all h-36`}>
+                      <input type="file" accept="image/*" multiple onChange={uploadGallery} disabled={uploadingGallery} className="hidden" />
+                      {uploadingGallery
+                        ? <div className="flex flex-col items-center gap-3"><div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" /><span className="text-xs text-[#D4AF37] font-medium tracking-wide uppercase">Uploading…</span></div>
+                        : <div className="flex flex-col items-center gap-2 text-[#5F1517]/40"><span className="text-3xl">🖼️</span><span className="text-xs font-medium uppercase tracking-widest text-center">Add Gallery Images</span></div>
+                      }
+                    </label>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Field label="Tags" name="tags" value={pForm.tags} onChange={handlePInput} placeholder="wedding, necklace, bridal" hint="Comma separated" />
-                  <Field label="Vendor / Brand" name="vendor" value={pForm.vendor} onChange={handlePInput} placeholder="Siri Samruddhi Gold" />
-                </div>
-                <Field label="SEO Description" name="seo_description" value={pForm.seo_description} onChange={handlePInput} rows={3} hint="Meta description for search engines (150-160 chars)" />
-              </div>
-            </SCard>
-
-            {/* Images */}
-            <SCard icon="🖼️" title="Media & Gallery">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <ImgUpload label="Primary Thumbnail" url={pForm.image_url} onUpload={uploadMain}
-                  onClear={() => setPForm(p => ({ ...p, image_url: '' }))}
-                  onChange={e => setPForm(p => ({ ...p, image_url: e.target.value }))}
-                  loading={uploadingMain} name="image_url" />
                 
-                <div>
-                  <label className="block text-xs font-semibold text-[#5F1517]/70 uppercase tracking-widest mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>Product Gallery</label>
-                  <label className={`flex flex-col items-center justify-center w-full border-2 border-dashed ${uploadingGallery ? 'border-[#D4AF37] bg-[#FFF7F2]' : 'border-[#D4AF37]/40 hover:border-[#D4AF37] hover:bg-[#FFF7F2]/50'} rounded-2xl p-6 cursor-pointer transition-all h-36`}>
-                    <input type="file" accept="image/*" multiple onChange={uploadGallery} disabled={uploadingGallery} className="hidden" />
-                    {uploadingGallery
-                      ? <div className="flex flex-col items-center gap-3"><div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" /><span className="text-xs text-[#D4AF37] font-medium tracking-wide uppercase">Uploading…</span></div>
-                      : <div className="flex flex-col items-center gap-2 text-[#5F1517]/40"><span className="text-3xl">🖼️</span><span className="text-xs font-medium uppercase tracking-widest text-center">Add Gallery Images</span></div>
-                    }
-                  </label>
+                {(pForm.gallery_urls || []).length > 0 && (
+                  <div className="mt-5 pt-4 border-t border-[#D4AF37]/20">
+                    <label className="block text-[10px] font-bold text-[#5F1517]/50 uppercase tracking-widest mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>Gallery Preview ({pForm.gallery_urls.length})</label>
+                    <div className="flex flex-wrap gap-3">
+                      {(pForm.gallery_urls || []).map((url, idx) => (
+                        <div key={idx} className="relative group">
+                          <img src={getImageUrl(url)} alt={`g${idx}`} className="w-20 h-20 object-cover rounded-xl border border-[#D4AF37]/30 shadow-sm" />
+                          <button type="button" onClick={() => setPForm(p => ({ ...p, gallery_urls: p.gallery_urls.filter((_, i) => i !== idx) }))}
+                            className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg hover:scale-110 border border-white">✕</button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </SCard>
+
+              {/* Physical Properties */}
+              <SCard icon="📏" title="Jewelry Specifications">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
+                  <Field label="Gross Weight" name="approx_gross_weight" value={pForm.approx_gross_weight} onChange={handlePInput} placeholder="e.g. 15.5g" />
+                  <Field label="Metal" name="metal" value={pForm.metal} onChange={handlePInput} placeholder="e.g. Yellow Gold" />
+                  <Field label="Purity" name="metal_purity" value={pForm.metal_purity} onChange={handlePInput} placeholder="e.g. 22K (916)" />
+                  <Field label="Gender" name="gender" value={pForm.gender} onChange={handlePInput} placeholder="Women / Men / Unisex" />
+                  <Field label="Hallmark" name="hallmark" value={pForm.hallmark} onChange={handlePInput} placeholder="e.g. BIS Hallmarked" />
+                  <Field label="Finish" name="metal_finish" value={pForm.metal_finish} onChange={handlePInput} placeholder="e.g. Matte / Antique" />
+                  <Field label="Certification" name="gold_certification" value={pForm.gold_certification} onChange={handlePInput} placeholder="e.g. GIA Certified" />
+                  
+                  {/* Dynamic fields based on category */}
+                  {isRing && <Field label="Ring Size" name="ring_size" value={pForm.ring_size} onChange={handlePInput} placeholder="e.g. 12 (Indian)" />}
+                  {isBangle && <Field label="Bangle Size" name="bangle_size" value={pForm.bangle_size} onChange={handlePInput} placeholder="e.g. 2.4" />}
+                  {isChain && <Field label="Chain Length" name="chain_included" value={pForm.chain_included} onChange={handlePInput} placeholder="e.g. 18 inches" />}
                 </div>
-              </div>
-              
-              {(pForm.gallery_urls || []).length > 0 && (
-                <div className="mt-5 pt-4 border-t border-[#D4AF37]/20">
-                  <label className="block text-[10px] font-bold text-[#5F1517]/50 uppercase tracking-widest mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>Gallery Preview ({pForm.gallery_urls.length})</label>
-                  <div className="flex flex-wrap gap-3">
-                    {(pForm.gallery_urls || []).map((url, idx) => (
-                      <div key={idx} className="relative group">
-                        <img src={getImageUrl(url)} alt={`g${idx}`} className="w-20 h-20 object-cover rounded-xl border border-[#D4AF37]/30 shadow-sm" />
-                        <button type="button" onClick={() => setPForm(p => ({ ...p, gallery_urls: p.gallery_urls.filter((_, i) => i !== idx) }))}
-                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg hover:scale-110 border border-white">✕</button>
+              </SCard>
+
+              {/* Stones / Diamonds */}
+              <SCard icon="💎" title="Diamond & Stone Details">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
+                  <Field label="Gemstone Name" name="stone_1_name" value={pForm.stone_1_name} onChange={handlePInput} placeholder="e.g. Ruby" />
+                  <Field label="Gemstone Wt" name="stone_1_weight" value={pForm.stone_1_weight} onChange={handlePInput} placeholder="e.g. 0.5 ct" />
+                  <div className="col-span-2 sm:col-span-1 hidden sm:block"></div>
+                  <Field label="Diamond Type" name="diamond_type" value={pForm.diamond_type} onChange={handlePInput} placeholder="e.g. Natural / Lab" />
+                  <Field label="Diamond Color" name="diamond_color" value={pForm.diamond_color} onChange={handlePInput} placeholder="e.g. E-F" />
+                  <Field label="Diamond Clarity" name="diamond_clarity" value={pForm.diamond_clarity} onChange={handlePInput} placeholder="e.g. VVS-VS" />
+                  <Field label="Total Diamond Wt" name="total_diamond_weight" value={pForm.total_diamond_weight} onChange={handlePInput} placeholder="e.g. 1.2 ct" />
+                  <Field label="No. of Diamonds" name="no_of_diamonds" value={pForm.no_of_diamonds} onChange={handlePInput} placeholder="e.g. 24" />
+                  <Field label="Diamond Shape" name="stone_shape" value={pForm.stone_shape} onChange={handlePInput} placeholder="e.g. Round Brilliant" />
+                </div>
+              </SCard>
+
+              {/* Detailed Price Breakup */}
+              <SCard icon="💰" title="Price Breakup & Dynamic Calculator">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="bg-[#FFF7F2] p-4 rounded-xl border border-[#D4AF37]/30">
+                      <span className="text-[10px] font-bold text-[#5F1517]/50 uppercase tracking-widest block mb-1">Purity-Based Live Rate</span>
+                      <span className="text-sm font-bold text-[#5F1517]">
+                        {pForm.metal_purity || 'Gold 22K'}: ₹{Number(pForm.gold_rate).toLocaleString('en-IN') || '13,275'} / gram
+                      </span>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <Field label="Gold Weight (g)" name="gold_weight" type="number" value={pForm.gold_weight} onChange={handlePInput} placeholder="e.g. 6.058" />
+                      <Field label="Metal Value (₹)" name="metal_value" type="number" value={pForm.metal_value} onChange={handlePInput} readOnly hint="Weight x Live Rate" />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <Field label="Stone Weight (ct)" name="stone_weight" value={pForm.stone_weight} onChange={handlePInput} placeholder="e.g. 1.08" />
+                      <Field label="Stone Value (₹)" name="stone_value" type="number" value={pForm.stone_value} onChange={handlePInput} placeholder="e.g. 594" />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <Field label="Making Charges (₹)" name="making_charges_value" type="number" value={pForm.making_charges_value} onChange={handlePInput} placeholder="e.g. 19222" />
+                      <Field label="Making Discount (₹)" name="making_charges_discount" type="number" value={pForm.making_charges_discount} onChange={handlePInput} placeholder="e.g. 3844" />
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 flex flex-col justify-between">
+                    <div>
+                      <h4 className="text-xs font-bold text-[#5F1517] uppercase tracking-[0.2em] mb-4">Breakup Preview</h4>
+                      <div className="space-y-2 text-xs font-semibold text-gray-600">
+                        <div className="flex justify-between">
+                          <span>Gold ({pForm.gold_weight || '0'}g @ ₹{Number(pForm.gold_rate).toLocaleString('en-IN')})</span>
+                          <span>₹{pForm.metal_value?.toLocaleString('en-IN') || '0'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Stone Value ({pForm.stone_weight || '0'} ct)</span>
+                          <span>₹{pForm.stone_value?.toLocaleString('en-IN') || '0'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Making Charges (Final)</span>
+                          <span>₹{pForm.making_charges_final?.toLocaleString('en-IN') || '0'}</span>
+                        </div>
+                        <div className="border-t border-dashed border-gray-300 pt-2 flex justify-between font-bold text-[var(--color-royal)]">
+                          <span>Subtotal</span>
+                          <span>₹{pForm.sub_total_final?.toLocaleString('en-IN') || '0'}</span>
+                        </div>
+                        <div className="flex justify-between text-gray-400">
+                          <span>GST (3%)</span>
+                          <span>₹{pForm.tax_final?.toLocaleString('en-IN') || '0'}</span>
+                        </div>
+                        <div className="border-t border-gray-300 pt-2 flex justify-between font-bold text-sm text-[var(--color-royal)]">
+                          <span>Grand Total (Final Selling Price)</span>
+                          <span>₹{pForm.grand_total_final?.toLocaleString('en-IN') || '0'}</span>
+                        </div>
                       </div>
+                    </div>
+                    <div className="text-[10px] text-gray-400 mt-4 leading-normal">
+                      The selling price and original MRP prices will be automatically populated from this live calculation.
+                    </div>
+                  </div>
+                </div>
+              </SCard>
+            </div>
+
+            <div className="space-y-6">
+              {/* Pricing Status (Sidebar) */}
+              <SCard icon="💵" title="Pricing & Status">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#5F1517]/70 uppercase tracking-widest mb-1.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Product Status</label>
+                    <select name="status" value={pForm.status} onChange={handlePInput}
+                      className="w-full px-4 py-3 border border-[#D4AF37]/30 shadow-sm rounded-xl text-sm font-bold text-[#5F1517] focus:outline-none focus:border-[#D4AF37] bg-white" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                      <option value="active">🟢 Active (Visible)</option>
+                      <option value="draft">🟡 Draft (Hidden)</option>
+                      <option value="archived">🔴 Archived</option>
+                    </select>
+                  </div>
+                  <Field label="Selling Price (₹)" name="price" type="number" value={pForm.price} onChange={handlePInput} required hint="Auto calculated or override manually" />
+                  <Field label="MRP / Original (₹)" name="original_price" type="number" value={pForm.original_price} onChange={handlePInput} hint="Strikethrough base MRP" />
+                  <div className="pt-3 border-t border-[#D4AF37]/20">
+                    <label className="flex items-center gap-3 cursor-pointer select-none mb-3 p-3 bg-[#FFF7F2] rounded-xl border border-[#D4AF37]/30 hover:border-[#D4AF37] transition">
+                      <input type="checkbox" name="is_on_sale" checked={pForm.is_on_sale} onChange={handlePInput} className="w-5 h-5 accent-[#5F1517]" />
+                      <span className="text-sm font-bold uppercase tracking-widest text-[#5F1517]" style={{ fontFamily: 'Montserrat, sans-serif' }}>Mark On Sale</span>
+                    </label>
+                    {pForm.is_on_sale && (
+                      <div className="space-y-4 mt-4 animate-fade-in">
+                        <Field label="Sale Price (₹)" name="sale_price" type="number" value={pForm.sale_price} onChange={handlePInput} />
+                        <Field label="Sale Badge Text" name="sale_label" value={pForm.sale_label} onChange={handlePInput} placeholder="e.g. 20% OFF" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </SCard>
+
+              {/* Inventory (Sidebar) */}
+              <SCard icon="📦" title="Inventory & Shipping">
+                <div className="space-y-4">
+                  <Field label="Stock Quantity" name="stock" type="number" value={pForm.stock} onChange={handlePInput} />
+                  <Field label="Weight for Shipping" name="weight" value={pForm.weight} onChange={handlePInput} placeholder="e.g. 0.5 kg" />
+                  <div className="pt-3 border-t border-[#D4AF37]/20 space-y-3">
+                    {[{ n: 'ready_to_dispatch', l: 'Ready to Dispatch' }, { n: 'transit_insurance', l: 'Transit Insurance' }].map(cb => (
+                      <label key={cb.n} className="flex items-center gap-3 cursor-pointer select-none">
+                        <input type="checkbox" name={cb.n} checked={(pForm as any)[cb.n]} onChange={handlePInput} className="w-4 h-4 accent-[#5F1517]" />
+                        <span className="text-xs font-bold uppercase tracking-widest text-[#5F1517]/70" style={{ fontFamily: 'Montserrat, sans-serif' }}>{cb.l}</span>
+                      </label>
                     ))}
                   </div>
                 </div>
-              )}
-            </SCard>
+              </SCard>
 
-            {/* Physical Properties */}
-            <SCard icon="📏" title="Jewelry Specifications">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
-                <Field label="Gross Weight" name="approx_gross_weight" value={pForm.approx_gross_weight} onChange={handlePInput} placeholder="e.g. 15.5g" />
-                <Field label="Metal" name="metal" value={pForm.metal} onChange={handlePInput} placeholder="e.g. Yellow Gold" />
-                <Field label="Purity" name="metal_purity" value={pForm.metal_purity} onChange={handlePInput} placeholder="e.g. 22K" />
-                <Field label="Gender" name="gender" value={pForm.gender} onChange={handlePInput} placeholder="Women / Men / Unisex" />
-                <Field label="Ring Size" name="ring_size" value={pForm.ring_size} onChange={handlePInput} placeholder="e.g. 12 (Indian)" />
-                <Field label="Bangle Size" name="bangle_size" value={pForm.bangle_size} onChange={handlePInput} placeholder="e.g. 2.4" />
-                <Field label="Hallmark" name="hallmark" value={pForm.hallmark} onChange={handlePInput} placeholder="e.g. BIS Hallmarked" />
-                <Field label="Finish" name="metal_finish" value={pForm.metal_finish} onChange={handlePInput} placeholder="e.g. Matte / Antique" />
-                <Field label="Certification" name="gold_certification" value={pForm.gold_certification} onChange={handlePInput} />
-              </div>
-            </SCard>
-
-            {/* Stones / Diamonds */}
-            <SCard icon="💎" title="Diamond & Stone Details">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
-                <Field label="Gemstone Name" name="stone_1_name" value={pForm.stone_1_name} onChange={handlePInput} placeholder="e.g. Ruby" />
-                <Field label="Gemstone Wt" name="stone_1_weight" value={pForm.stone_1_weight} onChange={handlePInput} placeholder="e.g. 0.5 ct" />
-                <div className="col-span-2 sm:col-span-1 hidden sm:block"></div>
-                <Field label="Diamond Type" name="diamond_type" value={pForm.diamond_type} onChange={handlePInput} placeholder="e.g. Natural / Lab" />
-                <Field label="Diamond Color" name="diamond_color" value={pForm.diamond_color} onChange={handlePInput} placeholder="e.g. E-F" />
-                <Field label="Diamond Clarity" name="diamond_clarity" value={pForm.diamond_clarity} onChange={handlePInput} placeholder="e.g. VVS-VS" />
-                <Field label="Total Diamond Wt" name="total_diamond_weight" value={pForm.total_diamond_weight} onChange={handlePInput} placeholder="e.g. 1.2 ct" />
-                <Field label="No. of Diamonds" name="no_of_diamonds" value={pForm.no_of_diamonds} onChange={handlePInput} placeholder="e.g. 24" />
-                <Field label="Diamond Shape" name="stone_shape" value={pForm.stone_shape} onChange={handlePInput} placeholder="e.g. Round Brilliant" />
-              </div>
-            </SCard>
-
-            {/* Detailed Price Breakup */}
-            <SCard icon="💰" title="Price Breakup Details">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <Field label="Metal Value" name="metal_value" type="number" value={pForm.metal_value} onChange={handlePInput} />
-                <Field label="Stone Value" name="stone_value" type="number" value={pForm.stone_value} onChange={handlePInput} />
-                <Field label="Making Charges" name="making_charges_value" type="number" value={pForm.making_charges_value} onChange={handlePInput} />
-                <Field label="Tax (GST)" name="tax_value" type="number" value={pForm.tax_value} onChange={handlePInput} />
-                <Field label="Grand Total (Final)" name="grand_total_final" type="number" value={pForm.grand_total_final} onChange={handlePInput} />
-              </div>
-            </SCard>
-          </div>
-
-          <div className="space-y-6">
-            {/* Pricing Status (Sidebar) */}
-            <SCard icon="💵" title="Pricing & Status">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-[#5F1517]/70 uppercase tracking-widest mb-1.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Product Status</label>
-                  <select name="status" value={pForm.status} onChange={handlePInput}
-                    className="w-full px-4 py-3 border border-[#D4AF37]/30 shadow-sm rounded-xl text-sm font-bold text-[#5F1517] focus:outline-none focus:border-[#D4AF37] bg-white" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                    <option value="active">🟢 Active (Visible)</option>
-                    <option value="draft">🟡 Draft (Hidden)</option>
-                    <option value="archived">🔴 Archived</option>
-                  </select>
-                </div>
-                <Field label="Final Price (₹)" name="price" type="number" value={pForm.price} onChange={handlePInput} required />
-                <Field label="MRP / Original (₹)" name="original_price" type="number" value={pForm.original_price} onChange={handlePInput} hint="Strikethrough price" />
-                <div className="pt-3 border-t border-[#D4AF37]/20">
-                  <label className="flex items-center gap-3 cursor-pointer select-none mb-3 p-3 bg-[#FFF7F2] rounded-xl border border-[#D4AF37]/30 hover:border-[#D4AF37] transition">
-                    <input type="checkbox" name="is_on_sale" checked={pForm.is_on_sale} onChange={handlePInput} className="w-5 h-5 accent-[#5F1517]" />
-                    <span className="text-sm font-bold uppercase tracking-widest text-[#5F1517]" style={{ fontFamily: 'Montserrat, sans-serif' }}>Mark On Sale</span>
-                  </label>
-                  {pForm.is_on_sale && (
-                    <div className="space-y-4 mt-4 animate-fade-in">
-                      <Field label="Sale Price (₹)" name="sale_price" type="number" value={pForm.sale_price} onChange={handlePInput} />
-                      <Field label="Sale Badge Text" name="sale_label" value={pForm.sale_label} onChange={handlePInput} placeholder="e.g. 20% OFF" />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </SCard>
-
-            {/* Inventory (Sidebar) */}
-            <SCard icon="📦" title="Inventory & Shipping">
-              <div className="space-y-4">
-                <Field label="Stock Quantity" name="stock" type="number" value={pForm.stock} onChange={handlePInput} />
-                <Field label="Weight for Shipping" name="weight" value={pForm.weight} onChange={handlePInput} placeholder="e.g. 0.5 kg" />
-                <div className="pt-3 border-t border-[#D4AF37]/20 space-y-3">
-                  {[{ n: 'ready_to_dispatch', l: 'Ready to Dispatch' }, { n: 'transit_insurance', l: 'Transit Insurance' }].map(cb => (
-                    <label key={cb.n} className="flex items-center gap-3 cursor-pointer select-none">
-                      <input type="checkbox" name={cb.n} checked={(pForm as any)[cb.n]} onChange={handlePInput} className="w-4 h-4 accent-[#5F1517]" />
-                      <span className="text-xs font-bold uppercase tracking-widest text-[#5F1517]/70" style={{ fontFamily: 'Montserrat, sans-serif' }}>{cb.l}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </SCard>
-
-            {/* Action Buttons */}
-            <div className="sticky top-24 pt-4">
-              <button type="submit"
-                className="w-full py-4 bg-gradient-to-r from-[#5F1517] to-[#801416] text-[#D4AF37] font-bold rounded-2xl uppercase tracking-[0.2em] text-sm hover:from-[#801416] hover:to-[#a01a1c] transition-all shadow-[0_4px_15px_rgba(95,21,23,0.3)] hover:shadow-[0_6px_20px_rgba(95,21,23,0.4)] mb-3"
-                style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                {editPId ? '💾 Save Product' : '+ Publish Product'}
-              </button>
-              {editPId && (
-                <button type="button" onClick={() => { setPForm({ ...emptyProduct }); setEditPId(null); setPMsg({ text: '', type: '' }); setSection('all-products'); }}
-                  className="w-full py-4 bg-white border border-[#D4AF37]/40 text-[#5F1517]/70 font-bold rounded-2xl uppercase tracking-[0.2em] text-xs hover:bg-[#FFF7F2] hover:text-[#5F1517] transition-all" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                  Cancel Edit
+              {/* Action Buttons */}
+              <div className="sticky top-24 pt-4">
+                <button type="submit"
+                  className="w-full py-4 bg-gradient-to-r from-[#5F1517] to-[#801416] text-[#D4AF37] font-bold rounded-2xl uppercase tracking-[0.2em] text-sm hover:from-[#801416] hover:to-[#a01a1c] transition-all shadow-[0_4px_15px_rgba(95,21,23,0.3)] hover:shadow-[0_6px_20px_rgba(95,21,23,0.4)] mb-3"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                  {editPId ? '💾 Save Product' : '+ Publish Product'}
                 </button>
-              )}
+                {editPId && (
+                  <button type="button" onClick={() => { setPForm({ ...emptyProduct }); setEditPId(null); setPMsg({ text: '', type: '' }); setSection('all-products'); }}
+                    className="w-full py-4 bg-white border border-[#D4AF37]/40 text-[#5F1517]/70 font-bold rounded-2xl uppercase tracking-[0.2em] text-xs hover:bg-[#FFF7F2] hover:text-[#5F1517] transition-all" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                    Cancel Edit
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </form>
-    </div>
-  );
+        </form>
+      </div>
+    );
+  };
 
   // ─── ALL CATEGORIES ───────────────────────────────────────────────────────────
   const renderAllCategories = () => (

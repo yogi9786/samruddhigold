@@ -70,4 +70,26 @@ adminApi.interceptors.response.use(
   }
 );
 
+// Cart User ID helper
+export const getCartUserId = () => {
+  let userId = localStorage.getItem('user_id');
+  if (!userId) {
+    userId = 'guest_' + Math.random().toString(36).substring(2, 15);
+    localStorage.setItem('user_id', userId);
+  }
+  return userId;
+};
+
+// Cart API
+export const getCart = () => api.get(`/cart/${getCartUserId()}`);
+export const addToCart = (productId: string, quantity: number = 1) => api.post('/cart/', { user_id: getCartUserId(), product_id: productId, quantity });
+export const updateCartItem = (id: string, quantity: number) => api.put(`/cart/${id}`, { quantity });
+export const removeFromCart = (id: string) => api.delete(`/cart/${id}`);
+export const clearCart = () => api.delete('/cart/');
+
+// Wishlist API
+export const getWishlist = () => api.get('/wishlist/');
+export const addToWishlist = (productId: string, userId: string) => api.post('/wishlist/', { product_id: productId, user_id: userId });
+export const removeFromWishlist = (productId: string) => api.delete(`/wishlist/${productId}`);
+
 export default api;

@@ -65,6 +65,31 @@ async def get_product(product_id: str, db: AsyncSession = Depends(get_db)):
     return product
 
 
+@public_router.get(
+    "/{product_id}/similar",
+    response_model=List[ProductResponse],
+    summary="Get similar products (same category)"
+)
+async def get_similar_products(product_id: str, db: AsyncSession = Depends(get_db)):
+    """
+    **Public endpoint** — No authentication required.
+    Returns up to 8 products from the same category, excluding the current product.
+    """
+    result = await db.execute(select(DBProduct).where(DBProduct.id == product_id))
+    product = result.scalars().first()
+    if not product or not product.category_id:
+        return []
+
+    similar_result = await db.execute(
+        select(DBProduct)
+        .where(DBProduct.category_id == product.category_id)
+        .where(DBProduct.id != product_id)
+        .where(DBProduct.status == "active")
+        .limit(8)
+    )
+    return similar_result.scalars().all()
+
+
 # ── Admin Routes ──────────────────────────────────────────────────────────────
 
 @admin_router.post(

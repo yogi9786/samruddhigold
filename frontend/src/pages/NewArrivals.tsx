@@ -53,7 +53,7 @@ const NewArrivals: React.FC = () => {
       <NewArrivalsHero products={products} />
 
       {/* Main Content Area */}
-      <main className="flex-grow w-full max-w-7xl mx-auto px-4 md:px-8 py-10">
+      <main className="flex-grow w-full max-w-7xl mx-auto px-4 md:px-8 pt-0 pb-10">
         
         {/* Recent Uploaded Products Section */}
         <section className="mb-20">

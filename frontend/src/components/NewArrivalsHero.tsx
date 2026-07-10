@@ -3,14 +3,40 @@ import logo from '../assets/samruddhi-logo.png';
 import { getImageUrl } from '../api';
 import { ChevronDown } from 'lucide-react';
 
-import imgGoldBride    from '../assets/gen/gold_bride_1782213365863.png';
-import imgGoldSet      from '../assets/gen/gold_set_1782213378462.png';
-import imgSangeet      from '../assets/gen/sangeet_bride_1782213396287.png';
-import imgPolki        from '../assets/gen/polki_set_1782213407545.png';
-import imgMehendi      from '../assets/gen/mehendi_bride_1782213420944.png';
-import imgMeenakari    from '../assets/gen/meenakari_set_1782213433201.png';
+import imgGoldBride from '../assets/gen/gold_bride_1782213365863.png';
+import imgGoldSet from '../assets/gen/gold_set_1782213378462.png';
+import imgSangeet from '../assets/gen/sangeet_bride_1782213396287.png';
+import imgPolki from '../assets/gen/polki_set_1782213407545.png';
+import imgMehendi from '../assets/gen/mehendi_bride_1782213420944.png';
+import imgMeenakari from '../assets/gen/meenakari_set_1782213433201.png';
+import imgHaldiBride from '../assets/gen/haldi_bride_1782213760602.png';
+import imgHaldiSet from '../assets/gen/haldi_set_1782213772944.png';
+import imgReceptionBride from '../assets/gen/reception_bride_1782213788636.png';
+import imgReceptionSet from '../assets/gen/reception_set_1782213798792.png';
 
 const FALLBACK_IMAGES = [imgGoldBride, imgGoldSet, imgSangeet, imgPolki, imgMehendi, imgMeenakari];
+
+const FLOATING_IMAGES = [
+  // Top Row
+  { image: imgGoldBride, top: '13%', left: '3%', mobileTop: '10%', mobileLeft: '1.5%', speed: 0.02, size: 'w-14 sm:w-20 md:w-32 lg:w-40', rotate: 3 },
+  { image: imgGoldSet, top: '16%', right: '4%', mobileTop: '12%', mobileRight: '1.5%', speed: 0.015, size: 'w-16 sm:w-24 md:w-36 lg:w-44', rotate: -6 },
+  
+  // Mid-Upper Row
+  { image: imgSangeet, top: '28%', left: '7%', mobileTop: '22%', mobileLeft: '2.5%', speed: 0.01, size: 'w-12 sm:w-16 md:w-28 lg:w-36', rotate: 6 },
+  { image: imgPolki, top: '32%', right: '6%', mobileTop: '26%', mobileRight: '2.5%', speed: -0.01, size: 'w-14 sm:w-20 md:w-32 lg:w-40', rotate: -3 },
+  
+  // Mid-Lower Row
+  { image: imgMehendi, top: '44%', left: '2%', mobileTop: '38%', mobileLeft: '1.5%', speed: 0.02, size: 'w-16 sm:w-24 md:w-36 lg:w-44', rotate: 8 },
+  { image: imgMeenakari, top: '48%', right: '3%', mobileTop: '42%', mobileRight: '1.5%', speed: -0.015, size: 'w-12 sm:w-16 md:w-28 lg:w-36', rotate: -8 },
+  
+  // Bottom-Center Images (framed around center)
+  { image: imgHaldiBride, top: '74%', left: '34%', mobileTop: '72%', mobileLeft: '22%', speed: -0.01, size: 'w-14 sm:w-20 md:w-32 lg:w-40', rotate: 4 },
+  { image: imgHaldiSet, top: '76%', right: '34%', mobileTop: '74%', mobileRight: '22%', speed: -0.02, size: 'w-16 sm:w-24 md:w-36 lg:w-44', rotate: -5 },
+  
+  // Outer Bottom Corner Images (Desktop only)
+  { image: imgReceptionBride, top: '78%', left: '4%', speed: -0.02, size: 'w-14 sm:w-16 md:w-28 lg:w-36', rotate: 5, hideMobile: true },
+  { image: imgReceptionSet, top: '82%', right: '5%', speed: -0.02, size: 'w-18 sm:w-24 md:w-36 lg:w-44', rotate: -7, hideMobile: true },
+];
 
 interface Product {
   id: string;
@@ -30,6 +56,7 @@ const NewArrivalsHero: React.FC<NewArrivalsHeroProps> = ({ products }) => {
   const wrapRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
+  const floatRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [isMobile, setIsMobile] = useState(false);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
@@ -46,31 +73,44 @@ const NewArrivalsHero: React.FC<NewArrivalsHeroProps> = ({ products }) => {
     const textEl = textRef.current;
     if (!wrap || !bg || !textEl) return;
 
+    // Apply initial translation to floating images
+    floatRefs.current.forEach((el, idx) => {
+      if (el) {
+        el.style.transform = 'translateY(0px) translateZ(0)';
+      }
+    });
+
     const onScroll = () => {
+      const scrolledPixels = window.scrollY;
+
+      // Update parallax positions of floating images
+      floatRefs.current.forEach((el, idx) => {
+        if (!el) return;
+        const imgData = FLOATING_IMAGES[idx];
+        const yTranslation = scrolledPixels * imgData.speed;
+        el.style.transform = `translateY(${yTranslation}px) translateZ(0)`;
+      });
+
       const { top } = wrap.getBoundingClientRect();
       const scrollable = wrap.offsetHeight - window.innerHeight;
       if (scrollable <= 0) return;
+      const p = Math.max(0, Math.min(1, -top / scrollable));
 
-      const rawP = Math.max(0, Math.min(1, -top / scrollable));
-
-      // Delay zoom so the banner sticks completely at rest first
-      const DELAY = 0.15;
-      const p = Math.max(0, Math.min(1, (rawP - DELAY) / (1 - DELAY)));
-
-      // Smooth zoom: 1x to 15x (use slightly higher zoom power on mobile to stay smooth)
-      const zoomPower = isMobile ? 1.5 : 1.4;
+      // Smooth zoom: slow and smooth start, linear progression
+      const zoomPower = 1.3;
       const eased = Math.pow(p, zoomPower);
-      
-      const maxZoomScale = isMobile ? 12 : 15;
+
+      // High max scale to ensure text goes completely off-screen for a full zoom portal effect
+      const maxZoomScale = isMobile ? 22 : 32;
       const scale = 1 + eased * maxZoomScale;
       textEl.style.transform = `scale(${scale}) translateZ(0)`;
 
-      // Gracefully fade text out at the very end
-      const textOpacity = p < 0.65 ? 1 : 1 - ((p - 0.65) / 0.35);
+      // Gracefully fade text out at the very end of the scroll range
+      const textOpacity = p < 0.70 ? 1 : 1 - ((p - 0.70) / 0.30);
       textEl.style.opacity = String(Math.max(0, textOpacity));
 
-      // Fast background fade out
-      const bgOpacity = p < 0.10 ? 1 : 1 - ((p - 0.10) / 0.80);
+      // Fade background out continuously over the entire scroll duration
+      const bgOpacity = 1 - p;
       bg.style.opacity = String(Math.max(0, bgOpacity));
     };
 
@@ -101,14 +141,52 @@ const NewArrivalsHero: React.FC<NewArrivalsHeroProps> = ({ products }) => {
   };
 
   return (
-    <div 
-      ref={wrapRef} 
-      className="w-full relative overflow-hidden" 
-      style={{ 
-        height: isMobile ? '135vh' : '150vh', // Slows down scroll
+    <div
+      ref={wrapRef}
+      className="w-full relative overflow-hidden"
+      style={{
+        height: isMobile ? '70vh' : '125vh', // Stretches scroll distance to make zoom slow and smooth
         paddingTop: isMobile ? '8vh' : '10vh', // Reduced top padding to shift text to the top
       }}
     >
+      {/* Floating Parallax Jewellery Images */}
+      {FLOATING_IMAGES.map((item, index) => {
+        if (isMobile && item.hideMobile) return null;
+
+        const topPos = isMobile && item.mobileTop !== undefined ? item.mobileTop : item.top;
+        const leftPos = isMobile && item.mobileLeft !== undefined ? item.mobileLeft : (item as any).left;
+        const rightPos = isMobile && item.mobileRight !== undefined ? item.mobileRight : (item as any).right;
+
+        return (
+          <div
+            key={index}
+            ref={el => { floatRefs.current[index] = el; }}
+            className="absolute transition-transform duration-75 ease-out z-20"
+            style={{
+              top: topPos,
+              ...(leftPos !== undefined ? { left: leftPos } : { right: rightPos }),
+              aspectRatio: '1/1',
+              willChange: 'transform',
+            }}
+          >
+            {/* Inner container to separate CSS hover scale/shadow from JS translations */}
+            <div
+              className={`pointer-events-auto cursor-pointer border-[3px] md:border-[6px] lg:border-[8px] border-white rounded-lg md:rounded-xl lg:rounded-2xl shadow-xl overflow-hidden transition-all duration-300 ease-out hover:scale-108 hover:shadow-2xl ${item.size}`}
+              style={{
+                transform: `rotate(${item.rotate}deg)`,
+              }}
+            >
+              <img
+                src={item.image}
+                alt="Showcase Jewellery"
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          </div>
+        );
+      })}
+
       <div
         style={{
           position: 'sticky',
@@ -172,7 +250,7 @@ const NewArrivalsHero: React.FC<NewArrivalsHeroProps> = ({ products }) => {
               display: 'flex',
               whiteSpace: 'nowrap',
               fontFamily: '"Georgia", "Times New Roman", serif',
-              fontSize: isMobile ? 'clamp(1rem, 7.8vw, 2.5rem)' : 'clamp(2rem, 8vw, 7rem)',
+              fontSize: isMobile ? 'clamp(1rem, 6.2vw, 2.1rem)' : 'clamp(2rem, 7vw, 6rem)',
               fontWeight: 700,
               color: '#5F1517',
               letterSpacing: isMobile ? '0.02em' : '0.05em',
@@ -182,7 +260,7 @@ const NewArrivalsHero: React.FC<NewArrivalsHeroProps> = ({ products }) => {
           >
             {BRAND_TEXT.map((char, index) => {
               if (char === " ") return <span key={index} style={{ width: '0.25em' }} />;
-              
+
               const imgUrl = getHoverImage(index);
               const isHovered = hoveredIndex === index;
 
@@ -198,18 +276,18 @@ const NewArrivalsHero: React.FC<NewArrivalsHeroProps> = ({ products }) => {
                 >
                   {char}
                   {/* Hover Image popup */}
-                  <div 
+                  <div
                     className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 pointer-events-none transition-all duration-300 z-50"
                     style={{
                       opacity: isHovered ? 1 : 0,
                       transform: isHovered ? 'translate(-50%, 0) scale(1)' : 'translate(-50%, 10px) scale(0.9)',
                     }}
                   >
-                    <div 
+                    <div
                       className="rounded-md overflow-hidden shadow-2xl border-2 border-white/95 bg-white"
-                      style={{ 
-                        width: isMobile ? '56px' : '96px', 
-                        height: isMobile ? '72px' : '112px' 
+                      style={{
+                        width: isMobile ? '56px' : '96px',
+                        height: isMobile ? '72px' : '112px'
                       }}
                     >
                       <img src={imgUrl} alt="New Arrival Preview" className="w-full h-full object-cover" />
