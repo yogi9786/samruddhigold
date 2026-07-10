@@ -119,7 +119,7 @@ const Header: React.FC = () => {
                   </div>
                   INR
                 </span>
-                <a href="/shop" className="flex items-center gap-1 cursor-pointer hover:opacity-80 no-underline text-[#801416] font-medium text-[11px]">New Arrivals</a>
+                <Link to="/new-arrivals" className="flex items-center gap-1 cursor-pointer hover:opacity-80 no-underline text-[#801416] font-medium text-[11px]">New Arrivals</Link>
              </div>
           </div>
         </div>
@@ -218,6 +218,7 @@ const Header: React.FC = () => {
         <nav className="hidden lg:flex w-full bg-[#FFF7F2] justify-center border-b border-[#5F1517]/10">
           <ul className="flex items-center gap-4 xl:gap-5 py-2.5 text-[13.5px] lg:text-[12.5px] font-medium text-[#801416] font-sans">
             <li className="whitespace-nowrap"><Link to="/shop" className="text-[#801416] no-underline hover:opacity-80 transition font-bold">Shop All</Link></li>
+            <li className="whitespace-nowrap"><Link to="/new-arrivals" className="text-[#801416] no-underline hover:opacity-80 transition font-bold">New Arrivals</Link></li>
             <li className="whitespace-nowrap"><a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I'm%20interested%20in%20your%20Express%20Delivery%20options." target="_blank" rel="noopener noreferrer" className="text-[#801416] no-underline hover:opacity-80 transition">Express Delivery</a></li>
             <li className="whitespace-nowrap"><a href="#gold" className="text-[#801416] no-underline hover:opacity-80 transition">Earrings</a></li>
             <li className="whitespace-nowrap"><a href="#gold" className="text-[#801416] no-underline hover:opacity-80 transition">Pendants</a></li>
@@ -250,6 +251,9 @@ const Header: React.FC = () => {
             <ul className="flex flex-col py-2 font-sans">
               <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
                 <Link to="/shop" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-bold text-sm no-underline">Shop All</Link>
+              </li>
+              <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
+                <Link to="/new-arrivals" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-bold text-sm no-underline">New Arrivals</Link>
               </li>
               <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
                 <a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I%20have%20an%20enquiry%20about%20Express%20Delivery%20options." target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Express Delivery</a>

@@ -19,7 +19,6 @@ import GoogleReviews from '../components/GoogleReviews';
 import FeaturedProducts from '../components/FeaturedProducts';
 import SignatureJewellery from '../components/SignatureJewellery';
 import FAQ from '../components/FAQ';
-import BrandTypography from '../components/BrandTypography';
 
 const Home: React.FC = () => {
   return (
@@ -76,8 +75,7 @@ const Home: React.FC = () => {
             {/* 3D Hover Gallery (Hidden on mobile) */}
       <HoverGallery />
 
-      {/* Brand Typography — scroll zoom reveal, above shop by category */}
-      <BrandTypography />
+
 
 
       {/* Curated Classics — Premium Section Header */}

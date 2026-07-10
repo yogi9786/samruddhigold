@@ -1,6 +1,7 @@
 import React from 'react';
 import { MapPin, Phone, Mail } from 'lucide-react';
 import { FaFacebook, FaYoutube, FaInstagram, FaWhatsapp } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 import logo from '../assets/samruddhi-logo.png';
 
 const Footer: React.FC = () => {
@@ -55,6 +56,7 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="text-xl font-serif font-medium mb-6 text-[#A56B25]">Quick Links</h3>
             <ul className="flex flex-col gap-3 text-[#FFF7F2]/80 text-sm">
+              <li><Link to="/new-arrivals" className="hover:text-[#A56B25] transition-colors">New Arrivals</Link></li>
               <li><a href="#gold" className="hover:text-[#A56B25] transition-colors">Gold Jewellery</a></li>
               <li><a href="#diamond" className="hover:text-[#A56B25] transition-colors">Diamond Collection</a></li>
               <li><a href="#look-book" className="hover:text-[#A56B25] transition-colors">Wedding Look Book</a></li>
