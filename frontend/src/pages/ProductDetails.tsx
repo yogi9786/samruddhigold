@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import api, { getImageUrl, addToCart, addToWishlist, removeFromWishlist } from '../api';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Heart, ShoppingBag, Truck, ShieldCheck, Phone, Video, Share2, Copy, Check, Star, Search, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart, ShoppingBag, Share2, Star, Search, Tag } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -35,9 +35,6 @@ const ProductDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string>('');
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
-  const [isZoomed, setIsZoomed] = useState(false);
-  const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
-  const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
 
   // Cart & Wishlist state
@@ -45,10 +42,7 @@ const ProductDetails: React.FC = () => {
   const [cartSuccess, setCartSuccess] = useState(false);
   const [isInWishlist, setIsInWishlist] = useState(false);
 
-  // Recently viewed
-  const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
   const similarScrollRef = useRef<HTMLDivElement>(null);
-  const recentScrollRef = useRef<HTMLDivElement>(null);
 
   const handleAddToCart = async () => {
     if (cartSuccess) {
@@ -144,28 +138,10 @@ const ProductDetails: React.FC = () => {
     if (id) fetchProduct();
     window.scrollTo(0, 0);
   }, [id]);
-
-  // Load recently viewed
-  useEffect(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem('recently_viewed') || '[]');
-      setRecentlyViewed(stored.filter((p: any) => p.id !== id));
-    } catch {}
-  }, [id]);
-
-  const handleImageZoom = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    setZoomPos({ x, y });
-  };
-
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    alert('Link copied to clipboard!');
   };
-
   const scrollHorizontal = (ref: React.RefObject<HTMLDivElement | null>, dir: 'left' | 'right') => {
     if (ref.current) {
       ref.current.scrollBy({ left: dir === 'left' ? -300 : 300, behavior: 'smooth' });
@@ -240,8 +216,6 @@ const ProductDetails: React.FC = () => {
   }
 
   const galleryImages = product.gallery_urls?.length ? product.gallery_urls : (product.image_url ? [product.image_url] : []);
-  const ringCategory = product.other_info?.ring_size;
-  const bangleCategory = product.other_info?.bangle_size;
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-ivory)] font-sans">

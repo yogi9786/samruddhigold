@@ -74,7 +74,7 @@ const NewArrivalsHero: React.FC<NewArrivalsHeroProps> = ({ products }) => {
     if (!wrap || !bg || !textEl) return;
 
     // Apply initial translation to floating images
-    floatRefs.current.forEach((el, idx) => {
+    floatRefs.current.forEach((el) => {
       if (el) {
         el.style.transform = 'translateY(0px) translateZ(0)';
       }

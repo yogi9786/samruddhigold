@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import api, { getImageUrl, getWishlist, addToWishlist, removeFromWishlist, addToCart } from '../api';
+import api, { getImageUrl, getWishlist, addToWishlist, removeFromWishlist } from '../api';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { Filter, X, ChevronDown, ChevronLeft, ChevronRight, ShoppingBag, Heart, SlidersHorizontal, Sparkles, Star, Truck, Tag, Eye, Search } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, ShoppingBag, Heart, SlidersHorizontal, Sparkles, Star, Truck, Tag, Eye, Search } from 'lucide-react';
 
 import imgCatRings from '../assets/gen/cat_rings_1782214860176.png';
 import imgCatEarrings from '../assets/gen/cat_earrings_1782214875918.png';

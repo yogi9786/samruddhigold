@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { getCart, updateCartItem, removeFromCart, getImageUrl, getCartUserId } from '../api';
+import { Link } from 'react-router-dom';
+import { getCart, updateCartItem, removeFromCart, getImageUrl } from '../api';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, ShieldCheck, Heart } from 'lucide-react';
+import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, ShieldCheck } from 'lucide-react';
 import api from '../api';
 
 interface Product {
@@ -25,15 +25,12 @@ interface CartItem {
 const Cart: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserAndCart = async () => {
       try {
         if (localStorage.getItem('access_token')) {
-          const userRes = await api.get('/auth/me');
-          setUser(userRes.data);
+          await api.get('/auth/me');
         }
         const cartRes = await getCart();
         setCartItems(cartRes.data);

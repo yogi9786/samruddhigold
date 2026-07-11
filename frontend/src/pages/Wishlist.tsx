@@ -40,16 +40,6 @@ const Wishlist: React.FC = () => {
     }
   }, []);
 
-  const fetchWishlist = async () => {
-    try {
-      const response = await getWishlist();
-      setWishlist(response.data);
-    } catch (error) {
-      console.error('Error fetching wishlist:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleRemove = async (productId: string) => {
     try {
