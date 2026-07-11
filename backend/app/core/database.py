@@ -31,7 +31,28 @@ async def init_db():
             # Uncomment the next line to drop all tables on startup (DANGEROUS IN PROD)
             # await conn.run_sync(Base.metadata.drop_all)
             await conn.run_sync(Base.metadata.create_all)
-        logger.info("Database tables created successfully")
+            
+            # Execute database schema alterations to ensure all Product columns exist
+            from sqlalchemy import text
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS description TEXT;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS quantity INTEGER DEFAULT 1;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS category_id VARCHAR;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS is_on_sale BOOLEAN DEFAULT FALSE;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS sale_price DOUBLE PRECISION;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS sale_label VARCHAR;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS status VARCHAR DEFAULT 'active';"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS stock INTEGER DEFAULT 0;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS weight VARCHAR;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS tags VARCHAR;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS vendor VARCHAR;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS seo_title VARCHAR;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS seo_description VARCHAR;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS price_breakup JSON;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS basic_info JSON;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS stone_info JSON;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS other_info JSON;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS return_policy JSON;"))
+        logger.info("Database tables created and migrated successfully")
         
         # Seed default metal prices if none exist
         async with async_session() as session:
