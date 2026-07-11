@@ -82,10 +82,10 @@ export const getCartUserId = () => {
 
 // Cart API
 export const getCart = () => api.get(`/cart/${getCartUserId()}`);
-export const addToCart = (productId: string, quantity: number = 1) => api.post('/cart/', { user_id: getCartUserId(), product_id: productId, quantity });
+export const addToCart = (productId: string, quantity: number = 1) => api.post('/cart', { user_id: getCartUserId(), product_id: productId, quantity });
 export const updateCartItem = (id: string, quantity: number) => api.put(`/cart/${id}`, { quantity });
 export const removeFromCart = (id: string) => api.delete(`/cart/${id}`);
-export const clearCart = () => api.delete('/cart/');
+export const clearCart = () => api.delete('/cart');
 
 // Wishlist API
 export const getWishlist = () => api.get('/wishlist/');

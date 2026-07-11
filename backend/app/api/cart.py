@@ -42,6 +42,7 @@ async def get_cart(user_id: str, db: AsyncSession = Depends(get_db)):
     return response_items
 
 @router.post("", response_model=CartItemResponse)
+@router.post("/", response_model=CartItemResponse)
 async def add_to_cart(item: CartItemCreate, db: AsyncSession = Depends(get_db)):
     """
     Add a product to the user's cart (or increment quantity if already exists).
