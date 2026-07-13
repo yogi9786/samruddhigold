@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import api, { getImageUrl, addToCart, addToWishlist, removeFromWishlist } from '../api';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { ChevronLeft, ChevronRight, Heart, ShoppingBag, Share2, Star, Search, Tag } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart, ShoppingBag, Share2, Star, Search, Tag, Award, Truck, ShieldCheck, RotateCcw, BellRing } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -41,8 +41,44 @@ const ProductDetails: React.FC = () => {
   const [addingToCart, setAddingToCart] = useState(false);
   const [cartSuccess, setCartSuccess] = useState(false);
   const [isInWishlist, setIsInWishlist] = useState(false);
+  const [activeTab, setActiveTab] = useState<'details' | 'price' | 'shipping'>('details');
 
   const similarScrollRef = useRef<HTMLDivElement>(null);
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(true);
+
+  const checkTabsScroll = () => {
+    const el = tabsRef.current;
+    if (!el) return;
+    setShowLeftArrow(el.scrollLeft > 5);
+    setShowRightArrow(el.scrollLeft < el.scrollWidth - el.clientWidth - 5);
+  };
+
+  const handleTabsScroll = (direction: 'left' | 'right') => {
+    const el = tabsRef.current;
+    if (!el) return;
+    const scrollAmount = 150;
+    el.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth'
+    });
+  };
+
+  useEffect(() => {
+    const el = tabsRef.current;
+    if (el) {
+      el.addEventListener('scroll', checkTabsScroll);
+      checkTabsScroll();
+      window.addEventListener('resize', checkTabsScroll);
+      const t = setTimeout(checkTabsScroll, 300);
+      return () => {
+        el.removeEventListener('scroll', checkTabsScroll);
+        window.removeEventListener('resize', checkTabsScroll);
+        clearTimeout(t);
+      };
+    }
+  }, [product, activeTab]);
 
   const handleAddToCart = async () => {
     if (cartSuccess) {
@@ -237,10 +273,10 @@ const ProductDetails: React.FC = () => {
           {/* Left: Image Gallery */}
           <div className="flex flex-col gap-4">
             {/* Main image */}
-            <div className="relative aspect-square overflow-hidden bg-white rounded-2xl border border-gray-100 shadow-sm">
+            <div className="relative aspect-square overflow-hidden bg-white rounded-2xl border border-gray-100 shadow-sm group cursor-zoom-in">
               {selectedImage ? (
                 <img src={selectedImage} alt={product.name}
-                  className="w-full h-full object-cover transition-transform duration-300" />
+                  className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-300">
                   <ShoppingBag size={60} />
@@ -293,58 +329,45 @@ const ProductDetails: React.FC = () => {
               {product.name}
             </h1>
 
-            {/* Ring / Bangle Size and Quantity Selectors (side by side) */}
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              {/* Ring Size */}
-              <div>
-                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Ring Size</label>
-                <select className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-700 outline-none focus:ring-1 focus:ring-[var(--color-royal)] font-semibold shadow-sm">
-                  <option>{product.other_info?.ring_size || '18'}</option>
-                  <option>12</option>
-                  <option>14</option>
-                  <option>16</option>
-                  <option>20</option>
-                </select>
-              </div>
-
-              {/* Weight */}
-              <div>
-                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Weight</label>
-                <select className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-700 outline-none focus:ring-1 focus:ring-[var(--color-royal)] font-semibold shadow-sm">
-                  <option>{product.basic_info?.approx_gross_weight ? `${product.basic_info.approx_gross_weight}g` : (product.weight ? `${product.weight}g` : '2.56g')}</option>
-                </select>
-              </div>
-
-              {/* Quantity */}
-              <div>
-                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Quantity</label>
-                <select className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-700 outline-none focus:ring-1 focus:ring-[var(--color-royal)] font-semibold shadow-sm">
-                  <option>1</option>
-                  <option>2</option>
-                  <option>3</option>
-                </select>
-                <span className="text-[9px] text-gray-400 block mt-1 leading-tight font-medium">*Maximum allowed qty 3</span>
-              </div>
+            {/* ── Spec Cards ── */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
+              {[
+                { label: product.other_info?.ring_size ? 'Ring Size' : 'Bangle Size', value: product.other_info?.ring_size || product.other_info?.bangle_size || '18' },
+                { label: 'Weight', value: product.basic_info?.approx_gross_weight ? `${product.basic_info.approx_gross_weight}g` : (product.weight ? `${product.weight}g` : '44g') },
+                { label: 'Qty', value: '1' },
+              ].map((spec) => (
+                <div key={spec.label} className="relative overflow-hidden bg-[var(--color-ivory)] border border-[var(--color-primary)]/30 rounded-xl sm:rounded-2xl px-2 py-3 sm:p-4 text-center shadow-sm hover:shadow-md hover:border-[var(--color-primary)]/60 transition-all duration-300 group">
+                  {/* Top gold accent */}
+                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-[var(--color-primary)] rounded-t-xl opacity-70" />
+                  <span className="block font-sans font-bold text-[8px] sm:text-[9px] text-[var(--color-royal)] uppercase tracking-[0.12em] sm:tracking-widest mb-1">
+                    {spec.label}
+                  </span>
+                  <span className="font-sans font-bold text-base sm:text-xl text-[var(--color-royal)] leading-none">
+                    {spec.value}
+                  </span>
+                </div>
+              ))}
             </div>
 
             {/* Pricing Section */}
             <div className="mb-6">
               <div className="flex items-baseline gap-3">
-                <span className="text-3xl font-extrabold text-[#5F1517]">
+                <span className="text-3xl font-sans font-extrabold text-[#5F1517]">
                   ₹{product.price?.toLocaleString('en-IN')}
                 </span>
                 {product.original_price && product.original_price > product.price && (
-                  <>
-                    <span className="text-gray-400 line-through text-lg font-medium">₹{product.original_price.toLocaleString('en-IN')}</span>
-                    <span className="text-[#801416] font-bold text-sm">({Math.round(((product.original_price - product.price) / product.original_price) * 100)}% OFF)</span>
-                  </>
+                  <span className="text-gray-400 line-through text-lg font-sans font-medium">₹{product.original_price.toLocaleString('en-IN')}</span>
                 )}
               </div>
               <p className="text-[11px] text-gray-500 mt-1.5">
                 MRP inclusive of all taxes. <a href="#price-breakup" className="text-[var(--color-royal)] font-semibold underline ml-1">View Details</a>
               </p>
-              <button className="text-xs text-gray-500 hover:text-[var(--color-royal)] mt-2.5 flex items-center gap-1 font-medium transition-colors">
-                <span>🔔</span> Notify price drop
+              <button 
+                onClick={() => window.dispatchEvent(new Event('openSubscribeModal'))}
+                className="text-[10px] sm:text-xs text-[var(--color-royal)] hover:text-opacity-80 mt-3.5 flex items-center gap-1.5 font-bold uppercase tracking-wider transition-colors border border-[var(--color-primary)]/20 px-3.5 py-2.5 bg-[var(--color-ivory)] hover:bg-[#FFF2EC] rounded-xl shadow-sm"
+              >
+                <BellRing size={13} className="text-[#A56B25] fill-[#A56B25]/10 animate-bounce" /> 
+                Notify Price Drop
               </button>
             </div>
 
@@ -415,177 +438,274 @@ const ProductDetails: React.FC = () => {
           </div>
         </div>
 
-        {/* ─── Trust Markers Section (Hallmark, Fast Shipping, Free Insured Shipping, Return Policy) ─── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 py-8 border-t border-b border-gray-200/60 mb-12 bg-white rounded-2xl shadow-sm px-4">
-          <div className="flex flex-col items-center text-center">
-            <div className="w-11 h-11 flex items-center justify-center text-xl mb-2 text-[#A56B25] bg-[#A56B25]/5 rounded-full">🛡️</div>
-            <h5 className="font-bold text-xs text-gray-800 uppercase tracking-wider mb-1">BIS Hallmark Jewellery</h5>
-            <p className="text-[9px] text-gray-400 font-semibold max-w-[200px]">Authenticity Guaranteed, Purity Assured</p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="w-11 h-11 flex items-center justify-center text-xl mb-2 text-[#A56B25] bg-[#A56B25]/5 rounded-full">🚀</div>
-            <h5 className="font-bold text-xs text-gray-800 uppercase tracking-wider mb-1">Fast Shipping</h5>
-            <p className="text-[9px] text-gray-400 font-semibold max-w-[200px]">Swift & Secure Delivery to Your Doorstep</p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="w-11 h-11 flex items-center justify-center text-xl mb-2 text-[#A56B25] bg-[#A56B25]/5 rounded-full">📦</div>
-            <h5 className="font-bold text-xs text-gray-800 uppercase tracking-wider mb-1">Free Insured Shipping</h5>
-            <p className="text-[9px] text-gray-400 font-semibold max-w-[200px]">Your Precious Jewellery, Protected Every Step</p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="w-11 h-11 flex items-center justify-center text-xl mb-2 text-[#A56B25] bg-[#A56B25]/5 rounded-full">🔄</div>
-            <h5 className="font-bold text-xs text-gray-800 uppercase tracking-wider mb-1">Return Policy</h5>
-            <p className="text-[9px] text-gray-400 font-semibold max-w-[200px]">15 Days Easy Returns Guaranteed</p>
+
+        {/* ─── Luxury Upper Divider ─── */}
+        <div className="flex items-center justify-center gap-4 my-12 sm:my-16">
+          <div className="h-px w-full max-w-[150px] sm:max-w-[240px] bg-[var(--color-primary)]/35" />
+          <span className="w-2.5 h-2.5 rotate-45 border border-[var(--color-primary)] bg-white" />
+          <div className="h-px w-full max-w-[150px] sm:max-w-[240px] bg-[var(--color-primary)]/35" />
+        </div>
+
+        {/* ─── Trust Markers ─── */}
+        <div className="mb-12 sm:mb-16">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-8 gap-x-4">
+            {[
+              { icon: <Award size={32} strokeWidth={1} />, title: 'BIS Hallmark Jewellery', sub: 'Authenticity Guaranteed, Purity Assured' },
+              { icon: <Truck size={32} strokeWidth={1} />, title: 'Fast Shipping', sub: 'Swift & Secure Delivery to Your Doorstep' },
+              { icon: <ShieldCheck size={32} strokeWidth={1} />, title: 'Free Insured Shipping', sub: 'Your Precious Jewellery, Protected Every Step' },
+              { icon: <RotateCcw size={32} strokeWidth={1} />, title: 'Return Policy', sub: '15 Days Easy Returns Guaranteed' },
+            ].map((item) => (
+              <div key={item.title} className="flex flex-col items-center text-center px-4 py-3 group">
+                {/* Icon circle */}
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center text-[var(--color-royal)] mb-4 sm:mb-5 transition-transform duration-300 group-hover:scale-105" style={{background: 'rgba(255, 203, 8, 0.15)', border: '1px solid rgba(130, 12, 15, 0.1)'}}>
+                  {item.icon}
+                </div>
+                <h4 className="font-serif font-bold text-sm sm:text-base text-[var(--color-royal)] leading-tight mb-2 tracking-wide">{item.title}</h4>
+                <p className="font-sans text-[10px] sm:text-xs text-gray-500 leading-relaxed max-w-[160px] font-medium">{item.sub}</p>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* ─── Product Description & Information Box ─── */}
-        <div className="bg-[#FAF5EE] rounded-3xl p-6 sm:p-10 mb-12 border border-[#EBE1D4]/40">
-          <div className="space-y-8 max-w-4xl mx-auto">
-            {/* Description Block */}
-            <div className="text-left">
-              <h3 className="text-base font-bold text-[#801416] mb-3 font-serif uppercase tracking-wider">Product Description</h3>
-              <div className="bg-white rounded-2xl p-6 border border-[#EBE1D4]/30 shadow-sm">
-                <p className="text-xs sm:text-sm text-gray-500 leading-relaxed whitespace-pre-line font-medium">
-                  {product.description || `Make a bold yet refined statement with this beautifully crafted gold ring, featuring a striking striped design at its center complemented by black enamel work on both sides. The contrast between the radiant gold and the deep black enamel creates a sophisticated dual-tone effect, adding depth and character to the overall design. The central stripe pattern enhances its modern appeal, while the enamel detailing brings a touch of uniqueness and style. Crafted with precision, the ring offers a smooth finish and a comfortable fit, making it suitable for everyday wear as well as special occasions.`}
-                </p>
+        {/* ─── Tabbed Section ─── */}
+        <div className="mb-20">
+          {/* Tab Selector */}
+          <div className="relative flex items-center border-b border-[var(--color-primary)]/30 mb-8 -mx-4 px-4 sm:mx-0 sm:px-0">
+            {/* Left Scroll Button */}
+            {showLeftArrow && (
+              <button 
+                onClick={() => handleTabsScroll('left')}
+                className="absolute left-1 z-20 p-1.5 bg-[#FFF7F2] border border-[#D4AF37]/30 rounded-full shadow-md text-[#5F1517] hover:bg-[#FFE8DC] hover:border-[#D4AF37] transition sm:hidden"
+                aria-label="Scroll Left"
+              >
+                <ChevronLeft size={16} />
+              </button>
+            )}
+
+            {/* Scrollable Tabs Wrapper */}
+            <div 
+              ref={tabsRef}
+              className="w-full overflow-x-auto scrollbar-hide flex scroll-smooth"
+            >
+              <div className="flex gap-1 sm:gap-6 mx-auto">
+                {[
+                  { key: 'details' as const, label: 'Product Description' },
+                  ...(breakup ? [{ key: 'price' as const, label: 'Price Breakup' }] : []),
+                  { key: 'shipping' as const, label: 'Shipping & Returns' },
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`relative flex-shrink-0 px-4 sm:px-10 py-4 font-serif font-bold tracking-widest uppercase transition-all duration-300 whitespace-nowrap text-[11px] sm:text-sm ${
+                      activeTab === tab.key
+                        ? 'text-[var(--color-royal)] scale-105'
+                        : 'text-gray-400 hover:text-[var(--color-royal)]/70'
+                    }`}
+                  >
+                    {tab.label}
+                    {activeTab === tab.key && (
+                      <span className="absolute bottom-0 left-2 right-2 sm:left-4 sm:right-4 h-[3px] bg-[var(--color-royal)] rounded-t-full shadow-sm" />
+                    )}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Information Block */}
-            <div className="text-left">
-              <h3 className="text-base font-bold text-[#801416] mb-3 font-serif uppercase tracking-wider">Product Information</h3>
-              <div className="bg-white rounded-2xl p-6 border border-[#EBE1D4]/30 shadow-sm max-w-lg">
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-sm font-bold text-[#801416]">Metal and Purity</h4>
-                    <p className="text-sm text-gray-500 font-semibold mt-0.5">
-                      {product.basic_info?.metal || 'Gold'} {product.basic_info?.metal_purity || '91.6'}
+            {/* Right Scroll Button */}
+            {showRightArrow && (
+              <button 
+                onClick={() => handleTabsScroll('right')}
+                className="absolute right-1 z-20 p-1.5 bg-[#FFF7F2] border border-[#D4AF37]/30 rounded-full shadow-md text-[#5F1517] hover:bg-[#FFE8DC] hover:border-[#D4AF37] transition sm:hidden"
+                aria-label="Scroll Right"
+              >
+                <ChevronRight size={16} />
+              </button>
+            )}
+          </div>
+
+          {/* Tab Content — high-end luxury card matching brand specs */}
+          <div className="rounded-2xl shadow-sm border border-[var(--color-primary)]/15 overflow-hidden transition-all duration-300" style={{background: 'linear-gradient(135deg, #FCF8F4, #FFFDFB)'}}>
+
+            {/* ── Story & Specs Tab ── */}
+            {activeTab === 'details' && (
+              <div className="p-6 sm:p-10 space-y-10 text-left">
+                {/* Product Description */}
+                <div>
+                  <h3 className="font-serif font-bold text-base sm:text-lg text-[var(--color-royal)] mb-4 tracking-wide uppercase border-b border-[var(--color-primary)]/20 pb-2">Product Description</h3>
+                  <div className="bg-white/70 rounded-xl p-5 sm:p-8 border border-[var(--color-primary)]/10 shadow-inner">
+                    <p className="font-sans text-xs sm:text-sm lg:text-base text-gray-700 leading-relaxed sm:leading-loose">
+                      {product.description || `Make a bold yet refined statement with this beautifully crafted gold jewellery, featuring exceptional craftsmanship and premium purity. Each piece is BIS Hallmark certified, ensuring authenticity and quality you can trust.`}
                     </p>
                   </div>
-                  <div className="grid grid-cols-2 gap-6 pt-1">
-                    <div>
-                      <h4 className="text-sm font-bold text-[#801416]">Size</h4>
-                      <p className="text-sm text-gray-500 font-semibold mt-0.5">
-                        {product.other_info?.ring_size || product.other_info?.bangle_size || '18'}
+                </div>
+
+                {/* Product Information */}
+                <div>
+                  <h3 className="font-serif font-bold text-base sm:text-lg text-[var(--color-royal)] mb-6 tracking-wide uppercase border-b border-[var(--color-primary)]/20 pb-2">Product Information</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {/* Metal and Purity */}
+                    <div className="bg-white/80 border border-[var(--color-primary)]/15 rounded-xl p-5 shadow-sm hover:border-[var(--color-royal)]/30 transition-all duration-300">
+                      <p className="font-sans text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Metal & Purity</p>
+                      <p className="font-sans text-sm sm:text-base text-[var(--color-royal)] font-bold mt-2">
+                        {product.basic_info?.metal || 'Gold'} {product.basic_info?.metal_purity || '91.6'}
                       </p>
                     </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-[#801416]">Weight</h4>
-                      <p className="text-sm text-gray-500 font-semibold mt-0.5">
-                        {product.basic_info?.approx_gross_weight ? `${product.basic_info.approx_gross_weight}gms` : (product.weight ? `${product.weight}gms` : '2.568gms')}
+
+                    {/* Size */}
+                    <div className="bg-white/80 border border-[var(--color-primary)]/15 rounded-xl p-5 shadow-sm hover:border-[var(--color-royal)]/30 transition-all duration-300">
+                      <p className="font-sans text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Size</p>
+                      <p className="font-sans text-sm sm:text-base text-[var(--color-royal)] font-bold mt-2">
+                        {product.other_info?.ring_size || product.other_info?.bangle_size || '—'}
+                      </p>
+                    </div>
+
+                    {/* Weight */}
+                    <div className="bg-white/80 border border-[var(--color-primary)]/15 rounded-xl p-5 shadow-sm hover:border-[var(--color-royal)]/30 transition-all duration-300">
+                      <p className="font-sans text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Weight</p>
+                      <p className="font-sans text-sm sm:text-base text-[var(--color-royal)] font-bold mt-2">
+                        {product.basic_info?.approx_gross_weight ? `${product.basic_info.approx_gross_weight}gms` : (product.weight ? `${product.weight}gms` : '—')}
+                      </p>
+                    </div>
+
+                    {/* Certification */}
+                    <div className="bg-white/80 border border-[var(--color-primary)]/15 rounded-xl p-5 shadow-sm hover:border-[var(--color-royal)]/30 transition-all duration-300">
+                      <p className="font-sans text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Certification</p>
+                      <p className="font-sans text-sm sm:text-base text-[var(--color-royal)] font-bold mt-2">
+                        {product.other_info?.gold_certification || 'BIS Hallmark'}
+                      </p>
+                    </div>
+
+                    {/* Product Code */}
+                    <div className="bg-white/80 border border-[var(--color-primary)]/15 rounded-xl p-5 shadow-sm hover:border-[var(--color-royal)]/30 transition-all duration-300 col-span-2 md:col-span-1">
+                      <p className="font-sans text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Product Code</p>
+                      <p className="font-mono text-xs sm:text-sm text-[var(--color-royal)] font-bold mt-2">
+                        {product.sku}
                       </p>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* ── Price Breakup Tab ── */}
+            {activeTab === 'price' && breakup && (
+              <div className="p-6 sm:p-10 text-left space-y-6">
+                <h3 className="font-serif font-bold text-base sm:text-lg text-[var(--color-royal)] mb-4 tracking-wide uppercase border-b border-[var(--color-primary)]/20 pb-2">Price Breakup</h3>
+                <div className="overflow-x-auto -mx-1">
+                  <table className="w-full min-w-[550px] border-collapse">
+                    {/* Header */}
+                    <thead>
+                      <tr className="border-b border-[var(--color-royal)]/30">
+                        {['Component', 'Rate', 'Weight', 'Value', 'Discount', 'Final Value'].map((h, i) => (
+                          <th key={h} className={`pb-3.5 font-sans font-bold text-[10px] sm:text-xs text-[var(--color-royal)] uppercase tracking-widest ${i === 5 ? 'text-right' : 'text-left'} pr-4 sm:pr-6`}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="font-sans">
+                      {/* Gold row */}
+                      <tr className="border-b border-gray-200/50 hover:bg-white/40 transition-all duration-200">
+                        <td className="py-4 pr-4 sm:pr-6 font-serif font-bold text-xs sm:text-sm text-[var(--color-royal)]">{product.basic_info?.metal_purity || '91.6'} Gold</td>
+                        <td className="py-4 pr-4 sm:pr-6 text-xs sm:text-sm text-gray-600">₹{breakup.gold_rate?.toLocaleString('en-IN')}</td>
+                        <td className="py-4 pr-4 sm:pr-6 text-xs sm:text-sm text-gray-600">{breakup.gold_weight} g</td>
+                        <td className="py-4 pr-4 sm:pr-6 text-xs sm:text-sm text-gray-700 font-semibold">₹{breakup.metal_value?.toLocaleString('en-IN')}</td>
+                        <td className="py-4 pr-4 sm:pr-6 text-xs sm:text-sm text-gray-600">₹0</td>
+                        <td className="py-4 text-right text-xs sm:text-sm text-gray-800 font-bold">₹{breakup.metal_value?.toLocaleString('en-IN')}</td>
+                      </tr>
+                      {/* Making Charges */}
+                      <tr className="border-b border-gray-200/50 hover:bg-white/40 transition-all duration-200">
+                        <td className="py-4 pr-4 sm:pr-6 font-serif font-bold text-xs sm:text-sm text-[var(--color-royal)]">Making Charges</td>
+                        <td className="py-4 pr-4 sm:pr-6 text-xs sm:text-sm text-gray-400">—</td>
+                        <td className="py-4 pr-4 sm:pr-6 text-xs sm:text-sm text-gray-400">—</td>
+                        <td className="py-4 pr-4 sm:pr-6 text-xs sm:text-sm text-gray-700 font-semibold">₹{breakup.making_charges_value?.toLocaleString('en-IN')}</td>
+                        <td className="py-4 pr-4 sm:pr-6 text-xs sm:text-sm text-emerald-600 font-semibold">₹{breakup.making_charges_discount?.toLocaleString('en-IN')}</td>
+                        <td className="py-4 text-right text-xs sm:text-sm text-gray-800 font-bold">₹{breakup.making_charges_final?.toLocaleString('en-IN')}</td>
+                      </tr>
+                      {/* Total */}
+                      <tr className="border-b-2 border-[var(--color-royal)]/30 bg-[var(--color-primary)]/5">
+                        <td className="py-4 pr-4 sm:pr-6 font-serif font-bold text-xs sm:text-sm text-[var(--color-royal)]">Total</td>
+                        <td className="py-4 pr-4 sm:pr-6"></td>
+                        <td className="py-4 pr-4 sm:pr-6"></td>
+                        <td className="py-4 pr-4 sm:pr-6 font-sans font-semibold text-xs sm:text-sm text-gray-700">₹{breakup.sub_total_value?.toLocaleString('en-IN')}</td>
+                        <td className="py-4 pr-4 sm:pr-6 font-sans font-semibold text-xs sm:text-sm text-emerald-600">₹{breakup.making_charges_discount?.toLocaleString('en-IN')}</td>
+                        <td className="py-4 text-right font-sans font-bold text-xs sm:text-sm text-[var(--color-royal)]">₹{breakup.sub_total_final?.toLocaleString('en-IN')}</td>
+                      </tr>
+                      {/* GST */}
+                      <tr className="border-b border-gray-200 hover:bg-white/40 transition-all duration-200">
+                        <td className="py-4 pr-4 sm:pr-6 font-serif font-bold text-xs sm:text-sm text-[var(--color-royal)]/80">GST (3%)</td>
+                        <td className="py-4 pr-4 sm:pr-6"></td>
+                        <td className="py-4 pr-4 sm:pr-6"></td>
+                        <td className="py-4 pr-4 sm:pr-6 font-sans text-xs sm:text-sm text-gray-700">₹{breakup.tax_value?.toLocaleString('en-IN')}</td>
+                        <td className="py-4 pr-4 sm:pr-6"></td>
+                        <td className="py-4 text-right font-sans text-xs sm:text-sm text-gray-800 font-bold">₹{breakup.tax_final?.toLocaleString('en-IN')}</td>
+                      </tr>
+                      {/* Grand Total */}
+                      <tr className="bg-[var(--color-royal)]/[0.03]">
+                        <td className="py-5 pr-4 sm:pr-6 font-serif font-extrabold text-sm sm:text-base text-[var(--color-royal)]">Grand Total</td>
+                        <td className="py-5 pr-4 sm:pr-6"></td>
+                        <td className="py-5 pr-4 sm:pr-6"></td>
+                        <td className="py-5 pr-4 sm:pr-6 font-sans font-bold text-sm sm:text-base text-[var(--color-royal)]">₹{breakup.grand_total_value?.toLocaleString('en-IN')}</td>
+                        <td className="py-5 pr-4 sm:pr-6"></td>
+                        <td className="py-5 text-right font-sans font-extrabold text-base sm:text-lg text-[var(--color-royal)]">₹{breakup.grand_total_final?.toLocaleString('en-IN')}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* ── Shipping & Returns Tab ── */}
+            {activeTab === 'shipping' && (
+              <div className="p-6 sm:p-10 space-y-6 text-left">
+                <h3 className="font-serif font-bold text-base sm:text-lg text-[var(--color-royal)] mb-4 tracking-wide uppercase border-b border-[var(--color-primary)]/20 pb-2">Shipping & Return Policies</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {[
+                    { icon: <Truck size={24} strokeWidth={1.2} />, title: 'Free Insured Delivery', desc: 'We offer free insured shipping to your doorstep for all orders within India. Every shipment is fully insured until it reaches you.' },
+                    { icon: <Award size={24} strokeWidth={1.2} />, title: 'Purity & Hallmarking', desc: 'Every piece is certified with government-approved BIS Hallmarking, guaranteeing the gold purity of your precious jewellery.' },
+                    { icon: <RotateCcw size={24} strokeWidth={1.2} />, title: '15 Days Returns', desc: 'Not satisfied? Enjoy easy returns or exchanges within 15 days of receiving the item. No questions asked.' },
+                  ].map((p) => (
+                    <div key={p.title} className="bg-white/80 border border-[var(--color-primary)]/15 rounded-2xl p-6 space-y-4 hover:border-[var(--color-royal)]/30 transition-all duration-300 shadow-sm group">
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-[var(--color-royal)] transition-transform duration-300 group-hover:scale-105" style={{background: 'rgba(255, 203, 8, 0.15)', border: '1px solid rgba(130, 12, 15, 0.05)'}}>
+                        {p.icon}
+                      </div>
+                      <h4 className="font-serif font-bold text-sm sm:text-base text-[var(--color-royal)]">{p.title}</h4>
+                      <p className="font-sans text-xs sm:text-sm text-gray-500 leading-relaxed font-medium">{p.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
 
-        {/* ─── Price Breakup Section (Minimal Gitanjali/GRT Table Layout) ─── */}
-        {breakup && (
-          <section id="price-breakup" className="mb-16 text-left max-w-4xl mx-auto">
-            <div className="flex items-center justify-between mb-6 pb-2 border-b border-gray-150">
-              <h2 className="text-xl font-serif text-[#801416] tracking-wide font-bold">
-                Price Breakup <span className="text-xs text-[#801416] underline font-sans ml-3 cursor-pointer">View Less</span>
-              </h2>
-            </div>
-            
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-gray-500">
-                <thead>
-                  <tr className="text-gray-400 font-medium border-b border-gray-150">
-                    <th className="py-3 text-left font-normal">Component</th>
-                    <th className="py-3 text-left font-normal">Rate</th>
-                    <th className="py-3 text-left font-normal">Weight</th>
-                    <th className="py-3 text-left font-normal">Value</th>
-                    <th className="py-3 text-left font-normal">Discount</th>
-                    <th className="py-3 text-right font-normal">Final Value</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 font-semibold">
-                  {/* Gold Row */}
-                  <tr>
-                    <td className="py-4 text-[#801416] font-bold">Gold</td>
-                    <td className="py-4">—</td>
-                    <td className="py-4">—</td>
-                    <td className="py-4">—</td>
-                    <td className="py-4">—</td>
-                    <td className="py-4 text-right font-bold">—</td>
-                  </tr>
-                  <tr className="text-gray-500 font-medium">
-                    <td className="py-3 pl-4 text-gray-400 font-medium">
-                      {product.basic_info?.metal_purity || '91.6'} Gold
-                    </td>
-                    <td className="py-3">{breakup.gold_rate}</td>
-                    <td className="py-3">{breakup.gold_weight}</td>
-                    <td className="py-3">₹{breakup.metal_value.toLocaleString('en-IN')}</td>
-                    <td className="py-3">₹0</td>
-                    <td className="py-3 text-right font-semibold">₹{breakup.metal_value.toLocaleString('en-IN')}</td>
-                  </tr>
-
-                  {/* Making Charges Row */}
-                  <tr className="font-medium text-gray-500">
-                    <td className="py-4 text-[#801416] font-bold">Making Charges</td>
-                    <td className="py-4">—</td>
-                    <td className="py-4">—</td>
-                    <td className="py-4">₹{breakup.making_charges_value.toLocaleString('en-IN')}</td>
-                    <td className="py-4">₹{breakup.making_charges_discount.toLocaleString('en-IN')}</td>
-                    <td className="py-4 text-right font-semibold">₹{breakup.making_charges_final.toLocaleString('en-IN')}</td>
-                  </tr>
-
-                  {/* Total Row */}
-                  <tr className="border-t border-b border-gray-200 font-bold bg-gray-50/10">
-                    <td className="py-4 text-[#801416] font-bold">Total</td>
-                    <td className="py-4">—</td>
-                    <td className="py-4">—</td>
-                    <td className="py-4 text-gray-700">₹{breakup.sub_total_value.toLocaleString('en-IN')}</td>
-                    <td className="py-4 text-red-500">₹{breakup.making_charges_discount.toLocaleString('en-IN')}</td>
-                    <td className="py-4 text-right text-gray-800 font-bold">₹{breakup.sub_total_final.toLocaleString('en-IN')}</td>
-                  </tr>
-
-                  {/* GST Row */}
-                  <tr className="font-medium text-gray-500">
-                    <td className="py-4 text-[#801416] font-bold">GST(3%)</td>
-                    <td className="py-4">—</td>
-                    <td className="py-4">—</td>
-                    <td className="py-4">₹{breakup.tax_value.toLocaleString('en-IN')}</td>
-                    <td className="py-4">—</td>
-                    <td className="py-4 text-right font-semibold">₹{breakup.tax_final.toLocaleString('en-IN')}</td>
-                  </tr>
-
-                  {/* Grand Total Row */}
-                  <tr className="border-t-2 border-b border-gray-300 bg-gray-50/20 font-bold text-gray-900">
-                    <td className="py-4 text-[#801416] font-extrabold text-sm">Grand Total</td>
-                    <td className="py-4">—</td>
-                    <td className="py-4">—</td>
-                    <td className="py-4 text-[#801416] font-extrabold">₹{breakup.grand_total_value.toLocaleString('en-IN')}</td>
-                    <td className="py-4">—</td>
-                    <td className="py-4 text-right text-[#801416] text-sm font-black">₹{breakup.grand_total_final.toLocaleString('en-IN')}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
-        )}
+        {/* ─── Luxury Brand Ornament Divider ─── */}
+        <div className="flex items-center justify-center gap-4 my-16 sm:my-20">
+          <div className="h-px w-full max-w-[120px] sm:max-w-[200px] bg-[var(--color-primary)]/40" />
+          <div className="flex items-center gap-2 text-[var(--color-primary)]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)]" />
+            <Star size={16} fill="var(--color-primary)" strokeWidth={1} />
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)]" />
+          </div>
+          <div className="h-px w-full max-w-[120px] sm:max-w-[200px] bg-[var(--color-primary)]/40" />
+        </div>
 
         {/* ─── Similar Designs Section ─── */}
         {similarProducts.length > 0 && (
           <section className="mb-16 text-left">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <span className="w-1.5 h-8 bg-[var(--color-primary)] rounded-full"></span>
-                <h2 className="text-xl sm:text-2xl font-serif text-[var(--color-royal)] tracking-wide font-light">Similar Designs</h2>
+            <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4 mb-8">
+              <div className="text-center sm:text-left">
+                <p className="font-sans text-[9px] tracking-[0.25em] uppercase text-gray-400 font-bold mb-1">Curated Selection</p>
+                <h2 className="text-2xl sm:text-3xl font-serif text-[var(--color-royal)] tracking-wide font-light leading-tight">Similar Designs</h2>
+                <p className="font-serif italic text-xs sm:text-sm text-gray-500 mt-1">Handpicked masterpieces that complement your choice</p>
               </div>
               <div className="flex gap-2">
                 <button onClick={() => scrollHorizontal(similarScrollRef, 'left')}
-                  className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-[var(--color-royal)] hover:border-[var(--color-primary)] transition-all bg-white">
-                  <ChevronLeft size={16} />
+                  className="w-10 h-10 rounded-full border border-[var(--color-primary)]/20 flex items-center justify-center text-gray-400 hover:text-[var(--color-royal)] hover:border-[var(--color-primary)] hover:bg-[#FFFBF7] transition-all bg-white shadow-sm">
+                  <ChevronLeft size={18} />
                 </button>
                 <button onClick={() => scrollHorizontal(similarScrollRef, 'right')}
-                  className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-[var(--color-royal)] hover:border-[var(--color-primary)] transition-all bg-white">
-                  <ChevronRight size={16} />
+                  className="w-10 h-10 rounded-full border border-[var(--color-primary)]/20 flex items-center justify-center text-gray-400 hover:text-[var(--color-royal)] hover:border-[var(--color-primary)] hover:bg-[#FFFBF7] transition-all bg-white shadow-sm">
+                  <ChevronRight size={18} />
                 </button>
               </div>
             </div>
@@ -624,9 +744,9 @@ const ProductDetails: React.FC = () => {
                     {/* Content */}
                     <div className="p-4 flex flex-col justify-start text-left bg-white">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-gray-800 text-sm sm:text-base">₹{p.price.toLocaleString('en-IN')}</span>
+                        <span className="font-sans font-bold text-gray-800 text-sm sm:text-base">₹{p.price.toLocaleString('en-IN')}</span>
                         {p.original_price && p.original_price > p.price && (
-                          <span className="text-[10px] sm:text-xs text-gray-400 line-through">₹{p.original_price.toLocaleString('en-IN')}</span>
+                          <span className="font-sans text-[10px] sm:text-xs text-gray-400 line-through">₹{p.original_price.toLocaleString('en-IN')}</span>
                         )}
                       </div>
                       

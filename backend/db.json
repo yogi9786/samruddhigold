@@ -5,25 +5,61 @@
       "id": "cat-gold",
       "name": "Gold Collection",
       "description": "Timeless 22K and 18K yellow, white, and rose gold masterpieces.",
-      "image_url": "/images/gallery/gold_necklace_close.png"
+      "image_url": "/api/uploads/gold_bangle.png"
     },
     {
       "id": "cat-silver",
       "name": "Silver Collection",
       "description": "Pure sterling silver jewelry, ornaments, and pooja articles.",
-      "image_url": "/images/gallery/gold_bracelet_hand.png"
+      "image_url": "/api/uploads/silver_collection.png"
     },
     {
       "id": "cat-diamond",
       "name": "Diamond Collection",
       "description": "Brilliant-cut VVS certified diamond jewelry set in premium gold.",
-      "image_url": "/images/gallery/diamond_ring_close.png"
+      "image_url": "/api/uploads/diamond_necklace.png"
     },
     {
       "id": "cat-wedding",
       "name": "Wedding Collection",
       "description": "Heavy bridal Haar, waist belts, Kundan jewelry, and heavy Jhumkas.",
-      "image_url": "/images/gallery/south_indian_lakshmi_haar.png"
+      "image_url": "/api/uploads/kundan_choker.png"
+    },
+    {
+      "id": "cat-rings",
+      "name": "Rings",
+      "description": "Exquisite gold and diamond engagement, statement, and cocktail rings.",
+      "image_url": "/api/uploads/cat_rings_1782214860176.png"
+    },
+    {
+      "id": "cat-earrings",
+      "name": "Earrings",
+      "description": "Gorgeous Jhumkas, studs, Chandbalis, and statement earrings.",
+      "image_url": "/api/uploads/cat_earrings_1782214875918.png"
+    },
+    {
+      "id": "cat-bangles",
+      "name": "Bangles",
+      "description": "Classic kadas, bridal bangles, and daily wear gold bangle sets.",
+      "image_url": "/api/uploads/cat_bangles_1782214893370.png"
+    },
+    {
+      "id": "cat-pendants",
+      "name": "Pendants",
+      "description": "Fine gold, diamond, and religious pendant sets.",
+      "image_url": "/api/uploads/cat_pendants_1782214847919.png"
+    },
+    {
+      "id": "cat-mangalsutra",
+      "name": "Mangalsutra",
+      "description": "Elegant mangalsutras and modern double-string necklace designs.",
+      "image_url": "/api/uploads/cat_mangalsutra_1782214906170.png"
+    },
+    {
+      "id": "cat-sets",
+      "name": "Necklace Sets",
+      "description": "Temple necklace sets, layered chokers, and signature bridal Haar.",
+      "image_url": "/api/uploads/cat_jewellery_sets_1782214836263.png"
     }
   ],
   "contacts": [],

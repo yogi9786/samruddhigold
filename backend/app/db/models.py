@@ -116,3 +116,11 @@ class VirtualShoppingBooking(Base):
     status = Column(String, default="Pending")
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
+class Subscription(Base):
+    __tablename__ = "subscriptions"
+    id = Column(String, primary_key=True, default=generate_uuid)
+    email = Column(String, nullable=True)
+    phone = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+

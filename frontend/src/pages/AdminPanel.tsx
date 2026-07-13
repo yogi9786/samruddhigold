@@ -19,7 +19,7 @@ interface Product {
   description?: string; quantity?: number;
 }
 
-type Section = 'dashboard' | 'all-products' | 'add-product' | 'all-categories' | 'add-category' | 'orders' | 'customers' | 'users' | 'change-password' | 'settings' | 'metal-prices' | 'virtual-bookings';
+type Section = 'dashboard' | 'all-products' | 'add-product' | 'all-categories' | 'add-category' | 'orders' | 'customers' | 'users' | 'change-password' | 'settings' | 'metal-prices' | 'virtual-bookings' | 'subscriptions';
 
 const emptyProduct = {
   name: '', sku: '', price: 0, original_price: 0, discount_text: '',
@@ -217,6 +217,10 @@ const AdminPanel: React.FC = () => {
   const [vSearch, setVSearch] = useState('');
   const [vStatusFilter, setVStatusFilter] = useState('');
 
+  const [subscriptions, setSubscriptions] = useState<any[]>([]);
+  const [loadingSubscriptions, setLoadingSubscriptions] = useState(false);
+  const [subSearch, setSubSearch] = useState('');
+
   const fetchVirtualBookings = useCallback(async () => {
     setLoadingBookings(true);
     try {
@@ -226,6 +230,18 @@ const AdminPanel: React.FC = () => {
       showToast('Failed to load video shopping bookings', 'error');
     } finally {
       setLoadingBookings(false);
+    }
+  }, []);
+
+  const fetchSubscriptions = useCallback(async () => {
+    setLoadingSubscriptions(true);
+    try {
+      const r = await adminApi.get('/subscriptions');
+      setSubscriptions(r.data);
+    } catch {
+      showToast('Failed to load subscriptions', 'error');
+    } finally {
+      setLoadingSubscriptions(false);
     }
   }, []);
 
@@ -286,7 +302,8 @@ const AdminPanel: React.FC = () => {
     fetchUsers(); 
     fetchMetalPrices(); 
     fetchVirtualBookings();
-  }, [fetchProducts, fetchCategories, fetchOrders, fetchUsers, fetchMetalPrices, fetchVirtualBookings]);
+    fetchSubscriptions();
+  }, [fetchProducts, fetchCategories, fetchOrders, fetchUsers, fetchMetalPrices, fetchVirtualBookings, fetchSubscriptions]);
 
   useEffect(() => { 
     if (token) refreshAll(); 
@@ -1802,6 +1819,98 @@ const AdminPanel: React.FC = () => {
     );
   };
 
+  // ─── SUBSCRIPTIONS ────────────────────────────────────────────────────────────
+  const renderSubscriptions = () => {
+    const filteredSubs = subscriptions.filter(sub => {
+      const matchSearch = !subSearch || 
+        (sub.email && sub.email.toLowerCase().includes(subSearch.toLowerCase())) || 
+        (sub.phone && sub.phone.includes(subSearch));
+      return matchSearch;
+    });
+
+    return (
+      <div className="animate-fade-in pb-10">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+          <div>
+            <h2 className="text-3xl font-bold text-[#5F1517] tracking-tight" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>Newsletter Subscriptions</h2>
+            <p className="text-xs text-[#5F1517]/50 mt-1 uppercase tracking-widest font-semibold" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+              {filteredSubs.length} subscribers found
+            </p>
+          </div>
+          <button 
+            onClick={fetchSubscriptions} 
+            disabled={loadingSubscriptions}
+            className="px-5 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517] text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition disabled:opacity-50 flex items-center gap-1.5" 
+            style={{ fontFamily: 'Montserrat, sans-serif' }}
+          >
+            {loadingSubscriptions ? (
+              <>
+                <svg className="animate-spin h-3.5 w-3.5 text-[#5F1517]" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Refreshing...
+              </>
+            ) : (
+              '↺ Refresh Data'
+            )}
+          </button>
+        </div>
+
+        {/* Filters */}
+        <div className="bg-white border border-[#D4AF37]/20 shadow-sm rounded-2xl p-5 mb-6">
+          <div>
+            <label className="block text-[10px] font-bold text-[#5F1517]/50 uppercase tracking-[0.15em] mb-1.5">Search Subscribers</label>
+            <input 
+              value={subSearch} 
+              onChange={e => setSubSearch(e.target.value)} 
+              placeholder="Search by Email or Phone..."
+              className="w-full px-4 py-2.5 border border-[#D4AF37]/20 rounded-xl text-xs focus:outline-none focus:border-[#D4AF37] bg-[#FFF7F2] shadow-inner" 
+              style={{ fontFamily: 'Montserrat, sans-serif' }} 
+            />
+          </div>
+        </div>
+
+        {/* List Table */}
+        <div className="bg-white border border-[#D4AF37]/20 rounded-2xl overflow-hidden shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-[#D4AF37]/20 bg-[#FFF7F2]">
+                  {['Date Subscribed', 'Email Address', 'Phone Number'].map(h => (
+                    <th key={h} className="px-5 py-4 text-[10px] font-bold text-[#5F1517]/50 uppercase tracking-[0.15em]" style={{ fontFamily: 'Montserrat, sans-serif' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#D4AF37]/10">
+                {filteredSubs.map((sub) => (
+                  <tr key={sub.id} className="hover:bg-[#FFF7F2]/40 transition-colors">
+                    <td className="px-5 py-4 text-xs text-gray-500 font-semibold">
+                      {new Date(sub.created_at).toLocaleString()}
+                    </td>
+                    <td className="px-5 py-4 text-xs font-bold text-[#5F1517]">
+                      {sub.email || <span className="text-gray-400 font-normal">—</span>}
+                    </td>
+                    <td className="px-5 py-4 text-xs font-mono text-gray-700">
+                      {sub.phone || <span className="text-gray-400 font-normal">—</span>}
+                    </td>
+                  </tr>
+                ))}
+                {filteredSubs.length === 0 && (
+                  <tr>
+                    <td colSpan={3} className="text-center py-16 text-[#5F1517]/40 text-sm font-bold uppercase tracking-widest" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                      No subscribers found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // ─── CHANGE PASSWORD ──────────────────────────────────────────────────────────
   const renderChangePw = () => (
     <div className="max-w-xl animate-fade-in">
@@ -2007,6 +2116,12 @@ const AdminPanel: React.FC = () => {
             </svg>
           } />
 
+          <NavItem id="subscriptions" label="Subscriptions" count={subscriptions.length} icon={
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.02 6.02 0 00-4.902-5.902A2.001 2.001 0 0012 3a2.001 2.001 0 00-1.098 2.098A6.02 6.02 0 006 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+          } />
+
           <NavItem id="customers" label="Customers" count={stats.customers} icon={
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M16 11c1.657 0 3-1.343 3-3S17.657 5 16 5c-1.657 0-3 1.343-3 3s1.343 3 3 3zM8 11c1.657 0 3-1.343 3-3S9.657 5 8 5C6.343 5 5 6.343 5 8s1.343 3 3 3zm8 2c2.209 0 4 1.791 4 4H4c0-2.209 1.791-4 4-4h8z" />
@@ -2057,7 +2172,7 @@ const AdminPanel: React.FC = () => {
             </button>
             <div>
               <h1 className="text-base sm:text-lg font-bold text-[#5F1517] capitalize tracking-tight" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>
-                {section === 'all-products' ? 'Products' : section === 'add-product' ? (editPId ? 'Edit Product' : 'Add Product') : section === 'all-categories' ? 'Collections' : section === 'add-category' ? (editCId ? 'Edit Collection' : 'Add Collection') : section === 'change-password' ? 'Security Settings' : section === 'customers' ? 'Customers' : section === 'users' ? 'All Users' : section === 'metal-prices' ? 'Metal Rates' : section === 'virtual-bookings' ? 'Video Shopping' : section.charAt(0).toUpperCase() + section.slice(1)}
+                {section === 'all-products' ? 'Products' : section === 'add-product' ? (editPId ? 'Edit Product' : 'Add Product') : section === 'all-categories' ? 'Collections' : section === 'add-category' ? (editCId ? 'Edit Collection' : 'Add Collection') : section === 'change-password' ? 'Security Settings' : section === 'customers' ? 'Customers' : section === 'users' ? 'All Users' : section === 'metal-prices' ? 'Metal Rates' : section === 'virtual-bookings' ? 'Video Shopping' : section === 'subscriptions' ? 'Subscriptions' : section.charAt(0).toUpperCase() + section.slice(1)}
               </h1>
               <p className="text-[9px] sm:text-[10px] font-bold text-[#5F1517]/40 uppercase tracking-[0.2em] mt-0.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Siri Samruddhi Gold Palace</p>
             </div>
@@ -2079,6 +2194,7 @@ const AdminPanel: React.FC = () => {
           {section === 'add-category' && renderCategoryForm()}
           {section === 'orders' && renderOrders()}
           {section === 'virtual-bookings' && renderVirtualBookings()}
+          {section === 'subscriptions' && renderSubscriptions()}
           {section === 'customers' && renderCustomers()}
           {section === 'users' && renderUsers()}
           {section === 'change-password' && renderChangePw()}

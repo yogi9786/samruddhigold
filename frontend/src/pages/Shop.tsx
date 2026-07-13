@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import api, { getImageUrl, getWishlist, addToWishlist, removeFromWishlist } from '../api';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { ChevronDown, ChevronLeft, ChevronRight, ShoppingBag, Heart, SlidersHorizontal, Sparkles, Star, Truck, Tag, Eye, Search } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, ShoppingBag, Heart, SlidersHorizontal, Sparkles, Star, Truck, Eye, Search } from 'lucide-react';
 
 import imgCatRings from '../assets/gen/cat_rings_1782214860176.png';
 import imgCatEarrings from '../assets/gen/cat_earrings_1782214875918.png';
@@ -21,6 +21,7 @@ interface Product {
   original_price?: number;
   discount_text?: string;
   image_url?: string;
+  gallery_urls?: string[];
   category_id?: string;
   status?: string;
   weight?: string;
@@ -196,16 +197,16 @@ const Shop: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-[var(--color-ivory)]">
       <Header />
 
-      <main className="flex-grow w-full max-w-[1400px] mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-16">
+      <main className="flex-grow w-full max-w-[1400px] mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-20">
 
         {/* ─── Breadcrumb ─── */}
-        <nav className="flex items-center gap-2 text-xs text-gray-400 mb-6 font-medium">
+        <nav className="flex items-center gap-2 text-xs text-gray-400 mb-8 font-sans tracking-wider">
           <Link to="/" className="hover:text-[var(--color-royal)] transition-colors">Home</Link>
-          <span>/</span>
+          <span className="text-[var(--color-primary)]">›</span>
           <span className="text-[var(--color-royal)] font-semibold">{selectedCategoryName}</span>
         </nav>
 
-        {/* ─── Header: Centered All Jewellery Title ─── */}
+        {/* ─── Editorial Header ─── */}
         <div className="text-center mb-8">
           <h1 className="text-3xl sm:text-4xl font-serif text-[var(--color-royal)] tracking-wide font-light">
             {selectedCategoryName}
@@ -213,24 +214,24 @@ const Shop: React.FC = () => {
           <div className="w-12 h-0.5 bg-[var(--color-primary)] mx-auto mt-3"></div>
         </div>
 
-        {/* ─── Category Carousel (Squares with rounded-2xl) ─── */}
-        <div className="relative mb-12 flex items-center justify-center px-8 sm:px-12 group/carousel">
+        {/* ─── Category Carousel ─── */}
+        <div className="flex items-center gap-4 sm:gap-6 mb-12 w-full px-2 sm:px-4">
           <button onClick={() => scrollCarousel('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-[#FFF5F5] hover:bg-[var(--color-royal)] hover:text-white rounded-full flex items-center justify-center border border-[#5F1517]/10 text-[var(--color-royal)] shadow transition-all duration-300">
-            <ChevronLeft size={20} />
+            className="flex-shrink-0 w-10 h-10 sm:w-11 sm:h-11 bg-white hover:bg-[var(--color-royal)] hover:text-white rounded-full flex items-center justify-center border border-[var(--color-primary)]/20 text-[var(--color-royal)] shadow-md transition-all duration-300 mx-1 sm:mx-2">
+            <ChevronLeft size={18} />
           </button>
 
-          <div ref={carouselRef} className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide scroll-smooth py-2 px-1 max-w-full">
-            {/* All Category Option */}
+          <div ref={carouselRef} className="flex gap-6 sm:gap-8 overflow-x-auto scrollbar-hide scroll-smooth py-2 flex-grow px-4 sm:px-6">
+            {/* All Category */}
             <button onClick={() => setSelectedCategoryId('all')}
               className="flex-shrink-0 flex flex-col items-center group transition-all duration-300">
-              <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shadow border transition-all duration-300 flex items-center justify-center ${selectedCategoryId === 'all'
-                  ? 'border-[var(--color-royal)] ring-2 ring-[var(--color-primary)]/30 scale-105'
-                  : 'border-gray-200 group-hover:border-[var(--color-primary)]'
+              <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden transition-all duration-300 ${selectedCategoryId === 'all'
+                  ? 'ring-2 ring-[var(--color-royal)] ring-offset-2 shadow-md scale-105'
+                  : 'shadow border border-[var(--color-primary)]/15'
                 }`}>
                 <img src={imgGoldSet} alt="" className="w-full h-full object-cover" />
               </div>
-              <span className={`text-[11px] sm:text-xs font-serif mt-2 font-medium tracking-wide transition-colors ${selectedCategoryId === 'all' ? 'text-[var(--color-royal)] font-bold' : 'text-gray-600 group-hover:text-[var(--color-royal)]'}`}>
+              <span className={`text-xs sm:text-sm font-serif mt-2 tracking-wide transition-colors ${selectedCategoryId === 'all' ? 'text-[var(--color-royal)] font-bold' : 'text-gray-600 group-hover:text-[var(--color-royal)]'}`}>
                 All Jewellery
               </span>
             </button>
@@ -238,13 +239,13 @@ const Shop: React.FC = () => {
             {categories.map(cat => (
               <button key={cat.id} onClick={() => setSelectedCategoryId(cat.id)}
                 className="flex-shrink-0 flex flex-col items-center group transition-all duration-300">
-                <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shadow border transition-all duration-300 ${selectedCategoryId === cat.id
-                    ? 'border-[var(--color-royal)] ring-2 ring-[var(--color-primary)]/30 scale-105'
-                    : 'border-gray-200 group-hover:border-[var(--color-primary)]'
+                <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden transition-all duration-300 ${selectedCategoryId === cat.id
+                    ? 'ring-2 ring-[var(--color-royal)] ring-offset-2 shadow-md scale-105'
+                    : 'shadow border border-[var(--color-primary)]/15'
                   }`}>
                   <img src={cat.image_url ? getImageUrl(cat.image_url) : getCategoryFallbackImage(cat.name)} alt="" className="w-full h-full object-cover" />
                 </div>
-                <span className={`text-[11px] sm:text-xs font-serif mt-2 font-medium tracking-wide transition-colors whitespace-nowrap ${selectedCategoryId === cat.id ? 'text-[var(--color-royal)] font-bold' : 'text-gray-600 group-hover:text-[var(--color-royal)]'}`}>
+                <span className={`text-xs sm:text-sm font-serif mt-2 tracking-wide transition-colors whitespace-nowrap ${selectedCategoryId === cat.id ? 'text-[var(--color-royal)] font-bold' : 'text-gray-600 group-hover:text-[var(--color-royal)]'}`}>
                   {cat.name}
                 </span>
               </button>
@@ -252,19 +253,18 @@ const Shop: React.FC = () => {
           </div>
 
           <button onClick={() => scrollCarousel('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-[#FFF5F5] hover:bg-[var(--color-royal)] hover:text-white rounded-full flex items-center justify-center border border-[#5F1517]/10 text-[var(--color-royal)] shadow transition-all duration-300">
-            <ChevronRight size={20} />
+            className="flex-shrink-0 w-10 h-10 sm:w-11 sm:h-11 bg-white hover:bg-[var(--color-royal)] hover:text-white rounded-full flex items-center justify-center border border-[var(--color-primary)]/20 text-[var(--color-royal)] shadow-md transition-all duration-300 mx-1 sm:mx-2">
+            <ChevronRight size={18} />
           </button>
         </div>
 
-        {/* ─── Toolbar: Filters Button + Item Count + Sort Dropdown ─── */}
-        <div className="flex flex-row items-center justify-between gap-3 mb-6 pb-4 border-b border-gray-200/60">
-          <div className="flex items-center">
-            {/* Filters Button */}
+        {/* ─── Toolbar ─── */}
+        <div className="flex flex-row items-center justify-between gap-3 mb-6 pb-5 border-b border-[var(--color-primary)]/15">
+          <div className="flex items-center gap-3">
             <button onClick={() => setIsFiltersOpen(!isFiltersOpen)}
-              className={`flex items-center gap-2 border font-semibold text-xs sm:text-sm tracking-wider px-5 py-2.5 rounded-lg transition-all duration-300 ${isFiltersOpen
-                  ? 'bg-[var(--color-royal)] text-white border-[var(--color-royal)]'
-                  : 'bg-[#FFF5F5] hover:bg-[#FFE0E0] border border-[#5F1517]/15 text-[#5F1517]'
+              className={`flex items-center gap-2 font-sans font-semibold text-xs sm:text-sm tracking-widest uppercase px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl transition-all duration-300 border ${isFiltersOpen
+                  ? 'bg-[var(--color-royal)] text-white border-[var(--color-royal)] shadow-md'
+                  : 'bg-white hover:bg-[#FFF5F5] border-[var(--color-primary)]/20 text-[var(--color-royal)]'
                 }`}>
               <SlidersHorizontal size={14} />
               <span>Filters</span>
@@ -275,114 +275,112 @@ const Shop: React.FC = () => {
               )}
             </button>
 
-            {/* Items Count */}
-            <span className="text-gray-500 font-semibold text-[11px] sm:text-xs uppercase tracking-[0.15em] ml-4">
-              {filteredAndSortedProducts.length} ITEMS
-            </span>
+            {activeFiltersCount > 0 && (
+              <button onClick={clearAllFilters}
+                className="font-sans font-bold text-xs sm:text-sm tracking-widest uppercase px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl border border-[var(--color-royal)]/25 text-[var(--color-royal)] bg-white hover:bg-[var(--color-royal)]/[0.04] transition-all duration-300 flex items-center gap-1">
+                Clear
+              </button>
+            )}
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Sort Selector */}
-            <div className="relative">
-              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
-                className="appearance-none bg-[#FFF5F5] hover:bg-[#FFE0E0] border border-[#5F1517]/15 rounded-lg py-2.5 pl-4 pr-10 text-xs sm:text-sm font-semibold text-[#5F1517] focus:outline-none cursor-pointer transition-all">
-                <option value="newest">Sort: New Drop</option>
-                <option value="price-low">Price: Low → High</option>
-                <option value="price-high">Price: High → Low</option>
-              </select>
-              <span className="absolute right-8 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
-              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5F1517] pointer-events-none" />
-            </div>
+          <div className="relative">
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
+              className="appearance-none bg-white border border-[var(--color-primary)]/20 rounded-xl py-2.5 sm:py-3 pl-4 sm:pl-5 pr-10 font-sans text-xs sm:text-sm font-semibold text-[var(--color-royal)] focus:outline-none cursor-pointer transition-all hover:border-[var(--color-primary)]/50 shadow-sm">
+              <option value="newest">Newest First</option>
+              <option value="price-low">Price: Low → High</option>
+              <option value="price-high">Price: High → Low</option>
+            </select>
+            <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-royal)] pointer-events-none" />
           </div>
         </div>
 
-        {/* ─── Collapsible Filters Panel (Sits above products, fully responsive) ─── */}
-        <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isFiltersOpen ? 'max-h-[500px] opacity-100 mb-8' : 'max-h-0 opacity-0 mb-0'
-          }`}>
-          <div className="bg-white border border-[#D4AF37]/20 rounded-2xl p-6 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Search */}
+        {/* ─── Collapsible Filters Panel ─── */}
+        <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isFiltersOpen ? 'max-h-[500px] opacity-100 mb-8' : 'max-h-0 opacity-0 mb-0'}`}>
+          <div className="bg-white border border-[var(--color-primary)]/15 rounded-2xl p-6 sm:p-8 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label className="block text-xs font-bold text-[var(--color-royal)] uppercase tracking-wider mb-2">Search Collection</label>
+              <label className="block font-serif font-bold text-sm text-[var(--color-royal)] mb-3">Search Collection</label>
               <div className="relative">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input type="text" placeholder="Search by name, SKU..." value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-xs bg-white focus:outline-none focus:border-[var(--color-primary)]" />
+                  className="w-full pl-9 pr-3 py-3 border border-gray-200 rounded-xl text-sm font-sans bg-white focus:outline-none focus:border-[var(--color-primary)] transition-colors" />
               </div>
             </div>
-
-            {/* Price Filter */}
             <div>
-              <label className="block text-xs font-bold text-[var(--color-royal)] uppercase tracking-wider mb-2">Price Range</label>
+              <label className="block font-serif font-bold text-sm text-[var(--color-royal)] mb-3">Price Range</label>
               <div className="flex items-center gap-2">
                 <input type="number" placeholder="₹ Min" value={minPrice}
                   onChange={e => setMinPrice(e.target.value ? Number(e.target.value) : '')}
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-xs bg-white focus:outline-none focus:border-[var(--color-primary)]" />
-                <span className="text-gray-300">—</span>
+                  className="w-full px-3 py-3 border border-gray-200 rounded-xl text-sm font-sans bg-white focus:outline-none focus:border-[var(--color-primary)] transition-colors" />
+                <span className="text-gray-300 font-light">—</span>
                 <input type="number" placeholder="₹ Max" value={maxPrice}
                   onChange={e => setMaxPrice(e.target.value ? Number(e.target.value) : '')}
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-xs bg-white focus:outline-none focus:border-[var(--color-primary)]" />
+                  className="w-full px-3 py-3 border border-gray-200 rounded-xl text-sm font-sans bg-white focus:outline-none focus:border-[var(--color-primary)] transition-colors" />
               </div>
             </div>
-
-            {/* Clear Button */}
             <div className="flex items-end">
               <button onClick={clearAllFilters}
-                className="w-full py-2.5 border border-[#5F1517]/30 hover:border-[var(--color-royal)] text-[#5F1517] font-bold text-xs uppercase tracking-wider rounded-xl hover:bg-[#FFF5F5] transition-all">
-                Clear Filters
+                className="w-full py-3 border border-[var(--color-primary)]/30 hover:border-[var(--color-royal)] text-[var(--color-royal)] font-serif font-bold text-sm uppercase tracking-wider rounded-xl hover:bg-[#FFF8F8] transition-all">
+                Clear All Filters
               </button>
             </div>
           </div>
         </div>
 
-        {/* ─── Active Tag Filter Pills (Premium Blue, Pink, Gold Pills) ─── */}
-        <div className="flex flex-wrap items-center justify-start sm:justify-end gap-3 mb-8">
+        {/* ─── Tag Filter Pills ─── */}
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-10">
+          <span className="font-sans text-[10px] sm:text-xs tracking-widest uppercase text-gray-400 font-semibold mr-1">Filter by:</span>
+
           <button onClick={() => setActiveTagFilter(activeTagFilter === 'new_drop' ? null : 'new_drop')}
-            className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all ${activeTagFilter === 'new_drop'
-                ? 'bg-[#3B72F1] text-white shadow-md'
-                : 'bg-[#DCE7FC] text-[#3B72F1] hover:bg-[#DCE7FC]/80 border border-[#3B72F1]/10'
-              }`}>
-            <Sparkles size={12} />
+            className={`rounded-xl px-5 py-2.5 font-sans font-bold text-[10px] sm:text-xs tracking-widest uppercase flex items-center gap-2 transition-all duration-300 border ${
+              activeTagFilter === 'new_drop'
+                ? 'bg-[#2E5A44] text-[#F9F6F0] border-[#2E5A44] shadow-md scale-[1.02]'
+                : 'bg-white text-[#2E5A44] border-[#2E5A44]/20 hover:border-[#2E5A44]/50 shadow-sm'
+            }`}>
+            <Sparkles size={13} strokeWidth={2} />
             New Drop
           </button>
 
           <button onClick={() => setActiveTagFilter(activeTagFilter === 'bestseller' ? null : 'bestseller')}
-            className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all ${activeTagFilter === 'bestseller'
-                ? 'bg-[#E03A3E] text-white shadow-md'
-                : 'bg-[#FFEBEB] text-[#E03A3E] hover:bg-[#FFEBEB]/80 border border-[#E03A3E]/10'
-              }`}>
-            <Star size={12} fill="currentColor" />
+            className={`rounded-xl px-5 py-2.5 font-sans font-bold text-[10px] sm:text-xs tracking-widest uppercase flex items-center gap-2 transition-all duration-300 border ${
+              activeTagFilter === 'bestseller'
+                ? 'bg-[var(--color-royal)] text-[var(--color-primary)] border-[var(--color-royal)] shadow-md scale-[1.02]'
+                : 'bg-white text-[var(--color-royal)] border-[var(--color-primary)]/25 hover:border-[var(--color-primary)]/50 shadow-sm'
+            }`}>
+            <Star size={13} strokeWidth={2} fill={activeTagFilter === 'bestseller' ? 'currentColor' : 'none'} />
             Bestseller
           </button>
 
           <button onClick={() => setActiveTagFilter(activeTagFilter === 'quick_delivery' ? null : 'quick_delivery')}
-            className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all ${activeTagFilter === 'quick_delivery'
-                ? 'bg-[#D19B00] text-white shadow-md'
-                : 'bg-[#FFF5D6] text-[#D19B00] hover:bg-[#FFF5D6]/80 border border-[#D19B00]/10'
-              }`}>
-            <Truck size={12} />
+            className={`rounded-xl px-5 py-2.5 font-sans font-bold text-[10px] sm:text-xs tracking-widest uppercase flex items-center gap-2 transition-all duration-300 border ${
+              activeTagFilter === 'quick_delivery'
+                ? 'bg-[#8B6914] text-white border-[#8B6914] shadow-md scale-[1.02]'
+                : 'bg-white text-[#8B6914] border-[#A37027]/20 hover:border-[#A37027]/50 shadow-sm'
+            }`}>
+            <Truck size={13} strokeWidth={2} />
             Quick Delivery
           </button>
         </div>
 
-        {/* ─── Product Grid (1:1 aspect-square cards spanning full width) ─── */}
+        {/* ─── Product Grid ─── */}
         <div className="w-full">
           {loading ? (
-            <div className="flex flex-col justify-center items-center h-80">
-              <div className="w-12 h-12 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mb-4"></div>
-              <p className="text-sm text-gray-400 uppercase tracking-widest font-medium">Loading collection…</p>
+            <div className="flex flex-col justify-center items-center h-96">
+              <div className="w-12 h-12 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mb-5" />
+              <p className="font-serif text-base text-[var(--color-royal)]/50 tracking-widest">Loading Collection…</p>
             </div>
           ) : filteredAndSortedProducts.length === 0 ? (
-            <div className="text-center py-24 bg-white rounded-2xl border border-gray-100 shadow-sm">
-              <div className="text-6xl mb-6 opacity-40">💍</div>
-              <p className="text-xl font-serif text-[var(--color-royal)]/60 mb-3">No pieces match your selection</p>
+            <div className="text-center py-28 bg-white rounded-3xl border border-[var(--color-primary)]/10 shadow-sm">
+              <div className="text-6xl mb-6 opacity-30">💍</div>
+              <p className="font-serif text-2xl text-[var(--color-royal)]/50 mb-2 font-light">No pieces found</p>
+              <p className="font-sans text-sm text-gray-400 mb-8">Try adjusting your filters or browse all collections</p>
               <button onClick={clearAllFilters}
-                className="px-6 py-3 bg-[var(--color-royal)] text-white text-sm font-semibold uppercase tracking-wider rounded-xl hover:bg-[var(--color-royal)]/90 transition-colors shadow-md">
-                View All Products
+                className="px-8 py-3.5 bg-[var(--color-royal)] text-white font-serif font-bold text-sm uppercase tracking-wider rounded-xl hover:bg-[var(--color-royal)]/90 transition-colors shadow-md">
+                View All Jewellery
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-7">
               {filteredAndSortedProducts.map((product) => {
                 const discountVal = product.original_price && product.original_price > product.price
                   ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
@@ -390,77 +388,77 @@ const Shop: React.FC = () => {
 
                 return (
                   <Link to={`/shop/${product.id}`} key={product.id}
-                    className="group flex flex-col bg-white rounded-3xl overflow-hidden border border-gray-100 hover:border-[var(--color-primary)]/40 shadow-sm hover:shadow-xl transition-all duration-500 relative">
+                    className="group flex flex-col bg-white rounded-3xl overflow-hidden border border-[var(--color-primary)]/10 hover:border-[var(--color-primary)]/40 shadow-sm hover:shadow-2xl transition-all duration-500 relative">
 
-                    {/* Image Container (1:1 aspect-square) */}
-                    <div className="relative aspect-square overflow-hidden bg-gray-50">
+                    {/* Gold top accent bar — hidden until hover */}
+                    <div className="h-[2px] w-full bg-[var(--color-primary)] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                    {/* Image */}
+                    <div className="relative aspect-square overflow-hidden bg-[#F9F5EF]">
                       {product.image_url ? (
-                        <img src={getImageUrl(product.image_url)} alt={product.name}
-                          className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out" loading="lazy" />
+                        <div className="w-full h-full relative">
+                          {/* Primary Image */}
+                          <img src={getImageUrl(product.image_url)} alt={product.name}
+                            className={`w-full h-full object-cover transition-all duration-700 ease-out ${
+                              product.gallery_urls && product.gallery_urls.length > 1
+                                ? 'group-hover:opacity-0 group-hover:scale-105'
+                                : 'group-hover:scale-110'
+                            }`} loading="lazy" />
+                          {/* Hover Alternate Image */}
+                          {product.gallery_urls && product.gallery_urls.length > 1 && (
+                            <img src={getImageUrl(product.gallery_urls[1])} alt={`${product.name} hover`}
+                              className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-all duration-700 ease-out scale-105 group-hover:scale-110" loading="lazy" />
+                          )}
+                        </div>
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-300">
                           <ShoppingBag size={40} />
                         </div>
                       )}
 
-                      {/* Sparkle rating button on top-left */}
-                      <div className="absolute top-3 left-3 flex gap-2">
-                        <button className="w-8 h-8 rounded-full bg-white/90 backdrop-blur text-yellow-500 hover:text-yellow-600 transition-all shadow-md flex items-center justify-center">
-                          <Star size={14} fill="currentColor" />
-                        </button>
-                        {discountVal && (
-                          <button className="w-8 h-8 rounded-full bg-white/90 backdrop-blur text-red-500 hover:text-red-600 transition-all shadow-md flex items-center justify-center">
-                            <Tag size={14} />
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Wishlist button on top-right */}
+                      {/* Wishlist */}
                       <div role="button" onClick={(e) => toggleWishlist(e, product.id)}
-                        className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-md z-20 cursor-pointer ${wishlist.has(product.id)
+                        className={`absolute top-3 right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-md z-20 cursor-pointer ${wishlist.has(product.id)
                             ? 'bg-red-500 text-white scale-110'
                             : 'bg-white/90 backdrop-blur text-gray-400 hover:text-red-500 hover:scale-105'
                           }`}>
-                        <Heart size={14} fill={wishlist.has(product.id) ? 'currentColor' : 'none'} />
+                        <Heart size={13} fill={wishlist.has(product.id) ? 'currentColor' : 'none'} />
                       </div>
 
-                      {/* Eye Icon Hover effect */}
-                      <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
-                        <div className="bg-white/90 backdrop-blur p-3 rounded-full shadow-lg transform scale-75 group-hover:scale-100 transition-all duration-300 text-[var(--color-royal)]">
-                          <Eye size={20} />
+                      {/* Hover overlay */}
+                      <div className="absolute inset-0 bg-[var(--color-royal)]/5 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
+                        <div className="bg-white/95 backdrop-blur px-4 py-2.5 rounded-full shadow-lg transform scale-90 group-hover:scale-100 transition-all duration-300 text-[var(--color-royal)] flex items-center gap-2">
+                          <Eye size={14} />
+                          <span className="font-serif text-xs font-bold tracking-wide">Quick View</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Content Section */}
-                    <div className="p-4 sm:p-5 flex flex-col justify-start text-left bg-white">
-                      {/* Price Section */}
-                      <div className="flex items-center gap-2">
-                        <span className="text-base sm:text-lg font-bold text-gray-800">
+                    {/* Content */}
+                    <div className="px-4 sm:px-5 pt-4 pb-5 flex flex-col justify-start text-left bg-white flex-1">
+                      {/* Price & Original Price side-by-side */}
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-sans font-extrabold text-base sm:text-lg text-slate-800 tracking-tight">
                           ₹{product.price.toLocaleString('en-IN')}
                         </span>
                         {product.original_price && product.original_price > product.price && (
-                          <span className="text-xs sm:text-sm text-gray-400 line-through">
+                          <span className="font-sans text-xs sm:text-sm text-slate-400/80 line-through font-medium">
                             ₹{product.original_price.toLocaleString('en-IN')}
                           </span>
                         )}
                       </div>
 
-                      {/* Discount Text */}
-                      {discountVal ? (
-                        <span className="text-xs text-red-500 font-bold mt-1">
+                      {/* Red Discount tag below prices */}
+                      {discountVal && (
+                        <p className="text-[11px] font-bold text-red-500 mt-0.5">
                           {discountVal}% Off
-                        </span>
-                      ) : (
-                        <span className="text-xs text-gray-400 font-medium mt-1">
-                          {product.basic_info?.metal_purity || '22K Gold'}
-                        </span>
+                        </p>
                       )}
 
-                      {/* Subtle, elegant title label */}
-                      <span className="text-[10px] text-gray-400 uppercase tracking-widest mt-2 block truncate font-medium">
+                      {/* Product Name — uppercase, tracked, muted */}
+                      <p className="font-sans text-[10px] sm:text-[11px] text-gray-400 uppercase tracking-widest mt-2 block truncate font-medium group-hover:text-[var(--color-royal)] transition-colors duration-300">
                         {product.name}
-                      </span>
+                      </p>
                     </div>
                   </Link>
                 );

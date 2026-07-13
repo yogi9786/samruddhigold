@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import AdminPanel from './pages/AdminPanel';
 import Shop from './pages/Shop';
@@ -13,6 +14,7 @@ import VirtualShopping from './pages/VirtualShopping';
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/siriadmin" element={<AdminPanel />} />

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Truck, Store, Search, User, Heart, ShoppingBag, Menu, X, ChevronDown, Calendar, MapPin } from 'lucide-react';
+import { Truck, Store, Search, User, Heart, ShoppingBag, Menu, X, ChevronDown, Calendar, MapPin, Bell } from 'lucide-react';
 import logo from '../assets/samruddhi-logo.png';
 import LoginModal from './LoginModal';
+import SubscribeModal from './SubscribeModal';
 
 import { Link } from 'react-router-dom';
 import api, { getCart, getWishlist } from '../api';
@@ -9,6 +10,7 @@ import api, { getCart, getWishlist } from '../api';
 const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isSubscribeOpen, setIsSubscribeOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [metalPrices, setMetalPrices] = useState<any[]>([]);
   const [showMetalPrices, setShowMetalPrices] = useState(false);
@@ -49,11 +51,16 @@ const Header: React.FC = () => {
         fetchCounts();
       }
     };
+    const handleOpenSubscribe = () => {
+      setIsSubscribeOpen(true);
+    };
     window.addEventListener('cartUpdated', handleCartUpdate);
     window.addEventListener('wishlistUpdated', handleCartUpdate);
+    window.addEventListener('openSubscribeModal', handleOpenSubscribe);
     return () => {
       window.removeEventListener('cartUpdated', handleCartUpdate);
       window.removeEventListener('wishlistUpdated', handleCartUpdate);
+      window.removeEventListener('openSubscribeModal', handleOpenSubscribe);
     };
   }, []);
 
@@ -203,6 +210,15 @@ const Header: React.FC = () => {
 
             {/* Right Icons */}
             <div className="hidden lg:flex items-center gap-5 text-[#801416] font-medium text-[13px] lg:text-[12px]">
+               {/* Subscription Bell */}
+               <button 
+                 onClick={() => setIsSubscribeOpen(true)}
+                 className="relative cursor-pointer hover:opacity-80 text-[#801416] bg-transparent border-0 p-0 outline-none transition-all duration-300"
+                 aria-label="Subscribe to notifications"
+               >
+                 <Bell size={22} strokeWidth={1.5} />
+                 <span className="absolute -top-0.5 -right-0.5 bg-[#FFCB08] w-2 h-2 rounded-full animate-pulse"></span>
+               </button>
                {/* Login */}
                {user ? (
                  <div className="flex items-center gap-2 cursor-pointer hover:opacity-80" onClick={handleLogout}>
@@ -231,6 +247,14 @@ const Header: React.FC = () => {
 
             {/* Mobile Actions */}
             <div className="lg:hidden flex items-center gap-3.5 text-[#801416]">
+              <button 
+                onClick={() => setIsSubscribeOpen(true)}
+                className="hover:opacity-80 transition relative"
+                aria-label="Subscribe to notifications"
+              >
+                <Bell size={22} strokeWidth={1.5} />
+                <span className="absolute -top-0.5 -right-0.5 bg-[#FFCB08] w-1.5 h-1.5 rounded-full animate-pulse"></span>
+              </button>
               <button className="hover:opacity-80 transition">
                 <Search size={22} strokeWidth={1.5} />
               </button>
@@ -273,15 +297,13 @@ const Header: React.FC = () => {
             <li className="whitespace-nowrap"><a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I'd%20like%20to%20know%20more%20about%20your%20current%20offers." target="_blank" rel="noopener noreferrer" className="text-[#801416] no-underline hover:opacity-80 transition">Offers</a></li>
             <li className="whitespace-nowrap"><a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20please%20share%20today's%20gold%20rate." target="_blank" rel="noopener noreferrer" className="text-[#801416] no-underline hover:opacity-80 transition">Today's Gold Rate</a></li>
             <li className="ml-2">
-              <a 
-                href={`https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I%20would%20like%20a%20Live%20Video%20Call%20to%20see%20your%20jewellery.`}
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link 
+                to="/virtual-shopping"
                 className="inline-flex items-center gap-2 bg-[#25D366] text-white px-4 py-1.5 rounded-full text-[12px] font-bold tracking-wide shadow-sm hover:opacity-90 transition no-underline"
               >
                 <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span></span>
                 Live Video Call
-              </a>
+              </Link>
             </li>
           </ul>
         </nav>
@@ -345,6 +367,11 @@ const Header: React.FC = () => {
         isOpen={isLoginModalOpen} 
         onClose={() => setIsLoginModalOpen(false)} 
         onLoginSuccess={() => fetchUserProfile()}
+      />
+
+      <SubscribeModal 
+        isOpen={isSubscribeOpen}
+        onClose={() => setIsSubscribeOpen(false)}
       />
     </>
   );

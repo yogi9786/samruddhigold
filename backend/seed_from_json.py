@@ -30,12 +30,15 @@ async def seed_data():
         # Seed Categories
         categories = data.get("categories", [])
         for cat in categories:
-            # Check if exists
             existing = await session.get(models.Category, cat["id"])
             if not existing:
                 print(f"Adding category: {cat['name']}")
                 new_cat = models.Category(**cat)
                 session.add(new_cat)
+            else:
+                print(f"Updating category: {cat['name']}")
+                for k, v in cat.items():
+                    setattr(existing, k, v)
         
         # Seed Products
         products = data.get("products", [])
@@ -45,6 +48,10 @@ async def seed_data():
                 print(f"Adding product: {prod['name']}")
                 new_prod = models.Product(**prod)
                 session.add(new_prod)
+            else:
+                print(f"Updating product: {prod['name']}")
+                for k, v in prod.items():
+                    setattr(existing, k, v)
                 
         await session.commit()
         print("Database seeding complete!")

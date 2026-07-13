@@ -1,16 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MapPin, Phone, Mail } from 'lucide-react';
 import { FaFacebook, FaYoutube, FaInstagram, FaWhatsapp } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import logo from '../assets/samruddhi-logo.png';
 
 const Footer: React.FC = () => {
+  const [email, setEmail] = useState('');
+
+  const handleNewsletterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    localStorage.setItem('prefilled_email', email);
+    window.dispatchEvent(new Event('openSubscribeModal'));
+    setEmail('');
+  };
+
   return (
     <footer className="bg-[#5F1517] text-[#FFF7F2] font-sans pt-16 pb-8 border-t-4 border-[#A56B25]">
       <div className="max-w-[1400px] mx-auto px-4 lg:px-10 xl:px-14">
         
         {/* Top Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
           
           {/* Brand Info */}
           <div className="flex flex-col gap-4">
@@ -98,6 +108,30 @@ const Footer: React.FC = () => {
                 <a href="mailto:sirisamruddhigoldpalace@gmail.com" className="hover:text-white transition-colors">sirisamruddhigoldpalace@gmail.com</a>
               </li>
             </ul>
+          </div>
+
+          {/* Stay Tuned */}
+          <div className="flex flex-col gap-4 text-left">
+            <h3 className="text-xl font-serif font-medium mb-6 text-[#A56B25]">Stay Tuned</h3>
+            <p className="text-[#FFF7F2]/80 text-sm leading-relaxed mb-2">
+              Subscribe to get daily rates, exclusive drops, and special gold coin offers.
+            </p>
+            <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-2.5">
+              <input 
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                className="w-full px-4 py-3 bg-white/10 border border-[#FFF7F2]/20 rounded-xl text-sm focus:outline-none focus:border-[#A56B25] text-white placeholder-white/40 font-medium"
+              />
+              <button 
+                type="submit" 
+                className="w-full py-3 bg-[#A56B25] hover:bg-[#8d6718] hover:text-white text-[#5F1517] font-bold rounded-xl uppercase tracking-wider text-xs shadow-md transition-all duration-300 border border-[#D4AF37]/20"
+              >
+                Subscribe
+              </button>
+            </form>
           </div>
 
         </div>
