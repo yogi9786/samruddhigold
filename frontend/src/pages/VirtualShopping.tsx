@@ -7,7 +7,7 @@ import BottomNav from '../components/BottomNav';
 import FloatingWhatsApp from '../components/FloatingWhatsApp';
 import api from '../api';
 import loaderVideo from '../assets/loader landscape.mp4';
-import { Video, Calendar, Clock, MapPin, Globe, Sparkles, Home, Users, CheckCircle2 } from 'lucide-react';
+import { Globe, Sparkles, Home, Users, CheckCircle2 } from 'lucide-react';
 
 const VirtualShopping: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
