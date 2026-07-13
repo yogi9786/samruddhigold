@@ -179,9 +179,9 @@ const Header: React.FC = () => {
               <div className="flex items-center gap-2 cursor-pointer hover:opacity-80">
                 <Truck size={18} strokeWidth={1.5} className="text-[#A56B25]" /> QUICK DELIVERY
               </div>
-              <div className="flex items-center gap-2 cursor-pointer hover:opacity-80">
-                <Store size={18} strokeWidth={1.5} /> VIRTUAL SHOPPING <ChevronDown size={14}/>
-              </div>
+              <Link to="/virtual-shopping" className="flex items-center gap-2 cursor-pointer hover:opacity-80 no-underline text-[#801416]">
+                <Store size={18} strokeWidth={1.5} /> VIRTUAL SHOPPING
+              </Link>
             </div>
 
             {/* Search Bar */}
@@ -297,6 +297,9 @@ const Header: React.FC = () => {
               </li>
               <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
                 <Link to="/new-arrivals" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-bold text-sm no-underline">New Arrivals</Link>
+              </li>
+              <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
+                <Link to="/virtual-shopping" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-bold text-sm no-underline">Virtual Shopping</Link>
               </li>
               <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
                 <a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I%20have%20an%20enquiry%20about%20Express%20Delivery%20options." target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Express Delivery</a>

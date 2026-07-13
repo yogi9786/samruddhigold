@@ -100,3 +100,19 @@ class WishlistItem(Base):
     user_id = Column(String, nullable=False, index=True)
     product_id = Column(String, nullable=False, index=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+class VirtualShoppingBooking(Base):
+    __tablename__ = "virtual_shopping_bookings"
+    id = Column(String, primary_key=True, default=generate_uuid)
+    name = Column(String, nullable=False)
+    email = Column(String, nullable=False)
+    phone = Column(String, nullable=False)
+    city_or_country = Column(String, nullable=False)
+    category = Column(String, nullable=False)
+    language = Column(String, nullable=False)
+    requirement_details = Column(Text, nullable=True)
+    booking_date = Column(String, nullable=False)
+    booking_time = Column(String, nullable=False)
+    status = Column(String, default="Pending")
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+

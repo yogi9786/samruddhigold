@@ -1,21 +1,23 @@
 import { Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const WHATSAPP = "919035085397";
+
 
 // Mobile shows first 4 (grid-cols-4), desktop shows all 9 (grid-cols-9 condensed into 3 rows of 3? No - we want scroll)
 // Mobile: 4 cols visible in a horizontal scroll, Desktop: 9 items in 3×3-ish
 import catMangalsutra from '../assets/gen/cat_mangalsutra_1782214906170.png';
 
 const categories = [
-  { label: "Ring",         img: "/images/gallery/gold_rings_coral.png",         wa: "Rings" },
-  { label: "Necklace",     img: "/images/gallery/chunky_gold_chain.png",        wa: "Necklaces" },
-  { label: "Bracelet",     img: "/images/gallery/gold_bracelet_hand.png",       wa: "Bracelets" },
-  { label: "Earring",      img: "/images/slider/south_indian_jewelry_3.png",    wa: "Earrings" },
-  { label: "Bangle",       img: "/images/gallery/indian_gold_bangle.png",       wa: "Bangles" },
-  { label: "Pendant",      img: "/images/slider/south_indian_jewelry_2.png",    wa: "Pendants" },
-  { label: "Mangalsutra",  img: catMangalsutra,                                 wa: "Mangalsutra" },
-  { label: "Kada",         img: "/images/gallery/indian_gold_bangle.png",       wa: "Kadas" },
-  { label: "Chain",        img: "/images/gallery/chunky_gold_chain.png",        wa: "Chains" },
+  { label: "Ring",         img: "/images/gallery/gold_rings_coral.png",         wa: "Rings",        vs: "Rings" },
+  { label: "Necklace",     img: "/images/gallery/chunky_gold_chain.png",        wa: "Necklaces",    vs: "Necklaces" },
+  { label: "Bracelet",     img: "/images/gallery/gold_bracelet_hand.png",       wa: "Bracelets",    vs: "Others" },
+  { label: "Earring",      img: "/images/slider/south_indian_jewelry_3.png",    wa: "Earrings",     vs: "Earrings" },
+  { label: "Bangle",       img: "/images/gallery/indian_gold_bangle.png",       wa: "Bangles",      vs: "Bangles" },
+  { label: "Pendant",      img: "/images/slider/south_indian_jewelry_2.png",    wa: "Pendants",     vs: "Pendants" },
+  { label: "Mangalsutra",  img: catMangalsutra,                                 wa: "Mangalsutra",  vs: "Necklaces" },
+  { label: "Kada",         img: "/images/gallery/indian_gold_bangle.png",       wa: "Kadas",        vs: "Bangles" },
+  { label: "Chain",        img: "/images/gallery/chunky_gold_chain.png",        wa: "Chains",       vs: "Necklaces" },
 ];
 
 // WhatsApp SVG icon
@@ -42,19 +44,19 @@ const CollectionShowcase = () => {
         </div>
 
         {/* Live Video Chat CTA */}
-        <a
-          href={`https://wa.me/${WHATSAPP}?text=Hi%20Samruddhi%20Gold%20Palace,%20I%20would%20like%20to%20join%20a%20Live%20Video%20Showcase.`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-shrink-0 inline-flex items-center gap-2 bg-[#25D366] text-white font-sans font-bold text-[11px] md:text-[12px] tracking-[1.5px] uppercase px-4 py-2.5 rounded-full no-underline hover:bg-[#1ebd5a] transition-all duration-300 shadow-lg self-start md:self-auto"
+        <Link
+          to="/virtual-shopping"
+          className="flex-shrink-0 inline-flex items-center gap-2 bg-[#5F1517] text-[#D4AF37] font-sans font-bold text-[11px] md:text-[12px] tracking-[1.5px] uppercase px-4 py-2.5 rounded-full no-underline hover:bg-[#801416] transition-all duration-300 shadow-lg self-start md:self-auto border border-[#D4AF37]/30"
         >
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D4AF37] opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#D4AF37]"></span>
           </span>
-          <WhatsAppIcon />
-          Live Video Showcase
-        </a>
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.069A1 1 0 0121 8.882v6.236a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          Book Live Video Session
+        </Link>
       </div>
 
       {/* Category Grid
@@ -66,11 +68,9 @@ const CollectionShowcase = () => {
       <div className="lg:hidden overflow-x-auto pb-2 -mx-1">
         <div className="flex gap-3 px-1 w-max">
           {categories.map((cat, i) => (
-            <a
+            <Link
               key={i}
-              href={`https://wa.me/${WHATSAPP}?text=Hi%20Samruddhi%20Gold%20Palace,%20I%20am%20interested%20in%20${encodeURIComponent(cat.wa)}.`}
-              target="_blank"
-              rel="noopener noreferrer"
+              to={`/virtual-shopping?category=${encodeURIComponent(cat.vs)}`}
               className="flex flex-col items-center group cursor-pointer no-underline flex-shrink-0 w-[72px]"
             >
               <div className="w-[72px] h-[96px] rounded-[2rem] bg-[#1A110E] overflow-hidden shadow-md group-hover:-translate-y-1.5 transition-transform duration-300 border border-[#D4AF37]/20 p-[3px]">
@@ -84,7 +84,7 @@ const CollectionShowcase = () => {
               <div className="bg-[#D4AF37] text-[#110A08] w-4 h-4 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Plus size={10} strokeWidth={3} />
               </div>
-            </a>
+            </Link>
           ))}
         </div>
       </div>
@@ -92,11 +92,9 @@ const CollectionShowcase = () => {
       {/* Desktop: 9 columns grid */}
       <div className="hidden lg:grid grid-cols-9 gap-4">
         {categories.map((cat, i) => (
-          <a
+          <Link
             key={i}
-            href={`https://wa.me/${WHATSAPP}?text=Hi%20Samruddhi%20Gold%20Palace,%20I%20am%20interested%20in%20${encodeURIComponent(cat.wa)}.`}
-            target="_blank"
-            rel="noopener noreferrer"
+            to={`/virtual-shopping?category=${encodeURIComponent(cat.vs)}`}
             className="flex flex-col items-center group cursor-pointer no-underline"
           >
             <div className="w-full aspect-[3/4] rounded-[2.5rem] bg-[#1A110E] overflow-hidden shadow-lg group-hover:-translate-y-2 transition-transform duration-300 border border-[#D4AF37]/20 p-[4px]">
@@ -110,7 +108,7 @@ const CollectionShowcase = () => {
             <div className="bg-[#D4AF37] text-[#110A08] w-5 h-5 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
               <Plus size={11} strokeWidth={3} />
             </div>
-          </a>
+          </Link>
         ))}
       </div>
 

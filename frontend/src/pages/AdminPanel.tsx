@@ -19,7 +19,7 @@ interface Product {
   description?: string; quantity?: number;
 }
 
-type Section = 'dashboard' | 'all-products' | 'add-product' | 'all-categories' | 'add-category' | 'orders' | 'customers' | 'users' | 'change-password' | 'settings' | 'metal-prices';
+type Section = 'dashboard' | 'all-products' | 'add-product' | 'all-categories' | 'add-category' | 'orders' | 'customers' | 'users' | 'change-password' | 'settings' | 'metal-prices' | 'virtual-bookings';
 
 const emptyProduct = {
   name: '', sku: '', price: 0, original_price: 0, discount_text: '',
@@ -210,6 +210,24 @@ const AdminPanel: React.FC = () => {
   const [stats, setStats] = useState({ products: 0, categories: 0, orders: 0, revenue: 0, onSale: 0, pending: 0, customers: 0 });
 
   const [metalPrices, setMetalPrices] = useState<any[]>([]);
+  const [virtualBookings, setVirtualBookings] = useState<any[]>([]);
+  const [loadingBookings, setLoadingBookings] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [vSearch, setVSearch] = useState('');
+  const [vStatusFilter, setVStatusFilter] = useState('');
+
+  const fetchVirtualBookings = useCallback(async () => {
+    setLoadingBookings(true);
+    try {
+      const r = await adminApi.get('/virtual-shopping');
+      setVirtualBookings(r.data);
+    } catch {
+      showToast('Failed to load video shopping bookings', 'error');
+    } finally {
+      setLoadingBookings(false);
+    }
+  }, []);
 
   // ─── Fetch ──────────────────────────────────────────────────────────────────
   const fetchProducts = useCallback(async () => {
@@ -267,7 +285,8 @@ const AdminPanel: React.FC = () => {
     fetchOrders(); 
     fetchUsers(); 
     fetchMetalPrices(); 
-  }, [fetchProducts, fetchCategories, fetchOrders, fetchUsers, fetchMetalPrices]);
+    fetchVirtualBookings();
+  }, [fetchProducts, fetchCategories, fetchOrders, fetchUsers, fetchMetalPrices, fetchVirtualBookings]);
 
   useEffect(() => { 
     if (token) refreshAll(); 
@@ -531,6 +550,38 @@ const AdminPanel: React.FC = () => {
     } catch { showToast('Update failed', 'error'); }
   };
 
+  // ─── Virtual Shopping Bookings Handlers ──────────────────────────────────────
+  const updateBookingStatus = async (id: string, status: string) => {
+    try {
+      await adminApi.put(`/virtual-shopping/${id}`, { status });
+      fetchVirtualBookings();
+      showToast(`Booking marked as ${status}`);
+    } catch {
+      showToast('Failed to update booking status', 'error');
+    }
+  };
+
+  const deleteBooking = async (id: string) => {
+    if (!confirm('Delete this video shopping booking? This action cannot be undone.')) return;
+    try {
+      await adminApi.delete(`/virtual-shopping/${id}`);
+      fetchVirtualBookings();
+      showToast('Booking deleted successfully');
+    } catch {
+      showToast('Failed to delete booking', 'error');
+    }
+  };
+
+  const viewBookingDetails = async (id: string) => {
+    try {
+      const r = await adminApi.get(`/virtual-shopping/${id}`);
+      setSelectedBooking(r.data);
+      setIsDetailModalOpen(true);
+    } catch {
+      showToast('Failed to load booking details', 'error');
+    }
+  };
+
   // ─── Password ────────────────────────────────────────────────────────────────
   const handleChangePw = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -619,21 +670,44 @@ const AdminPanel: React.FC = () => {
   };
 
   // ─── SIDEBAR NAV ITEM ─────────────────────────────────────────────────────────
-  const NavItem = ({ id, icon, label, count }: { id: Section; icon: string; label: string; count?: number }) => (
-    <button onClick={() => { setSection(id); setMobileMenuOpen(false); }}
-      className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm transition-all duration-300 ${section === id ? 'bg-[#D4AF37] text-[#5F1517] shadow-lg shadow-[#D4AF37]/20 font-bold' : 'text-[#FFF7F2]/70 hover:text-[#D4AF37] hover:bg-[#D4AF37]/10'}`}
-      style={{ fontFamily: 'Montserrat, sans-serif' }}>
-      <span className="text-lg w-6 text-center flex-shrink-0 drop-shadow-md">{icon}</span>
-      {(sidebarOpen || mobileMenuOpen) && <span className="flex-1 text-left text-xs tracking-wide">{label}</span>}
-      {(sidebarOpen || mobileMenuOpen) && count !== undefined && count > 0 && (
-        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm ${section === id ? 'bg-[#5F1517] text-[#D4AF37]' : 'bg-[#D4AF37]/20 border border-[#D4AF37]/30 text-[#D4AF37]'}`}>{count}</span>
-      )}
-    </button>
-  );
+  const NavItem = ({ id, icon, label, count }: { id: Section; icon: React.ReactNode; label: string; count?: number }) => {
+    const isActive = section === id;
+    return (
+      <button
+        onClick={() => { setSection(id); setMobileMenuOpen(false); }}
+        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 relative group ${
+          isActive
+            ? 'bg-gradient-to-r from-[#D4AF37] to-[#c9a32e] text-[#3a0c0e] shadow-md font-semibold'
+            : 'text-[#FFF7F2]/60 hover:text-[#FFF7F2] hover:bg-white/8'
+        }`}
+        style={{ fontFamily: 'Montserrat, sans-serif' }}
+      >
+        {/* Active left indicator */}
+        {isActive && (
+          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[#3a0c0e] rounded-r-full" />
+        )}
+        <span className={`w-5 h-5 flex-shrink-0 flex items-center justify-center ${
+          isActive ? 'text-[#3a0c0e]' : 'text-[#FFF7F2]/50 group-hover:text-[#D4AF37]'
+        } transition-colors duration-200`}>
+          {icon}
+        </span>
+        {(sidebarOpen || mobileMenuOpen) && (
+          <span className="flex-1 text-left text-[11px] font-medium tracking-wide truncate">{label}</span>
+        )}
+        {(sidebarOpen || mobileMenuOpen) && count !== undefined && count > 0 && (
+          <span className={`text-[9px] min-w-[18px] h-[18px] px-1 rounded-full font-bold flex items-center justify-center ${
+            isActive
+              ? 'bg-[#3a0c0e]/20 text-[#3a0c0e]'
+              : 'bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/20'
+          }`}>{count}</span>
+        )}
+      </button>
+    );
+  };
 
   const NavLabel = ({ label }: { label: string }) => (sidebarOpen || mobileMenuOpen) ? (
-    <div className="px-4 pt-5 pb-2 text-[9px] font-bold uppercase tracking-[4px] text-[#D4AF37]/40 drop-shadow-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>{label}</div>
-  ) : <div className="my-3 border-t border-white/5 mx-2" />;
+    <div className="px-3 pt-5 pb-1.5 text-[9px] font-bold uppercase tracking-[3px] text-[#D4AF37]/35" style={{ fontFamily: 'Montserrat, sans-serif' }}>{label}</div>
+  ) : <div className="my-4 mx-3 border-t border-white/8" />;
 
   // ─── LOGIN ────────────────────────────────────────────────────────────────────
   if (!token) {
@@ -688,28 +762,69 @@ const AdminPanel: React.FC = () => {
           <p className="text-xs text-[#5F1517]/50 mt-1 uppercase tracking-widest font-semibold" style={{ fontFamily: 'Montserrat, sans-serif' }}>Welcome back to your store</p>
         </div>
         <button onClick={refreshAll} className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517] text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-          ↺ Refresh Dashboard
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Refresh Dashboard
         </button>
       </div>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
         {[
-          { label: 'Total Revenue', value: `₹${(stats.revenue / 1000).toFixed(1)}K`, icon: '💰', action: () => setSection('orders'), sub: 'Lifetime' },
-          { label: 'Pending Orders', value: stats.pending, icon: '📦', action: () => setSection('orders'), sub: 'Requires action' },
-          { label: 'Total Products', value: stats.products, icon: '💎', action: () => setSection('all-products'), sub: `${stats.onSale} on sale` },
-          { label: 'Customers', value: stats.customers, icon: '🛍️', action: () => setSection('customers'), sub: 'Purchased' },
+          {
+            label: 'Total Revenue', value: `₹${(stats.revenue / 1000).toFixed(1)}K`,
+            action: () => setSection('orders'), sub: 'Lifetime',
+            color: 'from-emerald-50 to-white', iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600',
+            icon: (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            ),
+          },
+          {
+            label: 'Pending Orders', value: stats.pending,
+            action: () => setSection('orders'), sub: 'Requires action',
+            color: 'from-amber-50 to-white', iconBg: 'bg-amber-100', iconColor: 'text-amber-600',
+            icon: (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+            ),
+          },
+          {
+            label: 'Total Products', value: stats.products,
+            action: () => setSection('all-products'), sub: `${stats.onSale} on sale`,
+            color: 'from-violet-50 to-white', iconBg: 'bg-violet-100', iconColor: 'text-violet-600',
+            icon: (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            ),
+          },
+          {
+            label: 'Customers', value: stats.customers,
+            action: () => setSection('customers'), sub: 'Purchased',
+            color: 'from-sky-50 to-white', iconBg: 'bg-sky-100', iconColor: 'text-sky-600',
+            icon: (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16 11c1.657 0 3-1.343 3-3S17.657 5 16 5c-1.657 0-3 1.343-3 3s1.343 3 3 3zM8 11c1.657 0 3-1.343 3-3S9.657 5 8 5C6.343 5 5 6.343 5 8s1.343 3 3 3zm8 2c2.209 0 4 1.791 4 4H4c0-2.209 1.791-4 4-4h8z" />
+              </svg>
+            ),
+          },
         ].map((s, i) => (
           <button key={i} onClick={s.action}
-            className="group bg-white border border-[#D4AF37]/20 rounded-2xl p-6 hover:border-[#D4AF37]/60 shadow-sm hover:shadow-lg hover:shadow-[#D4AF37]/10 transition-all text-left relative overflow-hidden"
+            className={`group bg-gradient-to-br ${s.color} border border-[#D4AF37]/15 rounded-2xl p-5 hover:border-[#D4AF37]/40 shadow-sm hover:shadow-md hover:shadow-[#D4AF37]/10 transition-all text-left relative overflow-hidden`}
             style={{ fontFamily: 'Montserrat, sans-serif' }}>
-            <div className="absolute -right-4 -top-4 w-24 h-24 bg-gradient-to-br from-[#D4AF37]/10 to-transparent rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
-            <div className="flex items-center justify-between mb-4 relative z-10">
-              <span className="text-3xl drop-shadow-sm">{s.icon}</span>
-              <span className="text-[10px] uppercase font-bold tracking-widest text-[#D4AF37]/70 border border-[#D4AF37]/20 bg-[#FFF7F2] px-2.5 py-1 rounded-full">{s.sub}</span>
+            <div className="absolute -right-3 -top-3 w-20 h-20 bg-gradient-to-br from-[#D4AF37]/8 to-transparent rounded-full opacity-60 group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
+            <div className="flex items-start justify-between mb-4 relative z-10">
+              <div className={`w-10 h-10 rounded-xl ${s.iconBg} ${s.iconColor} flex items-center justify-center flex-shrink-0 shadow-sm`}>
+                {s.icon}
+              </div>
+              <span className="text-[9px] uppercase font-bold tracking-widest text-[#5F1517]/40 border border-[#D4AF37]/15 bg-white/60 px-2 py-1 rounded-full leading-tight text-right">{s.sub}</span>
             </div>
-            <div className="text-3xl font-bold text-[#5F1517] tracking-tight relative z-10" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>{s.value}</div>
-            <div className="text-[11px] font-semibold text-[#5F1517]/50 mt-1 uppercase tracking-widest relative z-10">{s.label}</div>
+            <div className="text-2xl font-bold text-[#5F1517] tracking-tight relative z-10" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>{s.value}</div>
+            <div className="text-[10px] font-semibold text-[#5F1517]/45 mt-1 uppercase tracking-widest relative z-10">{s.label}</div>
           </button>
         ))}
       </div>
@@ -718,19 +833,35 @@ const AdminPanel: React.FC = () => {
         {/* Quick Actions */}
         <div className="bg-white border border-[#D4AF37]/20 rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-5">
-            <span className="text-xl">⚡</span>
+            <div className="w-8 h-8 rounded-lg bg-[#FFF7F2] border border-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37]">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
             <h3 className="text-sm font-bold text-[#5F1517] uppercase tracking-[0.15em]" style={{ fontFamily: 'Montserrat, sans-serif' }}>Quick Actions</h3>
           </div>
           <GoldDivider />
           <div className="grid grid-cols-1 gap-3 mt-5">
             {[
-              { label: '+ Add New Product', s: 'add-product' as Section, bg: 'bg-gradient-to-r from-[#5F1517] to-[#801416] text-[#D4AF37] hover:shadow-lg' },
-              { label: '+ Add Collection', s: 'add-category' as Section, bg: 'bg-[#FFF7F2] text-[#5F1517] border border-[#D4AF37]/30 hover:border-[#D4AF37] hover:bg-[#D4AF37]/10' },
-              { label: '📦 Manage Orders', s: 'orders' as Section, bg: 'bg-[#FFF7F2] text-[#5F1517] border border-[#D4AF37]/30 hover:border-[#D4AF37] hover:bg-[#D4AF37]/10' },
+              { label: 'Add New Product', s: 'add-product' as Section, bg: 'bg-gradient-to-r from-[#5F1517] to-[#801416] text-[#D4AF37] hover:shadow-lg', withPlus: true },
+              { label: 'Add Collection', s: 'add-category' as Section, bg: 'bg-[#FFF7F2] text-[#5F1517] border border-[#D4AF37]/30 hover:border-[#D4AF37] hover:bg-[#D4AF37]/10', withPlus: true },
+              { label: 'Manage Orders', s: 'orders' as Section, bg: 'bg-[#FFF7F2] text-[#5F1517] border border-[#D4AF37]/30 hover:border-[#D4AF37] hover:bg-[#D4AF37]/10', withBox: true },
             ].map(a => (
               <button key={a.label} onClick={() => { if (a.s === 'add-product') { setPForm({ ...emptyProduct }); setEditPId(null); } setSection(a.s); }}
-                className={`w-full px-4 py-3.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${a.bg}`}
-                style={{ fontFamily: 'Montserrat, sans-serif' }}>{a.label}</button>
+                className={`w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${a.bg}`}
+                style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                {a.withPlus && (
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                )}
+                {a.withBox && (
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                )}
+                {a.label}
+              </button>
             ))}
           </div>
         </div>
@@ -739,7 +870,11 @@ const AdminPanel: React.FC = () => {
         <div className="lg:col-span-2 bg-white border border-[#D4AF37]/20 rounded-2xl p-6 shadow-sm">
            <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
-              <span className="text-xl">🛍️</span>
+              <div className="w-8 h-8 rounded-lg bg-[#FFF7F2] border border-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37]">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 11c1.657 0 3-1.343 3-3S17.657 5 16 5c-1.657 0-3 1.343-3 3s1.343 3 3 3zM8 11c1.657 0 3-1.343 3-3S9.657 5 8 5C6.343 5 5 6.343 5 8s1.343 3 3 3zm8 2c2.209 0 4 1.791 4 4H4c0-2.209 1.791-4 4-4h8z" />
+                </svg>
+              </div>
               <h3 className="text-sm font-bold text-[#5F1517] uppercase tracking-[0.15em]" style={{ fontFamily: 'Montserrat, sans-serif' }}>Recent Orders</h3>
             </div>
             <button onClick={() => setSection('orders')} className="text-xs font-bold text-[#D4AF37] hover:text-[#5F1517] uppercase tracking-widest transition" style={{ fontFamily: 'Montserrat, sans-serif' }}>View All</button>
@@ -1515,6 +1650,143 @@ const AdminPanel: React.FC = () => {
     </div>
   );
 
+  // ─── VIRTUAL BOOKINGS ─────────────────────────────────────────────────────────
+  const renderVirtualBookings = () => {
+    const filteredBookings = virtualBookings.filter(b => {
+      const matchSearch = !vSearch || 
+        b.name.toLowerCase().includes(vSearch.toLowerCase()) || 
+        b.email.toLowerCase().includes(vSearch.toLowerCase()) || 
+        b.phone.includes(vSearch) ||
+        b.city_or_country.toLowerCase().includes(vSearch.toLowerCase());
+      const matchStatus = !vStatusFilter || b.status === vStatusFilter;
+      return matchSearch && matchStatus;
+    });
+
+    const BOOKING_STATUS_COLORS: Record<string, string> = {
+      Pending: 'bg-amber-100 text-amber-700 border border-amber-200',
+      Confirmed: 'bg-green-100 text-green-700 border border-green-200',
+      Completed: 'bg-blue-100 text-blue-700 border border-blue-200',
+      Cancelled: 'bg-red-100 text-red-700 border border-red-200',
+    };
+
+    return (
+      <div className="animate-fade-in pb-10">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+          <div>
+            <h2 className="text-3xl font-bold text-[#5F1517] tracking-tight" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>Video Shopping Bookings</h2>
+            <p className="text-xs text-[#5F1517]/50 mt-1 uppercase tracking-widest font-semibold" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+              {filteredBookings.length} appointments scheduled
+            </p>
+          </div>
+          <button onClick={fetchVirtualBookings} className="px-5 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517] text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+            ↺ Refresh Data
+          </button>
+        </div>
+
+        {/* Filters */}
+        <div className="bg-white border border-[#D4AF37]/20 shadow-sm rounded-2xl p-5 mb-6 flex flex-wrap gap-4 items-end">
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-[10px] font-bold text-[#5F1517]/50 uppercase tracking-[0.15em] mb-1.5">Search Bookings</label>
+            <input 
+              value={vSearch} 
+              onChange={e => setVSearch(e.target.value)} 
+              placeholder="Search by Name, Email, Phone, City..."
+              className="w-full px-4 py-2.5 border border-[#D4AF37]/20 rounded-xl text-xs focus:outline-none focus:border-[#D4AF37] bg-[#FFF7F2] shadow-inner" 
+              style={{ fontFamily: 'Montserrat, sans-serif' }} 
+            />
+          </div>
+          <div className="min-w-[150px]">
+            <label className="block text-[10px] font-bold text-[#5F1517]/50 uppercase tracking-[0.15em] mb-1.5">Status</label>
+            <select 
+              value={vStatusFilter} 
+              onChange={e => setVStatusFilter(e.target.value)}
+              className="w-full px-4 py-2.5 border border-[#D4AF37]/20 rounded-xl text-xs focus:outline-none focus:border-[#D4AF37] bg-[#FFF7F2] shadow-inner font-semibold text-[#5F1517]" 
+              style={{ fontFamily: 'Montserrat, sans-serif' }}
+            >
+              <option value="">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="Confirmed">Confirmed</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        {/* List Table */}
+        <div className="bg-white border border-[#D4AF37]/20 rounded-2xl overflow-hidden shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-[#D4AF37]/20 bg-[#FFF7F2]">
+                  {['Date & Time', 'Customer Details', 'Location', 'Category & Lang', 'Status', 'Actions'].map(h => (
+                    <th key={h} className="px-5 py-4 text-[10px] font-bold text-[#5F1517]/50 uppercase tracking-[0.15em]" style={{ fontFamily: 'Montserrat, sans-serif' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#D4AF37]/10">
+                {filteredBookings.map((b) => (
+                  <tr key={b.id} className="hover:bg-[#FFF7F2]/40 transition-colors">
+                    <td className="px-5 py-4">
+                      <div className="font-bold text-sm text-[#5F1517]" style={{ fontFamily: 'Montserrat, sans-serif' }}>{b.booking_date}</div>
+                      <div className="text-xs text-[#A56B25] font-semibold flex items-center gap-1 mt-0.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                        <span className="text-xs">🕒</span> {b.booking_time} (IST)
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="font-bold text-[#5F1517] text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>{b.name}</div>
+                      <div className="text-xs text-[#5F1517]/60 mt-0.5">{b.email}</div>
+                      <div className="text-xs text-[#5F1517]/60 font-mono mt-0.5">{b.phone}</div>
+                    </td>
+                    <td className="px-5 py-4 text-xs font-semibold text-[#5F1517]/80" style={{ fontFamily: 'Montserrat, sans-serif' }}>{b.city_or_country}</td>
+                    <td className="px-5 py-4">
+                      <div className="text-xs font-bold text-[#5F1517]">{b.category}</div>
+                      <div className="text-[10px] text-gray-500 font-medium mt-0.5 uppercase tracking-wider">Lang: {b.language}</div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <select 
+                        value={b.status} 
+                        onChange={e => updateBookingStatus(b.id, e.target.value)}
+                        className={`px-3 py-1.5 border border-[#D4AF37]/30 rounded-xl text-[10px] font-bold uppercase tracking-widest focus:outline-none focus:ring-1 focus:ring-[#D4AF37] cursor-pointer ${BOOKING_STATUS_COLORS[b.status] || 'bg-white text-gray-700'}`} 
+                        style={{ fontFamily: 'Montserrat, sans-serif' }}
+                      >
+                        {['Pending', 'Confirmed', 'Completed', 'Cancelled'].map(s => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => viewBookingDetails(b.id)} 
+                          className="px-3 py-1.5 text-[10px] font-bold text-[#5F1517] bg-white border border-[#D4AF37]/30 hover:bg-[#D4AF37]/10 hover:border-[#D4AF37] rounded-lg transition uppercase tracking-widest shadow-sm"
+                        >
+                          View Details
+                        </button>
+                        <button 
+                          onClick={() => deleteBooking(b.id)} 
+                          className="px-3 py-1.5 text-[10px] font-bold text-red-600 bg-white border border-red-200 hover:bg-red-50 hover:border-red-300 rounded-lg transition uppercase tracking-widest shadow-sm"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filteredBookings.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="text-center py-16 text-[#5F1517]/40 text-sm font-bold uppercase tracking-widest" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                      No video shopping bookings found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // ─── CHANGE PASSWORD ──────────────────────────────────────────────────────────
   const renderChangePw = () => (
     <div className="max-w-xl animate-fade-in">
@@ -1549,54 +1821,213 @@ const AdminPanel: React.FC = () => {
     <div className="min-h-screen flex bg-[#FFF7F2] relative">
       <Toast msg={toast} onClose={() => setToast({ text: '', type: '' })} />
 
+      {/* Booking Detail Modal */}
+      {isDetailModalOpen && selectedBooking && (
+        <div className="fixed inset-0 bg-black/55 backdrop-blur-sm z-[999] flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl border border-[#D4AF37]/30 shadow-2xl max-w-lg w-full overflow-hidden relative" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#5F1517] to-[#801416]" />
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-xl font-bold text-[#5F1517]" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>Video Booking Details</h3>
+                  <p className="text-[10px] text-gray-500 font-mono tracking-tight mt-0.5">ID: {selectedBooking.id}</p>
+                </div>
+                <button onClick={() => setIsDetailModalOpen(false)} className="text-gray-400 hover:text-gray-600 text-xl font-bold">✕</button>
+              </div>
+              <div className="flex-1 h-px bg-gray-100 my-4" />
+              
+              <div className="grid grid-cols-2 gap-4 text-xs font-semibold text-[#5F1517]/80">
+                <div>
+                  <span className="block text-[10px] text-[#5F1517]/40 uppercase tracking-wider mb-0.5">Customer Name</span>
+                  <span className="text-sm font-bold text-[#5F1517]">{selectedBooking.name}</span>
+                </div>
+                <div>
+                  <span className="block text-[10px] text-[#5F1517]/40 uppercase tracking-wider mb-0.5">Phone Number</span>
+                  <span className="text-sm font-bold text-[#5F1517]">{selectedBooking.phone}</span>
+                </div>
+                <div className="col-span-2">
+                  <span className="block text-[10px] text-[#5F1517]/40 uppercase tracking-wider mb-0.5">Email Address</span>
+                  <span className="break-all">{selectedBooking.email}</span>
+                </div>
+                <div>
+                  <span className="block text-[10px] text-[#5F1517]/40 uppercase tracking-wider mb-0.5">City or Country</span>
+                  <span>{selectedBooking.city_or_country}</span>
+                </div>
+                <div>
+                  <span className="block text-[10px] text-[#5F1517]/40 uppercase tracking-wider mb-0.5">Preferred Language</span>
+                  <span>{selectedBooking.language}</span>
+                </div>
+                <div>
+                  <span className="block text-[10px] text-[#5F1517]/40 uppercase tracking-wider mb-0.5">Requested Date</span>
+                  <span className="text-sm font-bold text-[#801416]">{selectedBooking.booking_date}</span>
+                </div>
+                <div>
+                  <span className="block text-[10px] text-[#5F1517]/40 uppercase tracking-wider mb-0.5">Requested Time Slot</span>
+                  <span className="text-sm font-bold text-[#801416]">{selectedBooking.booking_time} (IST)</span>
+                </div>
+                <div>
+                  <span className="block text-[10px] text-[#5F1517]/40 uppercase tracking-wider mb-0.5">Shopping Category</span>
+                  <span>{selectedBooking.category}</span>
+                </div>
+                <div>
+                  <span className="block text-[10px] text-[#5F1517]/40 uppercase tracking-wider mb-0.5">Current Status</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+                    selectedBooking.status === 'Pending' ? 'bg-amber-100 text-amber-700' :
+                    selectedBooking.status === 'Confirmed' ? 'bg-green-100 text-green-700' :
+                    selectedBooking.status === 'Completed' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'
+                  }`}>{selectedBooking.status}</span>
+                </div>
+                <div className="col-span-2 bg-[#FFF7F2] p-4 rounded-xl border border-[#D4AF37]/20 mt-2">
+                  <span className="block text-[10px] text-[#5F1517]/50 uppercase tracking-wider mb-1 font-bold">Requirement Details / Notes</span>
+                  <p className="text-xs leading-relaxed text-[#5F1517] whitespace-pre-wrap font-medium">
+                    {selectedBooking.requirement_details || 'No details provided.'}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="mt-6 flex justify-end">
+                <button onClick={() => setIsDetailModalOpen(false)} className="px-5 py-2.5 bg-gradient-to-r from-[#5F1517] to-[#801416] text-[#D4AF37] text-xs font-bold rounded-xl uppercase tracking-widest hover:brightness-110 transition shadow">
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Sidebar Overlay Background */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 bg-[#5F1517]/80 backdrop-blur-sm z-40 sm:hidden transition-opacity" onClick={() => setMobileMenuOpen(false)} />
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed sm:relative top-0 left-0 h-full z-50 flex-shrink-0 flex flex-col transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'translate-x-0 w-64 shadow-2xl' : '-translate-x-full sm:translate-x-0'} ${sidebarOpen ? 'sm:w-64' : 'sm:w-20'}`}
-        style={{ background: '#5F1517', borderRight: '1px solid rgba(212,175,55,0.3)' }}>
+      <aside className={`fixed sm:relative top-0 left-0 h-full z-50 flex-shrink-0 flex flex-col transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'translate-x-0 w-64 shadow-2xl' : '-translate-x-full sm:translate-x-0'} ${sidebarOpen ? 'sm:w-64' : 'sm:w-[72px]'}`}
+        style={{ background: 'linear-gradient(180deg, #4a1012 0%, #5F1517 40%, #5a1315 100%)', borderRight: '1px solid rgba(212,175,55,0.15)' }}>
 
-        {/* Logo */}
-        <div className={`flex items-center gap-3 p-5 border-b border-[#D4AF37]/15 ${(sidebarOpen || mobileMenuOpen) ? '' : 'justify-center'}`}>
-          <img src={logo} alt="Siri Samruddhi" className="w-10 h-10 object-contain flex-shrink-0 drop-shadow-lg" />
+        {/* Logo Header */}
+        <div className={`flex items-center gap-3 px-4 py-4 border-b border-[#D4AF37]/10 ${(sidebarOpen || mobileMenuOpen) ? '' : 'justify-center'}`}>
+          <div className="relative flex-shrink-0">
+            <img src={logo} alt="Siri Samruddhi" className="w-9 h-9 object-contain drop-shadow-lg" />
+            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-[#5F1517]" />
+          </div>
           {(sidebarOpen || mobileMenuOpen) && (
-            <div className="overflow-hidden">
-              <div className="text-[#D4AF37] font-bold text-base tracking-tight whitespace-nowrap" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>Siri Samruddhi</div>
-              <div className="text-[#D4AF37]/50 text-[9px] uppercase font-bold tracking-[0.3em] whitespace-nowrap mt-0.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Admin Portal</div>
+            <div className="flex-1 overflow-hidden">
+              <div className="text-[#D4AF37] font-bold text-sm tracking-tight whitespace-nowrap" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>Siri Samruddhi</div>
+              <div className="text-[#D4AF37]/40 text-[9px] uppercase font-semibold tracking-[0.25em] whitespace-nowrap mt-0.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Admin Portal</div>
             </div>
           )}
-          <button onClick={() => setSidebarOpen(o => !o)} className={`hidden sm:block ${sidebarOpen ? 'ml-auto' : ''} text-[#D4AF37]/40 hover:text-[#D4AF37] transition p-1.5 text-xs flex-shrink-0 bg-white/5 rounded-full hover:bg-white/10`}>
-            {sidebarOpen ? '◀' : '▶'}
+          <button
+            onClick={() => setSidebarOpen(o => !o)}
+            className={`hidden sm:flex items-center justify-center ${sidebarOpen ? 'ml-auto' : ''} w-6 h-6 text-[#D4AF37]/30 hover:text-[#D4AF37] transition-colors flex-shrink-0 rounded-md hover:bg-white/8`}
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+              {sidebarOpen
+                ? <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                : <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              }
+            </svg>
           </button>
-          <button onClick={() => setMobileMenuOpen(false)} className="sm:hidden ml-auto text-[#D4AF37]/70 text-xl font-bold p-1">×</button>
+          <button
+            onClick={() => setMobileMenuOpen(false)}
+            className="sm:hidden ml-auto flex items-center justify-center w-7 h-7 text-[#D4AF37]/60 hover:text-[#D4AF37] transition-colors rounded-md hover:bg-white/10"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto scrollbar-hide">
-          <NavItem id="dashboard" icon="📊" label="Dashboard" />
+        <nav className={`flex-1 py-4 overflow-y-auto scrollbar-hide space-y-0.5 ${(sidebarOpen || mobileMenuOpen) ? 'px-3' : 'px-2'}`}>
+          <NavItem id="dashboard" label="Dashboard" icon={
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" />
+              <rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
+            </svg>
+          } />
+
           <NavLabel label="Catalogue" />
-          <NavItem id="all-products" icon="💎" label="All Products" count={stats.products} />
-          <NavItem id="add-product" icon="➕" label={editPId ? 'Edit Product' : 'Add Product'} />
-          <NavItem id="all-categories" icon="📂" label="Collections" count={stats.categories} />
-          <NavItem id="add-category" icon="🗂️" label={editCId ? 'Edit Collection' : 'Add Collection'} />
-          <NavItem id="metal-prices" icon="🪙" label="Metal Rates" />
+
+          <NavItem id="all-products" label="All Products" count={stats.products} icon={
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          } />
+
+          <NavItem id="add-product" label={editPId ? 'Edit Product' : 'Add Product'} icon={
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+          } />
+
+          <NavItem id="all-categories" label="Collections" count={stats.categories} icon={
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 7h7l2-3h7M3 12h18M3 17h7l2 3h7" />
+            </svg>
+          } />
+
+          <NavItem id="add-category" label={editCId ? 'Edit Collection' : 'Add Collection'} icon={
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          } />
+
+          <NavItem id="metal-prices" label="Metal Rates" icon={
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          } />
+
           <NavLabel label="Commerce" />
-          <NavItem id="orders" icon="📦" label="Orders" count={stats.pending} />
-          <NavItem id="customers" icon="🛍️" label="Customers" count={stats.customers} />
-          <NavItem id="users" icon="👥" label="Users" />
+
+          <NavItem id="orders" label="Orders" count={stats.pending} icon={
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+          } />
+
+          <NavItem id="virtual-bookings" label="Video Shopping" icon={
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.069A1 1 0 0121 8.882v6.236a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+          } />
+
+          <NavItem id="customers" label="Customers" count={stats.customers} icon={
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16 11c1.657 0 3-1.343 3-3S17.657 5 16 5c-1.657 0-3 1.343-3 3s1.343 3 3 3zM8 11c1.657 0 3-1.343 3-3S9.657 5 8 5C6.343 5 5 6.343 5 8s1.343 3 3 3zm8 2c2.209 0 4 1.791 4 4H4c0-2.209 1.791-4 4-4h8z" />
+            </svg>
+          } />
+
+          <NavItem id="users" label="Users" icon={
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          } />
+
           <NavLabel label="Account" />
-          <NavItem id="change-password" icon="🛡️" label="Security" />
+
+          <NavItem id="change-password" label="Security" icon={
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          } />
         </nav>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-[#D4AF37]/15 bg-black/10">
-          <button onClick={handleLogout}
-            className={`w-full flex items-center gap-3 px-4 py-3 text-[#FFF7F2]/40 hover:text-red-300 hover:bg-white/10 rounded-xl text-xs font-bold uppercase tracking-widest transition ${(sidebarOpen || mobileMenuOpen) ? '' : 'justify-center'}`}
-            style={{ fontFamily: 'Montserrat, sans-serif' }}>
-            <span className="text-xl flex-shrink-0">🚪</span>
-            {(sidebarOpen || mobileMenuOpen) && <span>Logout</span>}
+        {/* Footer / Logout */}
+        <div className={`p-3 border-t border-[#D4AF37]/10 ${(sidebarOpen || mobileMenuOpen) ? '' : 'flex justify-center'}`}>
+          <button
+            onClick={handleLogout}
+            className={`flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-[#FFF7F2]/35 hover:text-red-400 hover:bg-white/6 transition-all duration-200 group ${
+              !(sidebarOpen || mobileMenuOpen) ? 'justify-center' : ''
+            }`}
+            style={{ fontFamily: 'Montserrat, sans-serif' }}
+          >
+            <svg className="w-4 h-4 flex-shrink-0 group-hover:text-red-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            {(sidebarOpen || mobileMenuOpen) && (
+              <span className="text-[11px] font-semibold tracking-wide">Sign Out</span>
+            )}
           </button>
         </div>
       </aside>
@@ -1611,7 +2042,7 @@ const AdminPanel: React.FC = () => {
             </button>
             <div>
               <h1 className="text-base sm:text-lg font-bold text-[#5F1517] capitalize tracking-tight" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>
-                {section === 'all-products' ? 'Products' : section === 'add-product' ? (editPId ? 'Edit Product' : 'Add Product') : section === 'all-categories' ? 'Collections' : section === 'add-category' ? (editCId ? 'Edit Collection' : 'Add Collection') : section === 'change-password' ? 'Security Settings' : section === 'customers' ? 'Customers' : section === 'users' ? 'All Users' : section === 'metal-prices' ? 'Metal Rates' : section.charAt(0).toUpperCase() + section.slice(1)}
+                {section === 'all-products' ? 'Products' : section === 'add-product' ? (editPId ? 'Edit Product' : 'Add Product') : section === 'all-categories' ? 'Collections' : section === 'add-category' ? (editCId ? 'Edit Collection' : 'Add Collection') : section === 'change-password' ? 'Security Settings' : section === 'customers' ? 'Customers' : section === 'users' ? 'All Users' : section === 'metal-prices' ? 'Metal Rates' : section === 'virtual-bookings' ? 'Video Shopping' : section.charAt(0).toUpperCase() + section.slice(1)}
               </h1>
               <p className="text-[9px] sm:text-[10px] font-bold text-[#5F1517]/40 uppercase tracking-[0.2em] mt-0.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Siri Samruddhi Gold Palace</p>
             </div>
@@ -1632,6 +2063,7 @@ const AdminPanel: React.FC = () => {
           {section === 'all-categories' && renderAllCategories()}
           {section === 'add-category' && renderCategoryForm()}
           {section === 'orders' && renderOrders()}
+          {section === 'virtual-bookings' && renderVirtualBookings()}
           {section === 'customers' && renderCustomers()}
           {section === 'users' && renderUsers()}
           {section === 'change-password' && renderChangePw()}

@@ -8,6 +8,7 @@ import ContactUs from './pages/ContactUs';
 import NewArrivals from './pages/NewArrivals';
 import Wishlist from './pages/Wishlist';
 import Cart from './pages/Cart';
+import VirtualShopping from './pages/VirtualShopping';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/about" element={<AboutUs />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/new-arrivals" element={<NewArrivals />} />
+        <Route path="/virtual-shopping" element={<VirtualShopping />} />
       </Routes>
     </Router>
   );
