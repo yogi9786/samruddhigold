@@ -175,14 +175,14 @@ const Header: React.FC = () => {
 
         {/* ── MAIN HEADER BAR ── */}
         <div className="w-full bg-[#FFF7F2] border-b border-[#5F1517]/10">
-          <div className="max-w-[1400px] mx-auto px-4 lg:px-10 xl:px-14 flex items-center justify-between pb-3 pt-0 lg:py-2">
+          <div className="max-w-[1400px] mx-auto px-4 lg:px-10 xl:px-14 flex items-center justify-between py-1.5 lg:py-2">
             
             {/* Logo */}
             <Link to="/" className="flex-shrink-0 flex items-center cursor-pointer mr-6">
               <img
                 src={logo}
                 alt="Samruddhi Gold Palace"
-                className="h-16 md:h-20 lg:h-[4.5rem] object-contain"
+                className="h-12 md:h-16 lg:h-[4.5rem] object-contain"
               />
             </Link>
 
@@ -364,7 +364,7 @@ const Header: React.FC = () => {
       </header>
 
       {/* Red Offer Banner — NOT sticky, scrolls with content */}
-      <div className="w-full bg-[#721013] text-center py-1.5 text-white text-[12px] md:text-[13px] font-medium tracking-wide">
+      <div className="w-full bg-[#721013] text-center py-1 text-white text-[11px] md:text-[13px] font-medium tracking-wide">
         Flat 20% off on VA, for Online Gold Jewellery
       </div>
 

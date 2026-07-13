@@ -23,15 +23,15 @@ const categories = [
 
 const GenderCategories: React.FC = () => {
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 mb-10 lg:mb-16 mt-4 md:mt-6">
-      <div className="text-center mb-6 md:mb-8">
-        <p className="font-sans text-[#801416] mb-2 uppercase tracking-[0.2em] text-[10px] md:text-[11px] font-bold">
+    <div className="w-full max-w-7xl mx-auto px-4 mb-6 lg:mb-16 mt-2 md:mt-6">
+      <div className="text-center mb-4 md:mb-8">
+        <p className="font-sans text-[#801416] mb-1 uppercase tracking-[0.15em] text-[8px] md:text-[10px] lg:text-[11px] font-bold">
           Discover
         </p>
-        <h2 className="font-serif text-[22px] md:text-[30px] lg:text-[34px] text-[#5F1517] mb-3 leading-tight font-bold">
+        <h2 className="font-serif text-[16px] md:text-[26px] lg:text-[34px] text-[#5F1517] mb-2 leading-tight font-bold">
           Shop by Category
         </h2>
-        <div className="w-12 h-[2px] bg-[#801416]/20 mx-auto" />
+        <div className="w-10 h-[1.5px] bg-[#801416]/20 mx-auto" />
       </div>
 
       {/* Desktop: 3 columns | Mobile: 2 columns (Women + Men), then Kids below */}
@@ -54,19 +54,19 @@ const GenderCategories: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-[#110A08]/70 via-[#110A08]/10 to-transparent opacity-90 transition-opacity duration-500 group-hover:opacity-100" />
 
               {/* Floating Tag inside image */}
-              <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 w-max px-4 md:px-6 py-1.5 md:py-2 bg-white/15 backdrop-blur-sm rounded-full border border-white/30 transition-all duration-500 group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37]">
-                <span className="text-white text-[9px] md:text-[11px] tracking-[0.25em] md:tracking-[0.3em] uppercase font-bold group-hover:text-[#110A08] transition-colors">
+              <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 w-max px-2 md:px-6 py-1.5 md:py-2 bg-white/15 backdrop-blur-sm rounded-full border border-white/30 transition-all duration-500 group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37]">
+                <span className="text-white text-[7.5px] md:text-[11px] tracking-[0.15em] md:tracking-[0.3em] uppercase font-bold group-hover:text-[#110A08] transition-colors whitespace-nowrap">
                   {cat.subtitle}
                 </span>
               </div>
             </div>
 
             {/* Typography Below */}
-            <div className="mt-4 md:mt-6 text-center">
-              <h3 className="text-[#5F1517] font-serif text-[22px] md:text-[34px] font-bold tracking-wider">
+            <div className="mt-2 md:mt-6 text-center">
+              <h3 className="text-[#5F1517] font-serif text-[16px] md:text-[28px] lg:text-[34px] font-bold tracking-wider">
                 {cat.title}
               </h3>
-              <div className="w-0 h-[1.5px] bg-[#D4AF37] mx-auto mt-1.5 md:mt-2 transition-all duration-500 ease-out group-hover:w-12 md:group-hover:w-16" />
+              <div className="w-0 h-[1.5px] bg-[#D4AF37] mx-auto mt-1 md:mt-2 transition-all duration-500 ease-out group-hover:w-10 md:group-hover:w-16" />
             </div>
           </div>
         ))}

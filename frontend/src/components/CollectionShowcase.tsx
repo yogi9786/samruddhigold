@@ -25,11 +25,11 @@ const CollectionShowcase = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
         <div>
-          <p className="font-sans text-[#D4AF37]/60 text-[10px] tracking-[4px] uppercase mb-2">Explore</p>
-          <h2 className="font-serif text-[28px] md:text-[42px] text-white leading-tight tracking-wide">
+          <p className="font-sans text-[#D4AF37]/60 text-[9px] md:text-[10px] tracking-[3px] md:tracking-[4px] uppercase mb-1 md:mb-2">Explore</p>
+          <h2 className="font-serif text-[20px] md:text-[32px] lg:text-[42px] text-white leading-tight tracking-wide">
             Choose The Type!
           </h2>
-          <p className="font-sans text-[12px] md:text-[14px] text-white/50 mt-2 max-w-md leading-relaxed font-light">
+          <p className="font-sans text-[11px] md:text-[14px] text-white/50 mt-1.5 md:mt-2 max-w-md leading-relaxed font-light">
             Discover our exquisite range of handcrafted jewellery — each piece tells a unique story of artistry and elegance.
           </p>
         </div>
@@ -55,9 +55,21 @@ const CollectionShowcase = () => {
           Desktop: all 9 in a single row of 9 columns
       */}
 
-      {/* Mobile: horizontal scroll, 4 per "page" */}
-      <div className="lg:hidden overflow-x-auto pb-2 -mx-1">
-        <div className="flex gap-3 px-1 w-max">
+      {/* Mobile + Tablet: horizontal scroll with arrow navigators */}
+      <div className="lg:hidden relative pb-2">
+        {/* Left Arrow */}
+        <button 
+          onClick={(e) => {
+            const container = (e.currentTarget.parentElement as HTMLElement)?.querySelector('.scroll-container') as HTMLElement;
+            if (container) container.scrollBy({ left: -160, behavior: 'smooth' });
+          }}
+          className="absolute left-0 top-[40%] -translate-y-1/2 z-10 bg-[#D4AF37] text-[#110A08] w-7 h-7 rounded-full flex items-center justify-center shadow-md"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
+        </button>
+
+        {/* Scroll Container — no scrollbar line */}
+        <div className="scroll-container flex gap-3 px-8 w-full overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {categories.map((cat, i) => (
             <Link
               key={i}
@@ -78,6 +90,17 @@ const CollectionShowcase = () => {
             </Link>
           ))}
         </div>
+
+        {/* Right Arrow */}
+        <button 
+          onClick={(e) => {
+            const container = (e.currentTarget.parentElement as HTMLElement)?.querySelector('.scroll-container') as HTMLElement;
+            if (container) container.scrollBy({ left: 160, behavior: 'smooth' });
+          }}
+          className="absolute right-0 top-[40%] -translate-y-1/2 z-10 bg-[#D4AF37] text-[#110A08] w-7 h-7 rounded-full flex items-center justify-center shadow-md"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+        </button>
       </div>
 
       {/* Desktop: 9 columns grid */}

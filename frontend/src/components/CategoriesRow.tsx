@@ -176,28 +176,73 @@ const categories = [
 
 const CategoriesRow: React.FC = () => {
   return (
-    <div className="w-full bg-[#FFF7F2] py-3 px-2 md:px-4 border-b border-[#D4AF37]/15 mb-2">
-      <div className="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full">
-        <div className="flex flex-row gap-3 md:gap-5 min-w-max lg:min-w-0 lg:flex-wrap lg:justify-center mx-auto px-1">
-          {categories.map((cat) => (
-            <a
-              key={cat.id}
-              href={cat.href}
-              className="flex flex-col items-center gap-1.5 md:gap-2 cursor-pointer group no-underline flex-shrink-0"
-            >
-              {/* Circle icon */}
-              <div className="w-[46px] h-[46px] md:w-[56px] md:h-[56px] rounded-full border border-[#D4AF37]/50 p-[2px] md:p-[3px] group-hover:border-[#C82A3A] transition-colors duration-300">
-                <div className="w-full h-full rounded-full bg-gradient-to-br from-white to-[#FFF7EC] flex items-center justify-center group-hover:shadow-sm transition-shadow duration-300">
-                  {React.cloneElement(cat.icon as React.ReactElement<any>, { className: 'w-6 h-6 md:w-7 md:h-7' })}
+    <div className="w-full bg-[#FFF7F2] py-2 md:py-3 px-2 md:px-4 border-b border-[#D4AF37]/15 mb-2">
+      {/* Mobile/Tablet: arrow navigators */}
+      <div className="relative lg:hidden">
+        {/* Left Arrow */}
+        <button
+          onClick={(e) => {
+            const el = (e.currentTarget.parentElement as HTMLElement)?.querySelector('.cat-scroll') as HTMLElement;
+            if (el) el.scrollBy({ left: -120, behavior: 'smooth' });
+          }}
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/95 text-[#801416] w-6 h-6 rounded-full flex items-center justify-center border border-[#D4AF37]/40 shadow-md"
+        >
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
+        </button>
+
+        <div className="cat-scroll overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full px-7">
+          <div className="flex flex-row gap-3 md:gap-5 min-w-max">
+            {categories.map((cat) => (
+              <a
+                key={cat.id}
+                href={cat.href}
+                className="flex flex-col items-center gap-1 md:gap-1.5 cursor-pointer group no-underline flex-shrink-0"
+              >
+                {/* Circle icon */}
+                <div className="w-[40px] h-[40px] md:w-[50px] md:h-[50px] rounded-full border border-[#D4AF37]/50 p-[2px] group-hover:border-[#C82A3A] transition-colors duration-300">
+                  <div className="w-full h-full rounded-full bg-gradient-to-br from-white to-[#FFF7EC] flex items-center justify-center group-hover:shadow-sm transition-shadow duration-300">
+                    {React.cloneElement(cat.icon as React.ReactElement<any>, { className: 'w-5 h-5 md:w-6 md:h-6' })}
+                  </div>
                 </div>
-              </div>
-              {/* Label */}
-              <span className="text-[10px] md:text-[11px] font-sans font-medium text-[#801416] group-hover:text-[#5F1517] transition-colors text-center leading-tight whitespace-nowrap">
-                {cat.name}
-              </span>
-            </a>
-          ))}
+                {/* Label */}
+                <span className="text-[9px] md:text-[10px] font-sans font-medium text-[#801416] group-hover:text-[#5F1517] transition-colors text-center leading-tight whitespace-nowrap">
+                  {cat.name}
+                </span>
+              </a>
+            ))}
+          </div>
         </div>
+
+        {/* Right Arrow */}
+        <button
+          onClick={(e) => {
+            const el = (e.currentTarget.parentElement as HTMLElement)?.querySelector('.cat-scroll') as HTMLElement;
+            if (el) el.scrollBy({ left: 120, behavior: 'smooth' });
+          }}
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/95 text-[#801416] w-6 h-6 rounded-full flex items-center justify-center border border-[#D4AF37]/40 shadow-md"
+        >
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+        </button>
+      </div>
+
+      {/* Desktop: wrap all items */}
+      <div className="hidden lg:flex flex-row flex-wrap gap-5 justify-center mx-auto px-1">
+        {categories.map((cat) => (
+          <a
+            key={cat.id}
+            href={cat.href}
+            className="flex flex-col items-center gap-2 cursor-pointer group no-underline flex-shrink-0"
+          >
+            <div className="w-[56px] h-[56px] rounded-full border border-[#D4AF37]/50 p-[3px] group-hover:border-[#C82A3A] transition-colors duration-300">
+              <div className="w-full h-full rounded-full bg-gradient-to-br from-white to-[#FFF7EC] flex items-center justify-center group-hover:shadow-sm transition-shadow duration-300">
+                {React.cloneElement(cat.icon as React.ReactElement<any>, { className: 'w-7 h-7' })}
+              </div>
+            </div>
+            <span className="text-[11px] font-sans font-medium text-[#801416] group-hover:text-[#5F1517] transition-colors text-center leading-tight whitespace-nowrap">
+              {cat.name}
+            </span>
+          </a>
+        ))}
       </div>
     </div>
   );
