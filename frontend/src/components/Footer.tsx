@@ -113,9 +113,7 @@ const Footer: React.FC = () => {
           {/* Stay Tuned */}
           <div className="flex flex-col gap-4 text-left">
             <h3 className="text-xl font-serif font-medium mb-6 text-[#A56B25]">Stay Tuned</h3>
-            <p className="text-[#FFF7F2]/80 text-sm leading-relaxed mb-2">
-              Subscribe to get daily rates, exclusive drops, and special gold coin offers.
-            </p>
+        
             <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-2.5">
               <input 
                 type="email"

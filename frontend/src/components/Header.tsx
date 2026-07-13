@@ -54,13 +54,18 @@ const Header: React.FC = () => {
     const handleOpenSubscribe = () => {
       setIsSubscribeOpen(true);
     };
+    const handleOpenLogin = () => {
+      setIsLoginModalOpen(true);
+    };
     window.addEventListener('cartUpdated', handleCartUpdate);
     window.addEventListener('wishlistUpdated', handleCartUpdate);
     window.addEventListener('openSubscribeModal', handleOpenSubscribe);
+    window.addEventListener('openLoginModal', handleOpenLogin);
     return () => {
       window.removeEventListener('cartUpdated', handleCartUpdate);
       window.removeEventListener('wishlistUpdated', handleCartUpdate);
       window.removeEventListener('openSubscribeModal', handleOpenSubscribe);
+      window.removeEventListener('openLoginModal', handleOpenLogin);
     };
   }, []);
 
@@ -170,7 +175,7 @@ const Header: React.FC = () => {
 
         {/* ── MAIN HEADER BAR ── */}
         <div className="w-full bg-[#FFF7F2] border-b border-[#5F1517]/10">
-          <div className="max-w-[1400px] mx-auto px-4 lg:px-10 xl:px-14 flex items-center justify-between py-3 lg:py-2">
+          <div className="max-w-[1400px] mx-auto px-4 lg:px-10 xl:px-14 flex items-center justify-between pb-3 pt-0 lg:py-2">
             
             {/* Logo */}
             <Link to="/" className="flex-shrink-0 flex items-center cursor-pointer mr-6">

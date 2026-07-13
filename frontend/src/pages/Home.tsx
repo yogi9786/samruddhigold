@@ -22,7 +22,7 @@ import FAQ from '../components/FAQ';
 
 const Home: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col w-full bg-transparent pb-16 lg:pb-0 overflow-x-hidden">
+    <div className="min-h-screen flex flex-col w-full bg-transparent pb-16 lg:pb-0">
       <Header />
       <ScrollReveal delay={100}>
         <div className="w-full">
