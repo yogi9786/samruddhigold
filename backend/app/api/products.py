@@ -10,6 +10,7 @@ from app.core.security import verify_admin
 from app.core.database import get_db
 from app.models.product import ProductCreate, ProductUpdate, ProductResponse
 from app.db.models import Product as DBProduct
+from app.core.pricing import calculate_dynamic_price, get_live_rates
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Public product routes — No authentication required
@@ -41,6 +42,11 @@ async def get_all_products(db: AsyncSession = Depends(get_db)):
     """
     result = await db.execute(select(DBProduct).limit(1000))
     products = result.scalars().all()
+    
+    rates = await get_live_rates(db)
+    for p in products:
+        p.price = calculate_dynamic_price(p, rates)
+        
     return products
 
 
@@ -62,6 +68,9 @@ async def get_product(product_id: str, db: AsyncSession = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found"
         )
+        
+    rates = await get_live_rates(db)
+    product.price = calculate_dynamic_price(product, rates)
     return product
 
 
@@ -87,7 +96,13 @@ async def get_similar_products(product_id: str, db: AsyncSession = Depends(get_d
         .where(DBProduct.status == "active")
         .limit(8)
     )
-    return similar_result.scalars().all()
+    similar_products = similar_result.scalars().all()
+    
+    rates = await get_live_rates(db)
+    for p in similar_products:
+        p.price = calculate_dynamic_price(p, rates)
+        
+    return similar_products
 
 
 # ── Admin Routes ──────────────────────────────────────────────────────────────

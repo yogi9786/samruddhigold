@@ -52,6 +52,14 @@ async def init_db():
             await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS stone_info JSON;"))
             await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS other_info JSON;"))
             await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS return_policy JSON;"))
+            
+            # Ensure Order columns exist for Razorpay integration
+            await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS email VARCHAR;"))
+            await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS full_name VARCHAR;"))
+            await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS razorpay_order_id VARCHAR;"))
+            await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS razorpay_payment_id VARCHAR;"))
+            await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS razorpay_signature VARCHAR;"))
+            await conn.execute(text("ALTER TABLE orders ALTER COLUMN user_username DROP NOT NULL;"))
         logger.info("Database tables created and migrated successfully")
         
         # Seed default metal prices if none exist

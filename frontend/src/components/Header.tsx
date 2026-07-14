@@ -216,16 +216,18 @@ const Header: React.FC = () => {
              </div>
              <div className="flex items-center gap-5 text-[12px] lg:text-[11px] text-[#801416] font-medium">
                 <div 
-                  className="relative flex items-center gap-1 cursor-pointer hover:opacity-80 py-1"
+                  className="relative flex items-center py-1"
                   onMouseEnter={() => setShowMetalPrices(true)}
                   onMouseLeave={() => setShowMetalPrices(false)}
                 >
-                  <span className="text-[#A56B25]">🪙</span> 
-                  {metalPrices.find(p => p.id === 'gold_22k') 
-                    ? `TODAY'S GOLD RATE`
-                    : 'GOLD 22 KT/1g - ₹ 13,230'
-                  }
-                  <ChevronDown size={12}/>
+                  <Link to="/gold-rates" className="flex items-center gap-1 hover:opacity-80 no-underline text-[#801416] font-medium">
+                    <span className="text-[#A56B25]">🪙</span> 
+                    {metalPrices.find(p => p.id === 'gold_22k') 
+                      ? `TODAY'S GOLD RATE`
+                      : 'GOLD 22 KT/1g - ₹ 13,230'
+                    }
+                    <ChevronDown size={12}/>
+                  </Link>
                   
                   {showMetalPrices && metalPrices.length > 0 && (
                     <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-[#D4AF37]/20 rounded-2xl shadow-xl p-4 text-[#5F1517] z-50 animate-fade-in">
@@ -275,9 +277,9 @@ const Header: React.FC = () => {
 
             {/* Quick Delivery & Virtual Shopping */}
             <div className="hidden lg:flex items-center gap-6 text-[12px] lg:text-[11px] font-bold text-[#801416] mr-8 tracking-wide">
-              <div className="flex items-center gap-2 cursor-pointer hover:opacity-80">
+              <Link to="/shipping" className="flex items-center gap-2 cursor-pointer hover:opacity-80 no-underline text-[#801416]">
                 <Truck size={18} strokeWidth={1.5} className="text-[#A56B25]" /> QUICK DELIVERY
-              </div>
+              </Link>
               <Link to="/virtual-shopping" className="flex items-center gap-2 cursor-pointer hover:opacity-80 no-underline text-[#801416]">
                 <Store size={18} strokeWidth={1.5} /> VIRTUAL SHOPPING
               </Link>
@@ -463,7 +465,7 @@ const Header: React.FC = () => {
             <li className="whitespace-nowrap"><a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I'm%20looking%20for%20gifting%20recommendations." target="_blank" rel="noopener noreferrer" className="text-[#801416] no-underline hover:opacity-80 transition">Gifting</a></li>
             <li className="whitespace-nowrap"><a href="#look-book" className="text-[#801416] no-underline hover:opacity-80 transition">Wedding Collections</a></li>
             <li className="whitespace-nowrap"><a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I'd%20like%20to%20know%20more%20about%20your%20current%20offers." target="_blank" rel="noopener noreferrer" className="text-[#801416] no-underline hover:opacity-80 transition">Offers</a></li>
-            <li className="whitespace-nowrap"><a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20please%20share%20today's%20gold%20rate." target="_blank" rel="noopener noreferrer" className="text-[#801416] no-underline hover:opacity-80 transition">Today's Gold Rate</a></li>
+            <li className="whitespace-nowrap"><Link to="/gold-rates" className="text-[#801416] no-underline hover:opacity-80 transition">Today's Gold Rate</Link></li>
             <li className="ml-2">
               <Link 
                 to="/virtual-shopping"
@@ -519,7 +521,7 @@ const Header: React.FC = () => {
                 <a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I'd%20like%20to%20know%20more%20about%20your%20current%20offers." target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Offers</a>
               </li>
               <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
-                <a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20please%20share%20today's%20gold%20rate." target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Today's Gold Rate</a>
+                <Link to="/gold-rates" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Today's Gold Rate</Link>
               </li>
             </ul>
           </div>

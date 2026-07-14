@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     ADMIN_USERNAME: str = "siriadmin"
     ADMIN_PASSWORD: str = "adminpassword"
 
+    # Razorpay Settings
+    RAZORPAY_KEY_ID: str = ""
+    RAZORPAY_KEY_SECRET: str = ""
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

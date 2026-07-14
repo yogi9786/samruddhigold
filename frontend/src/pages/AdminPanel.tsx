@@ -7,7 +7,7 @@ import logo from '../assets/samruddhi-logo.png';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Category { id: string; name: string; description?: string; image_url?: string; }
-interface Order { id: string; items: any[]; total_amount: number; shipping_address: string; contact_phone: string; payment_method: string; user_username: string; status: string; created_at: string; updated_at: string; }
+interface Order { id: string; items: any[]; total_amount: number; shipping_address: string; contact_phone: string; email?: string; full_name?: string; payment_method: string; razorpay_order_id?: string; razorpay_payment_id?: string; user_username: string; status: string; created_at: string; updated_at: string; }
 interface User { id: string; username: string; email?: string; full_name?: string; disabled: boolean; }
 interface Product {
   id: string; name: string; sku: string; price: number; original_price?: number;
@@ -902,10 +902,10 @@ const AdminPanel: React.FC = () => {
               <div key={o.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-[#FFF7F2] transition border border-transparent hover:border-[#D4AF37]/20">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-[#FFF7F2] border border-[#D4AF37]/30 flex items-center justify-center text-[#5F1517] font-bold text-xs">
-                    {o.user_username.charAt(0).toUpperCase()}
+                    {String(o.full_name || o.user_username || 'Guest').charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-[#5F1517] uppercase tracking-wider" style={{ fontFamily: 'Montserrat, sans-serif' }}>{o.user_username}</div>
+                    <div className="text-xs font-bold text-[#5F1517] uppercase tracking-wider" style={{ fontFamily: 'Montserrat, sans-serif' }}>{o.full_name || o.user_username || 'Guest Customer'}</div>
                     <div className="text-[10px] text-[#5F1517]/40 font-mono tracking-tight mt-0.5">#{o.id.slice(0, 8)} • {new Date(o.created_at).toLocaleDateString()}</div>
                   </div>
                 </div>
@@ -1441,7 +1441,7 @@ const AdminPanel: React.FC = () => {
           <table className="w-full">
             <thead>
               <tr className="border-b border-[#D4AF37]/20 bg-[#FFF7F2]">
-                {['Order ID & Date', 'Customer', 'Items', 'Total', 'Payment', 'Status'].map(h => (
+                {['Order ID & Date', 'Customer', 'Address', 'Total', 'Payment', 'Status'].map(h => (
                   <th key={h} className="text-left px-5 py-4 text-[10px] font-bold text-[#5F1517]/50 uppercase tracking-[0.15em]" style={{ fontFamily: 'Montserrat, sans-serif' }}>{h}</th>
                 ))}
               </tr>
@@ -1455,15 +1455,28 @@ const AdminPanel: React.FC = () => {
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#5F1517] to-[#801416] flex items-center justify-center text-[#D4AF37] font-bold text-xs shadow-inner">
-                        {o.user_username.charAt(0).toUpperCase()}
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#5F1517] to-[#801416] flex items-center justify-center text-[#D4AF37] font-bold text-xs shadow-inner flex-shrink-0">
+                        {String(o.full_name || o.user_username || 'G').charAt(0).toUpperCase()}
                       </div>
-                      <span className="text-sm text-[#5F1517] font-bold" style={{ fontFamily: 'Montserrat, sans-serif' }}>{o.user_username}</span>
+                      <div>
+                        <div className="text-sm text-[#5F1517] font-bold" style={{ fontFamily: 'Montserrat, sans-serif' }}>{o.full_name || o.user_username || 'Guest Customer'}</div>
+                        <div className="text-[10px] text-[#5F1517]/60 mt-0.5">{o.email || 'No email'}</div>
+                        <div className="text-[10px] text-[#5F1517]/60">{o.contact_phone}</div>
+                      </div>
                     </div>
                   </td>
-                  <td className="px-5 py-4 text-xs font-bold text-[#5F1517]/70" style={{ fontFamily: 'Montserrat, sans-serif' }}>{o.items?.length || 0}</td>
+                  <td className="px-5 py-4">
+                    <div className="text-[10px] font-medium text-[#5F1517]/80 max-w-[200px] whitespace-pre-wrap break-words">{o.shipping_address}</div>
+                  </td>
                   <td className="px-5 py-4 text-sm font-bold text-[#5F1517]" style={{ fontFamily: 'Montserrat, sans-serif' }}>₹{o.total_amount.toLocaleString()}</td>
-                  <td className="px-5 py-4 text-[10px] font-bold text-[#5F1517]/50 uppercase tracking-widest" style={{ fontFamily: 'Montserrat, sans-serif' }}>{o.payment_method}</td>
+                  <td className="px-5 py-4">
+                    <div className="text-[10px] font-bold text-[#5F1517]/50 uppercase tracking-widest" style={{ fontFamily: 'Montserrat, sans-serif' }}>{o.payment_method}</div>
+                    {o.razorpay_payment_id && (
+                      <div className="text-[9px] mt-1 text-green-700 font-bold bg-green-50 border border-green-200 px-2 py-0.5 rounded-full inline-block">
+                        Paid: {o.razorpay_payment_id}
+                      </div>
+                    )}
+                  </td>
                   <td className="px-5 py-4">
                     <select value={o.status} onChange={e => updateOrderStatus(o.id, e.target.value)}
                       className={`px-3 py-1.5 border border-[#D4AF37]/30 rounded-xl text-[10px] font-bold uppercase tracking-widest focus:outline-none focus:ring-1 focus:ring-[#D4AF37] cursor-pointer ${STATUS_COLORS[o.status] || 'bg-white text-gray-700'}`} style={{ fontFamily: 'Montserrat, sans-serif' }}>
@@ -1509,9 +1522,9 @@ const AdminPanel: React.FC = () => {
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#5F1517] to-[#801416] flex items-center justify-center text-[#D4AF37] font-bold text-lg shadow-inner">
-                          {u.username.charAt(0).toUpperCase()}
+                          {String(u.username || 'U').charAt(0).toUpperCase()}
                         </div>
-                        <span className="font-bold text-[#5F1517] text-sm tracking-wide" style={{ fontFamily: 'Montserrat, sans-serif' }}>{u.username}</span>
+                        <span className="font-bold text-[#5F1517] text-sm tracking-wide" style={{ fontFamily: 'Montserrat, sans-serif' }}>{u.username || 'Unknown User'}</span>
                       </div>
                     </td>
                     <td className="px-5 py-4 text-sm font-semibold text-[#5F1517]/80" style={{ fontFamily: 'Montserrat, sans-serif' }}>{u.full_name || '—'}</td>
@@ -1554,9 +1567,9 @@ const AdminPanel: React.FC = () => {
                 <td className="px-5 py-4">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-[#FFF7F2] border border-[#D4AF37]/40 flex items-center justify-center text-[#5F1517] font-bold text-xs">
-                      {u.username.charAt(0).toUpperCase()}
+                      {String(u.username || 'U').charAt(0).toUpperCase()}
                     </div>
-                    <span className="font-bold text-[#5F1517] text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>{u.username}</span>
+                    <span className="font-bold text-[#5F1517] text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>{u.username || 'Unknown User'}</span>
                   </div>
                 </td>
                 <td className="px-5 py-4 text-sm font-semibold text-[#5F1517]/70" style={{ fontFamily: 'Montserrat, sans-serif' }}>{u.full_name || '—'}</td>
@@ -1631,6 +1644,7 @@ const AdminPanel: React.FC = () => {
                   <tr className="border-b border-[#D4AF37]/20 bg-[#FFF7F2]/50 text-[10px] font-bold text-[#5F1517]/50 uppercase tracking-[0.15em]">
                     <th className="px-4 py-3">Metal / ID</th>
                     <th className="px-4 py-3">Price / Unit</th>
+                    <th className="px-4 py-3">Last Updated</th>
                     <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
@@ -1645,6 +1659,18 @@ const AdminPanel: React.FC = () => {
                         <div className="text-[#5F1517] font-bold">₹{mp.price.toLocaleString('en-IN')}</div>
                         <div className="text-[10px] text-[#5F1517]/50 uppercase tracking-widest font-semibold mt-0.5">Per {mp.unit}</div>
                       </td>
+                      <td className="px-4 py-4">
+                        <div className="text-[#5F1517]/75 font-sans text-xs font-semibold">
+                          {mp.updated_at ? new Date(mp.updated_at).toLocaleString('en-IN', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true
+                          }) : '—'}
+                        </div>
+                      </td>
                       <td className="px-4 py-4 text-right">
                         <div className="flex gap-2 justify-end">
                           <button onClick={() => startEditMetal(mp)} className="px-3 py-1.5 text-[10px] font-bold text-[#5F1517] bg-white border border-[#D4AF37]/30 hover:bg-[#D4AF37]/10 hover:border-[#D4AF37] rounded-lg transition uppercase tracking-widest shadow-sm">Edit</button>
@@ -1655,7 +1681,7 @@ const AdminPanel: React.FC = () => {
                   ))}
                   {metalPrices.length === 0 && (
                     <tr>
-                      <td colSpan={3} className="text-center py-8 text-gray-400 font-medium">No rates defined. Add one above!</td>
+                      <td colSpan={4} className="text-center py-8 text-gray-400 font-medium">No rates defined. Add one above!</td>
                     </tr>
                   )}
                 </tbody>

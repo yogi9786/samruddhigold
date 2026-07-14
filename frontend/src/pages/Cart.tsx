@@ -5,6 +5,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, ShieldCheck } from 'lucide-react';
 import api from '../api';
+import LogoSpinner from '../components/LogoSpinner';
 
 interface Product {
   id: string;
@@ -88,9 +89,7 @@ const Cart: React.FC = () => {
         </h1>
 
         {loading ? (
-          <div className="text-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-gold)] mx-auto"></div>
-          </div>
+          <LogoSpinner size="md" text="Loading your shopping bag..." />
         ) : cartItems.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-2xl shadow-sm border border-[var(--color-gold)]/20 max-w-2xl mx-auto">
             <ShoppingBag className="w-16 h-16 mx-auto text-gray-300 mb-4" />
@@ -205,12 +204,9 @@ const Cart: React.FC = () => {
               </div>
 
               {/* Checkout details or checkout button */}
-              <button 
-                onClick={() => alert("Checkout flow simulation. Order request will be processed.")}
-                className="w-full bg-[var(--color-royal)] hover:bg-blue-900 text-white py-3.5 rounded-full font-semibold transition-colors flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
-              >
+              <Link to="/checkout" className="w-full bg-[var(--color-royal)] hover:bg-blue-900 text-white py-3.5 rounded-full font-semibold transition-colors flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
                 Proceed to Checkout <ArrowRight className="w-4 h-4" />
-              </button>
+              </Link>
 
               <div className="pt-4 border-t border-gray-100 flex items-center gap-3 text-xs text-gray-500 justify-center">
                 <ShieldCheck className="w-5 h-5 text-[var(--color-gold)] flex-shrink-0" />

@@ -4,6 +4,7 @@ import api, { getImageUrl, addToCart, addToWishlist, removeFromWishlist } from '
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { ChevronLeft, ChevronRight, Heart, ShoppingBag, Share2, Star, Search, Tag, Award, Truck, ShieldCheck, RotateCcw, BellRing } from 'lucide-react';
+import LogoSpinner from '../components/LogoSpinner';
 
 interface Product {
   id: string;
@@ -231,8 +232,7 @@ const ProductDetails: React.FC = () => {
       <div className="min-h-screen flex flex-col bg-[var(--color-ivory)]">
         <Header />
         <div className="flex-grow flex flex-col justify-center items-center">
-          <div className="w-12 h-12 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-sm text-gray-400 uppercase tracking-widest font-medium">Loading masterpiece…</p>
+          <LogoSpinner size="md" text="Loading masterpiece..." />
         </div>
       </div>
     );

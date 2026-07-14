@@ -72,11 +72,29 @@ class Order(Base):
     total_amount = Column(Float, nullable=False)
     shipping_address = Column(Text, nullable=False)
     contact_phone = Column(String, nullable=False)
+    email = Column(String, nullable=True)
+    full_name = Column(String, nullable=True)
     payment_method = Column(String, nullable=False)
-    user_username = Column(String, nullable=False)
+    user_username = Column(String, nullable=True)  # Nullable for guest checkouts
     status = Column(String, default="Pending")
+    
+    # Razorpay specific fields
+    razorpay_order_id = Column(String, nullable=True)
+    razorpay_payment_id = Column(String, nullable=True)
+    razorpay_signature = Column(String, nullable=True)
+    
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+class Payment(Base):
+    __tablename__ = "payments"
+    id = Column(String, primary_key=True, default=generate_uuid)
+    order_id = Column(String, nullable=False, index=True)
+    razorpay_payment_id = Column(String, nullable=False)
+    razorpay_order_id = Column(String, nullable=False)
+    amount = Column(Float, nullable=False)
+    status = Column(String, default="Captured")
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 class MetalPrice(Base):
     __tablename__ = "metal_prices"

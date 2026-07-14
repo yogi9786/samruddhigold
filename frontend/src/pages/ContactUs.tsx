@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import Header from '../components/Header';
-import TopBanner from '../components/TopBanner';
 import Footer from '../components/Footer';
 import BottomNav from '../components/BottomNav';
 import FloatingWhatsApp from '../components/FloatingWhatsApp';
@@ -42,7 +41,6 @@ const ContactUs: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col w-full bg-[#FFF7F2] pb-16 lg:pb-0 overflow-x-hidden font-sans">
-      <TopBanner />
       <Header />
       
       {/* Hero Section */}
@@ -111,7 +109,7 @@ const ContactUs: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="text-lg font-serif text-[#5F1517] mb-1">Business Hours</h4>
-                  <p className="text-gray-600">Mon - Sun: 10:30 AM - 8:30 PM</p>
+                  <p className="text-gray-600">Mon - Sun: 10:00 AM - 9:30 PM</p>
                 </div>
               </div>
             </div>

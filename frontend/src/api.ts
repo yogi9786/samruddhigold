@@ -92,4 +92,8 @@ export const getWishlist = () => api.get('/wishlist/');
 export const addToWishlist = (productId: string, userId: string) => api.post('/wishlist/', { product_id: productId, user_id: userId });
 export const removeFromWishlist = (productId: string) => api.delete(`/wishlist/${productId}`);
 
+// Order & Checkout API
+export const checkoutOrder = (orderData: any) => api.post('/orders/checkout', orderData);
+export const verifyPayment = (paymentData: any) => api.post('/orders/verify-payment', paymentData);
+
 export default api;

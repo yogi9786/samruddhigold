@@ -6,6 +6,7 @@ from app.core.database import get_db
 from app.db.models import CartItem as DBCartItem, Product as DBProduct
 from app.models.cart import CartItemCreate, CartItemUpdate, CartItemResponse
 from app.models.product import ProductResponse
+from app.core.pricing import calculate_dynamic_price, get_live_rates
 
 router = APIRouter(prefix="/cart", tags=["Cart"])
 
@@ -23,10 +24,12 @@ async def get_cart(user_id: str, db: AsyncSession = Depends(get_db)):
     )
     items = result.all()
     
+    rates = await get_live_rates(db)
     response_items = []
     for cart_item, product in items:
         prod_data = None
         if product:
+            product.price = calculate_dynamic_price(product, rates)
             prod_data = ProductResponse.model_validate(product)
         
         response_items.append(
@@ -78,6 +81,8 @@ async def add_to_cart(item: CartItemCreate, db: AsyncSession = Depends(get_db)):
         target_item = new_item
 
     # Fetch product details for response
+    rates = await get_live_rates(db)
+    product.price = calculate_dynamic_price(product, rates)
     prod_res = ProductResponse.model_validate(product)
     return CartItemResponse(
         id=target_item.id,
@@ -105,8 +110,13 @@ async def update_cart_item(item_id: str, update_data: CartItemUpdate, db: AsyncS
     # Fetch product
     prod_check = await db.execute(select(DBProduct).where(DBProduct.id == cart_item.product_id))
     product = prod_check.scalars().first()
-    prod_res = ProductResponse.model_validate(product) if product else None
-
+    
+    prod_res = None
+    if product:
+        rates = await get_live_rates(db)
+        product.price = calculate_dynamic_price(product, rates)
+        prod_res = ProductResponse.model_validate(product)
+ 
     return CartItemResponse(
         id=cart_item.id,
         user_id=cart_item.user_id,

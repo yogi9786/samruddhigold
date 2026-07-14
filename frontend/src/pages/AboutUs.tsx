@@ -1,6 +1,5 @@
 import React from 'react';
 import Header from '../components/Header';
-import TopBanner from '../components/TopBanner';
 import Footer from '../components/Footer';
 import BottomNav from '../components/BottomNav';
 import FloatingWhatsApp from '../components/FloatingWhatsApp';
@@ -12,7 +11,6 @@ import udupiImg from '../assets/udupi-branch-siri-samruddhi.jpg.webp';
 const AboutUs: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col w-full bg-[#FFF7F2] pb-16 lg:pb-0 overflow-x-hidden font-sans">
-      <TopBanner />
       <Header />
       
       {/* Hero Section */}
