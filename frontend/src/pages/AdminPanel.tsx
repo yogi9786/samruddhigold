@@ -54,7 +54,7 @@ const emptyProduct = {
   product_type: 'simple', slug: '', short_description: '',
   manage_stock: false, allow_backorders: 'no', low_stock_threshold: 0,
   sold_individually: false, dimensions: { length: '', width: '', height: '' }, shipping_class: '',
-  upsells: [], cross_sells: [], attributes: [],
+  upsells: [] as string[], cross_sells: [] as string[], attributes: [] as any[],
   purchase_note: '', menu_order: 0, enable_reviews: true
 };
 const emptyCat = { name: '', description: '', image_url: '', parent_id: '', slug: '', display_type: 'default' };
