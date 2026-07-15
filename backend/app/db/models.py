@@ -21,6 +21,9 @@ class Category(Base):
     name = Column(String, index=True, nullable=False)
     description = Column(Text, nullable=True)
     image_url = Column(String, nullable=True)
+    parent_id = Column(String, nullable=True)
+    slug = Column(String, unique=True, index=True, nullable=True)
+    display_type = Column(String, default="default")
 
 class Contact(Base):
     __tablename__ = "contacts"
@@ -64,6 +67,23 @@ class Product(Base):
     stone_info = Column(JSON, nullable=True)
     other_info = Column(JSON, nullable=True)
     return_policy = Column(JSON, nullable=True)
+
+    # WooCommerce professional fields
+    product_type = Column(String, default="simple")
+    slug = Column(String, unique=True, index=True, nullable=True)
+    short_description = Column(Text, nullable=True)
+    manage_stock = Column(Boolean, default=False)
+    allow_backorders = Column(String, default="no")
+    low_stock_threshold = Column(Integer, nullable=True)
+    sold_individually = Column(Boolean, default=False)
+    dimensions = Column(JSON, nullable=True)
+    shipping_class = Column(String, nullable=True)
+    upsells = Column(JSON, nullable=True)
+    cross_sells = Column(JSON, nullable=True)
+    attributes = Column(JSON, nullable=True)
+    purchase_note = Column(Text, nullable=True)
+    menu_order = Column(Integer, default=0)
+    enable_reviews = Column(Boolean, default=True)
 
 class Order(Base):
     __tablename__ = "orders"

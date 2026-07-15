@@ -13,6 +13,7 @@ from pydantic import BaseModel
 import razorpay
 import hmac
 import hashlib
+import asyncio
 
 class VerifyPaymentRequest(BaseModel):
     razorpay_order_id: str
@@ -53,7 +54,7 @@ async def checkout_order(order: OrderCreate, current_user: dict = Depends(get_cu
                 "currency": "INR",
                 "receipt": f"receipt_{datetime.now().timestamp()}"
             }
-            rzp_order = client.order.create(data=data)
+            rzp_order = await asyncio.to_thread(client.order.create, data=data)
             order_dict["razorpay_order_id"] = rzp_order.get("id")
             order_dict["status"] = "Payment Pending"
         except Exception as e:
@@ -84,11 +85,14 @@ async def verify_payment(payload: VerifyPaymentRequest, db: AsyncSession = Depen
     if settings.RAZORPAY_KEY_ID and settings.RAZORPAY_KEY_SECRET:
         try:
             client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-            client.utility.verify_payment_signature({
-                'razorpay_order_id': payload.razorpay_order_id,
-                'razorpay_payment_id': payload.razorpay_payment_id,
-                'razorpay_signature': payload.razorpay_signature
-            })
+            await asyncio.to_thread(
+                client.utility.verify_payment_signature,
+                {
+                    'razorpay_order_id': payload.razorpay_order_id,
+                    'razorpay_payment_id': payload.razorpay_payment_id,
+                    'razorpay_signature': payload.razorpay_signature
+                }
+            )
             # Signature verified
             db_order.status = "Payment Successful"
             db_order.razorpay_payment_id = payload.razorpay_payment_id
@@ -97,9 +101,9 @@ async def verify_payment(payload: VerifyPaymentRequest, db: AsyncSession = Depen
             
             # Explicitly capture the payment
             amount_in_paise = int(db_order.total_amount * 100)
-            payment_info = client.payment.fetch(payload.razorpay_payment_id)
+            payment_info = await asyncio.to_thread(client.payment.fetch, payload.razorpay_payment_id)
             if payment_info.get("status") == "authorized":
-                client.payment.capture(payload.razorpay_payment_id, amount_in_paise)
+                await asyncio.to_thread(client.payment.capture, payload.razorpay_payment_id, amount_in_paise)
                 
             # Create a dedicated Payment record
             new_payment = DBPayment(

@@ -41,7 +41,7 @@ async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
             detail="Username already registered"
         )
 
-    hashed_password = get_password_hash(user.password)
+    hashed_password = await get_password_hash(user.password)
     user_dict = user.model_dump(exclude={"password"})
 
     db_user = DBUser(**user_dict, hashed_password=hashed_password)
@@ -120,7 +120,7 @@ async def update_user(user_id: str, user_update: UserUpdate, current_user: dict 
     update_data = user_update.model_dump(exclude_unset=True)
 
     if "password" in update_data:
-        hashed_password = get_password_hash(update_data["password"])
+        hashed_password = await get_password_hash(update_data["password"])
         update_data["hashed_password"] = hashed_password
         del update_data["password"]
 

@@ -52,6 +52,17 @@ class OtherInfo(BaseModel):
 class ReturnPolicy(BaseModel):
     return_days: Optional[str] = None
 
+class ProductDimensions(BaseModel):
+    length: Optional[Union[str, float]] = None
+    width: Optional[Union[str, float]] = None
+    height: Optional[Union[str, float]] = None
+
+class ProductAttribute(BaseModel):
+    name: str
+    value: str
+    visible: Optional[bool] = True
+    variation: Optional[bool] = False
+
 # ── Main Product Models ───────────────────────────────────────────────────────
 
 class ProductBase(BaseModel):
@@ -84,6 +95,23 @@ class ProductBase(BaseModel):
     stone_info: Optional[StoneInfo] = None
     other_info: Optional[OtherInfo] = None
     return_policy: Optional[ReturnPolicy] = None
+
+    # WooCommerce professional fields
+    product_type: Optional[str] = 'simple'
+    slug: Optional[str] = None
+    short_description: Optional[str] = None
+    manage_stock: Optional[bool] = False
+    allow_backorders: Optional[str] = 'no'
+    low_stock_threshold: Optional[int] = None
+    sold_individually: Optional[bool] = False
+    dimensions: Optional[ProductDimensions] = None
+    shipping_class: Optional[str] = None
+    upsells: Optional[List[str]] = None
+    cross_sells: Optional[List[str]] = None
+    attributes: Optional[List[ProductAttribute]] = None
+    purchase_note: Optional[str] = None
+    menu_order: Optional[int] = 0
+    enable_reviews: Optional[bool] = True
 
 class ProductCreate(ProductBase):
     """Model for creating a new product."""
@@ -118,6 +146,23 @@ class ProductUpdate(BaseModel):
     stone_info: Optional[StoneInfo] = None
     other_info: Optional[OtherInfo] = None
     return_policy: Optional[ReturnPolicy] = None
+
+    # WooCommerce professional fields
+    product_type: Optional[str] = None
+    slug: Optional[str] = None
+    short_description: Optional[str] = None
+    manage_stock: Optional[bool] = None
+    allow_backorders: Optional[str] = None
+    low_stock_threshold: Optional[int] = None
+    sold_individually: Optional[bool] = None
+    dimensions: Optional[ProductDimensions] = None
+    shipping_class: Optional[str] = None
+    upsells: Optional[List[str]] = None
+    cross_sells: Optional[List[str]] = None
+    attributes: Optional[List[ProductAttribute]] = None
+    purchase_note: Optional[str] = None
+    menu_order: Optional[int] = None
+    enable_reviews: Optional[bool] = None
 
 class ProductResponse(ProductBase):
     """Model returned to the client, includes id."""

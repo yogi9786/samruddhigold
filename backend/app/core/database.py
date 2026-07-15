@@ -13,7 +13,11 @@ Base = declarative_base()
 engine = create_async_engine(
     settings.DATABASE_URL, 
     echo=settings.DEBUG,
-    future=True
+    future=True,
+    pool_size=20,
+    max_overflow=20,
+    pool_timeout=30.0,
+    pool_recycle=1800
 )
 
 async_session = async_sessionmaker(
@@ -52,6 +56,28 @@ async def init_db():
             await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS stone_info JSON;"))
             await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS other_info JSON;"))
             await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS return_policy JSON;"))
+            
+            # Add WooCommerce professional product fields
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS product_type VARCHAR DEFAULT 'simple';"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS slug VARCHAR;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS short_description TEXT;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS manage_stock BOOLEAN DEFAULT FALSE;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS allow_backorders VARCHAR DEFAULT 'no';"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS low_stock_threshold INTEGER;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS sold_individually BOOLEAN DEFAULT FALSE;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS dimensions JSON;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS shipping_class VARCHAR;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS upsells JSON;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS cross_sells JSON;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS attributes JSON;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS purchase_note TEXT;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS menu_order INTEGER DEFAULT 0;"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS enable_reviews BOOLEAN DEFAULT TRUE;"))
+            
+            # Ensure Categories columns exist
+            await conn.execute(text("ALTER TABLE categories ADD COLUMN IF NOT EXISTS parent_id VARCHAR;"))
+            await conn.execute(text("ALTER TABLE categories ADD COLUMN IF NOT EXISTS slug VARCHAR;"))
+            await conn.execute(text("ALTER TABLE categories ADD COLUMN IF NOT EXISTS display_type VARCHAR DEFAULT 'default';"))
             
             # Ensure Order columns exist for Razorpay integration
             await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS email VARCHAR;"))

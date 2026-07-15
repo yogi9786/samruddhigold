@@ -5,6 +5,9 @@ class CategoryBase(BaseModel):
     name: str
     description: Optional[str] = None
     image_url: Optional[str] = None
+    parent_id: Optional[str] = None
+    slug: Optional[str] = None
+    display_type: Optional[str] = "default"
 
 class CategoryCreate(CategoryBase):
     pass

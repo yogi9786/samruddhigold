@@ -11,6 +11,7 @@ from sqlalchemy.future import select
 from app.core.config import settings
 from app.core.database import get_db
 from app.db.models import User as DBUser
+import asyncio
 
 # ── Password hashing ──────────────────────────────────────────────────────────
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -21,12 +22,12 @@ oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/api/auth/token", auto_e
 
 # ── Helper functions ──────────────────────────────────────────────────────────
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+async def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return await asyncio.to_thread(pwd_context.verify, plain_password, hashed_password)
 
 
-def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+async def get_password_hash(password: str) -> str:
+    return await asyncio.to_thread(pwd_context.hash, password)
 
 
 async def authenticate_user(db: AsyncSession, username: str, password: str):
@@ -38,7 +39,7 @@ async def authenticate_user(db: AsyncSession, username: str, password: str):
     user = result.scalars().first()
     if not user:
         return None
-    if not verify_password(password, user.hashed_password):
+    if not await verify_password(password, user.hashed_password):
         return None
     return user
 

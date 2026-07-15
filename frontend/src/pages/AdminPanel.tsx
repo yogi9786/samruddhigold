@@ -6,7 +6,7 @@ import logo from '../assets/samruddhi-logo.png';
 // Primary: #5F1517  Accent: #801416  Gold: #D4AF37  Cream: #FFF7F2
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-interface Category { id: string; name: string; description?: string; image_url?: string; }
+interface Category { id: string; name: string; description?: string; image_url?: string; parent_id?: string; slug?: string; display_type?: string; }
 interface Order { id: string; items: any[]; total_amount: number; shipping_address: string; contact_phone: string; email?: string; full_name?: string; payment_method: string; razorpay_order_id?: string; razorpay_payment_id?: string; user_username: string; status: string; created_at: string; updated_at: string; }
 interface User { id: string; username: string; email?: string; full_name?: string; disabled: boolean; }
 interface Product {
@@ -17,6 +17,12 @@ interface Product {
   price_breakup?: any; basic_info?: any; stone_info?: any; other_info?: any; return_policy?: any;
   status?: string; stock?: number; weight?: string; tags?: string; vendor?: string; seo_title?: string; seo_description?: string;
   description?: string; quantity?: number;
+  // WooCommerce fields
+  product_type?: string; slug?: string; short_description?: string;
+  manage_stock?: boolean; allow_backorders?: string; low_stock_threshold?: number;
+  sold_individually?: boolean; dimensions?: any; shipping_class?: string;
+  upsells?: string[]; cross_sells?: string[]; attributes?: any[];
+  purchase_note?: string; menu_order?: number; enable_reviews?: boolean;
 }
 
 type Section = 'dashboard' | 'all-products' | 'add-product' | 'all-categories' | 'add-category' | 'orders' | 'customers' | 'users' | 'change-password' | 'settings' | 'metal-prices' | 'virtual-bookings' | 'subscriptions';
@@ -43,9 +49,15 @@ const emptyProduct = {
   chain_included: '', earring_type: '', gold_certification: '', metal_finish: '', occasion: '',
   hallmark: '', gender: '', ring_size: '', bangle_size: '',
   // Return
-  return_days: ''
+  return_days: '',
+  // WooCommerce fields
+  product_type: 'simple', slug: '', short_description: '',
+  manage_stock: false, allow_backorders: 'no', low_stock_threshold: 0,
+  sold_individually: false, dimensions: { length: '', width: '', height: '' }, shipping_class: '',
+  upsells: [], cross_sells: [], attributes: [],
+  purchase_note: '', menu_order: 0, enable_reviews: true
 };
-const emptyCat = { name: '', description: '', image_url: '' };
+const emptyCat = { name: '', description: '', image_url: '', parent_id: '', slug: '', display_type: 'default' };
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 const Toast: React.FC<{ msg: { text: string; type: string }; onClose: () => void }> = ({ msg, onClose }) => {
@@ -445,7 +457,12 @@ const AdminPanel: React.FC = () => {
     basic_info: { height: pForm.height, material: pForm.material, metal: pForm.metal, metal_purity: pForm.metal_purity, width: pForm.width, approx_gross_weight: pForm.approx_gross_weight },
     stone_info: { stone_1_name: pForm.stone_1_name, stone_1_weight: pForm.stone_1_weight, diamond_type: pForm.diamond_type, diamond_clarity: pForm.diamond_clarity, diamond_color: pForm.diamond_color, total_diamond_weight: pForm.total_diamond_weight, no_of_diamonds: pForm.no_of_diamonds, stone_shape: pForm.stone_shape, stone_setting: pForm.stone_setting },
     other_info: { chain_included: pForm.chain_included, earring_type: pForm.earring_type, gold_certification: pForm.gold_certification, metal_finish: pForm.metal_finish, occasion: pForm.occasion, hallmark: pForm.hallmark, gender: pForm.gender, ring_size: pForm.ring_size, bangle_size: pForm.bangle_size },
-    return_policy: { return_days: pForm.return_days }
+    return_policy: { return_days: pForm.return_days },
+    product_type: pForm.product_type, slug: pForm.slug || null, short_description: pForm.short_description || null,
+    manage_stock: pForm.manage_stock, allow_backorders: pForm.allow_backorders, low_stock_threshold: pForm.low_stock_threshold || null,
+    sold_individually: pForm.sold_individually, dimensions: pForm.dimensions, shipping_class: pForm.shipping_class || null,
+    upsells: pForm.upsells, cross_sells: pForm.cross_sells, attributes: pForm.attributes,
+    purchase_note: pForm.purchase_note || null, menu_order: pForm.menu_order, enable_reviews: pForm.enable_reviews
   });
 
   const handleProductSubmit = async (e: React.FormEvent) => {
@@ -504,7 +521,14 @@ const AdminPanel: React.FC = () => {
       occasion: p.other_info?.occasion || '', hallmark: p.other_info?.hallmark || '', gender: p.other_info?.gender || '',
       ring_size: p.other_info?.ring_size || '', bangle_size: p.other_info?.bangle_size || '',
       
-      return_days: p.return_policy?.return_days || ''
+      return_days: p.return_policy?.return_days || '',
+      
+      product_type: p.product_type || 'simple', slug: p.slug || '', short_description: p.short_description || '',
+      manage_stock: p.manage_stock || false, allow_backorders: p.allow_backorders || 'no', low_stock_threshold: p.low_stock_threshold || 0,
+      sold_individually: p.sold_individually || false, dimensions: p.dimensions || { length: '', width: '', height: '' },
+      shipping_class: p.shipping_class || '', upsells: p.upsells || [], cross_sells: p.cross_sells || [],
+      attributes: p.attributes || [], purchase_note: p.purchase_note || '', menu_order: p.menu_order || 0,
+      enable_reviews: p.enable_reviews !== undefined ? p.enable_reviews : true
     };
     pSnapshot.current = form;
     setPForm(form); setEditPId(p.id); setPMsg({ text: '', type: '' }); setSection('add-product');
@@ -540,7 +564,7 @@ const AdminPanel: React.FC = () => {
   const handleCatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const payload = { name: cForm.name, description: cForm.description, image_url: cForm.image_url };
+      const payload = { name: cForm.name, description: cForm.description, image_url: cForm.image_url, parent_id: (cForm as any).parent_id || null, slug: (cForm as any).slug || null, display_type: (cForm as any).display_type || 'default' };
       if (editCId) { await adminApi.put(`/categories/${editCId}`, payload); showToast('Category updated!'); }
       else { await adminApi.post('/categories', payload); showToast('Category added!'); }
       setCForm({ ...emptyCat }); setEditCId(null); cSnapshot.current = null;
@@ -549,7 +573,7 @@ const AdminPanel: React.FC = () => {
   };
 
   const startEditCat = (c: Category) => {
-    const form = { name: c.name, description: c.description || '', image_url: c.image_url || '' };
+    const form = { name: c.name, description: c.description || '', image_url: c.image_url || '', parent_id: c.parent_id || '', slug: c.slug || '', display_type: c.display_type || 'default' };
     cSnapshot.current = form; setCForm(form); setEditCId(c.id); setSection('add-category');
   };
   const handleRollbackCat = () => { if (cSnapshot.current) { setCForm(cSnapshot.current); showToast('Rolled back', 'info'); } };
@@ -945,10 +969,10 @@ const AdminPanel: React.FC = () => {
             className="w-full px-4 py-2.5 border border-[#D4AF37]/20 rounded-xl text-xs focus:outline-none focus:border-[#D4AF37] bg-[#FFF7F2] shadow-inner" style={{ fontFamily: 'Montserrat, sans-serif' }} />
         </div>
         <div className="min-w-[140px]">
-          <label className="block text-[10px] font-bold text-[#5F1517]/50 uppercase tracking-[0.15em] mb-1.5">Collection</label>
+          <label className="block text-[10px] font-bold text-[#5F1517]/50 uppercase tracking-[0.15em] mb-1.5">Category</label>
           <select value={pCatFilter} onChange={e => setPCatFilter(e.target.value)}
-            className="w-full px-4 py-2.5 border border-[#D4AF37]/20 rounded-xl text-xs focus:outline-none focus:border-[#D4AF37] bg-[#FFF7F2] shadow-inner font-semibold text-[#5F1517]" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-            <option value="">All Collections</option>
+            className="w-full sm:w-48 px-3 py-2 border border-[#D4AF37]/30 rounded-xl text-xs bg-white text-[#5F1517] focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/30 transition shadow-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+            <option value="">All Categories</option>
             {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
@@ -1094,14 +1118,27 @@ const AdminPanel: React.FC = () => {
               {/* General Info */}
               <SCard icon="📋" title="General Information">
                 <div className="space-y-4">
-                  <Field label="Product Title" name="name" value={pForm.name} onChange={handlePInput} required placeholder="e.g. 22K Gold Antique Choker" />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Field label="Product Title" name="name" value={pForm.name} onChange={handlePInput} required placeholder="e.g. 22K Gold Antique Choker" />
+                    <Field label="Slug (URL-friendly)" name="slug" value={pForm.slug} onChange={handlePInput} placeholder="e.g. gold-antique-choker" />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <Field label="SKU (Stock Keeping Unit)" name="sku" value={pForm.sku} onChange={handlePInput} required hint="Unique product code" />
                     <div>
-                      <label className="block text-xs font-semibold text-[#5F1517]/70 uppercase tracking-widest mb-1.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Collection / Category</label>
+                      <label className="block text-xs font-semibold text-[#5F1517]/70 uppercase tracking-widest mb-1.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Product Type</label>
+                      <select name="product_type" value={pForm.product_type} onChange={handlePInput}
+                        className="w-full px-4 py-3 border border-[#D4AF37]/30 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/40 focus:border-[#D4AF37] transition shadow-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                        <option value="simple">Simple Product</option>
+                        <option value="variable">Variable Product</option>
+                        <option value="grouped">Grouped Product</option>
+                        <option value="external">External/Affiliate Product</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-[#5F1517]/70 uppercase tracking-widest mb-1.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Category</label>
                       <select name="category_id" value={pForm.category_id} onChange={handlePInput}
-                        className="w-full px-4 py-3 border border-[#D4AF37]/30 shadow-sm rounded-xl text-sm font-medium focus:outline-none focus:border-[#D4AF37] bg-white" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                        <option value="">— Select Collection —</option>
+                        className="w-full px-4 py-3 border border-[#D4AF37]/30 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/40 focus:border-[#D4AF37] transition shadow-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                        <option value="">— Select Category —</option>
                         {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                       </select>
                     </div>
@@ -1110,12 +1147,84 @@ const AdminPanel: React.FC = () => {
                     <Field label="Quantity / Inventory" name="quantity" type="number" value={pForm.quantity} onChange={handlePInput} required placeholder="e.g. 5" />
                     <Field label="Vendor / Brand" name="vendor" value={pForm.vendor} onChange={handlePInput} placeholder="Siri Samruddhi Gold" />
                   </div>
-                  <Field label="Product Description" name="description" value={pForm.description} onChange={handlePInput} rows={4} placeholder="Enter a premium detailed description of this item..." />
+                  <Field label="Product Short Description" name="short_description" value={pForm.short_description} onChange={handlePInput} rows={2} placeholder="Brief summary of the product (shows near price)..." />
+                  <Field label="Product Full Description" name="description" value={pForm.description} onChange={handlePInput} rows={4} placeholder="Enter a premium detailed description of this item..." />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Field label="Tags" name="tags" value={pForm.tags} onChange={handlePInput} placeholder="wedding, necklace, bridal" hint="Comma separated" />
                     <Field label="SEO Title" name="seo_title" value={pForm.seo_title} onChange={handlePInput} placeholder="Meta title for Google" />
                   </div>
                   <Field label="SEO Description" name="seo_description" value={pForm.seo_description} onChange={handlePInput} rows={2} hint="Meta description for search engines (150-160 chars)" />
+                </div>
+              </SCard>
+
+              {/* WooCommerce: Inventory & Shipping */}
+              <SCard icon="📦" title="Inventory & Shipping">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-[#5F1517]/70 uppercase tracking-widest mb-1.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Manage Stock?</label>
+                      <select name="manage_stock" value={pForm.manage_stock ? 'true' : 'false'} onChange={(e) => setPForm(p => ({ ...p, manage_stock: e.target.value === 'true' }))}
+                        className="w-full px-4 py-3 border border-[#D4AF37]/30 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/40 focus:border-[#D4AF37] transition shadow-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                        <option value="false">No</option>
+                        <option value="true">Yes</option>
+                      </select>
+                    </div>
+                    {pForm.manage_stock && (
+                      <Field label="Stock Quantity" name="stock" type="number" value={pForm.stock} onChange={handlePInput} />
+                    )}
+                    <Field label="Low Stock Threshold" name="low_stock_threshold" type="number" value={pForm.low_stock_threshold} onChange={handlePInput} />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-[#5F1517]/70 uppercase tracking-widest mb-1.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Allow Backorders?</label>
+                      <select name="allow_backorders" value={pForm.allow_backorders} onChange={handlePInput}
+                        className="w-full px-4 py-3 border border-[#D4AF37]/30 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/40 focus:border-[#D4AF37] transition shadow-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                        <option value="no">Do not allow</option>
+                        <option value="notify">Allow, but notify customer</option>
+                        <option value="yes">Allow</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-[#5F1517]/70 uppercase tracking-widest mb-1.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Sold Individually?</label>
+                      <select name="sold_individually" value={pForm.sold_individually ? 'true' : 'false'} onChange={(e) => setPForm(p => ({ ...p, sold_individually: e.target.value === 'true' }))}
+                        className="w-full px-4 py-3 border border-[#D4AF37]/30 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/40 focus:border-[#D4AF37] transition shadow-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                        <option value="false">No</option>
+                        <option value="true">Yes (Max 1 per order)</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="border-t border-[#D4AF37]/20 pt-4 mt-4">
+                    <h4 className="text-xs font-bold text-[#5F1517]/70 uppercase tracking-widest mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>Shipping Dimensions</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                      <Field label="Length" name="length" value={pForm.dimensions?.length || ''} onChange={(e: any) => setPForm(p => ({ ...p, dimensions: { ...p.dimensions, length: e.target.value } }))} placeholder="cm" />
+                      <Field label="Width" name="width" value={pForm.dimensions?.width || ''} onChange={(e: any) => setPForm(p => ({ ...p, dimensions: { ...p.dimensions, width: e.target.value } }))} placeholder="cm" />
+                      <Field label="Height" name="height" value={pForm.dimensions?.height || ''} onChange={(e: any) => setPForm(p => ({ ...p, dimensions: { ...p.dimensions, height: e.target.value } }))} placeholder="cm" />
+                      <Field label="Shipping Class" name="shipping_class" value={pForm.shipping_class} onChange={handlePInput} placeholder="e.g. heavy" />
+                    </div>
+                  </div>
+                </div>
+              </SCard>
+
+              {/* WooCommerce: Advanced / Linked Products */}
+              <SCard icon="🔗" title="Advanced & Linked Products">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Field label="Purchase Note" name="purchase_note" value={pForm.purchase_note} onChange={handlePInput} hint="Sent to customer after purchase" />
+                    <Field label="Menu Order" name="menu_order" type="number" value={pForm.menu_order} onChange={handlePInput} hint="Custom sorting order" />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-[#5F1517]/70 uppercase tracking-widest mb-1.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Enable Reviews?</label>
+                      <select name="enable_reviews" value={pForm.enable_reviews ? 'true' : 'false'} onChange={(e) => setPForm(p => ({ ...p, enable_reviews: e.target.value === 'true' }))}
+                        className="w-full px-4 py-3 border border-[#D4AF37]/30 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/40 focus:border-[#D4AF37] transition shadow-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                      </select>
+                    </div>
+                    {/* Upsells and Cross-sells would typically have a multi-select component, but we will leave them empty string/comma separated for now for simplicity, or omit the complex UI if not needed immediately. We'll add text fields for comma separated IDs for now. */}
+                  </div>
                 </div>
               </SCard>
 
@@ -1325,11 +1434,11 @@ const AdminPanel: React.FC = () => {
     <div className="animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-3xl font-bold text-[#5F1517] tracking-tight" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>Collections</h2>
+          <h2 className="text-3xl font-bold text-[#5F1517] tracking-tight" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>Categories</h2>
           <p className="text-xs text-[#5F1517]/50 mt-1 uppercase tracking-widest font-semibold" style={{ fontFamily: 'Montserrat, sans-serif' }}>{categories.length} active categories</p>
         </div>
         <div className="flex gap-3 flex-wrap">
-          <input value={cSearch} onChange={e => setCSearch(e.target.value)} placeholder="Search collections…"
+          <input value={cSearch} onChange={e => setCSearch(e.target.value)} placeholder="Search categories…"
             className="px-4 py-2.5 border border-[#D4AF37]/30 shadow-sm rounded-xl text-xs bg-white focus:outline-none focus:border-[#D4AF37] w-full sm:w-56" style={{ fontFamily: 'Montserrat, sans-serif' }} />
           <button onClick={fetchCategories} className="px-4 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517]/70 text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition" style={{ fontFamily: 'Montserrat, sans-serif' }}>↺</button>
           <button onClick={() => { setCForm({ ...emptyCat }); setEditCId(null); setCMsg({ text: '', type: '' }); setSection('add-category'); }}
@@ -1342,7 +1451,7 @@ const AdminPanel: React.FC = () => {
           <table className="w-full">
             <thead>
               <tr className="border-b border-[#D4AF37]/20 bg-[#FFF7F2]">
-                {['Thumbnail', 'Collection Details', 'Products', 'Actions'].map(h => (
+                {['Thumbnail', 'Category Details', 'Products', 'Actions'].map(h => (
                   <th key={h} className="text-left px-5 py-4 text-[10px] font-bold text-[#5F1517]/50 uppercase tracking-[0.15em]" style={{ fontFamily: 'Montserrat, sans-serif' }}>{h}</th>
                 ))}
               </tr>
@@ -1373,7 +1482,7 @@ const AdminPanel: React.FC = () => {
                   </td>
                 </tr>
               ))}
-              {categories.length === 0 && <tr><td colSpan={4} className="text-center py-16 text-[#5F1517]/40 text-sm font-bold uppercase tracking-widest" style={{ fontFamily: 'Montserrat, sans-serif' }}>No collections found.</td></tr>}
+              {categories.length === 0 && <tr><td colSpan={4} className="text-center py-16 text-[#5F1517]/40 text-sm font-bold uppercase tracking-widest" style={{ fontFamily: 'Montserrat, sans-serif' }}>No categories found.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -1389,17 +1498,53 @@ const AdminPanel: React.FC = () => {
           className="p-2 text-[#5F1517]/50 hover:text-[#5F1517] bg-white border border-[#D4AF37]/20 hover:border-[#D4AF37] shadow-sm rounded-xl transition">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
         </button>
-        <h2 className="text-3xl font-bold text-[#5F1517] tracking-tight" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>{editCId ? 'Edit Collection' : 'Create Collection'}</h2>
+        <h2 className="text-3xl font-bold text-[#5F1517] tracking-tight" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>{editCId ? 'Edit Category' : 'Create Category'}</h2>
         {editCId && cSnapshot.current && (
           <button type="button" onClick={handleRollbackCat} className="ml-auto flex items-center gap-2 px-4 py-2 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517]/70 text-xs font-bold uppercase tracking-widest rounded-xl hover:border-[#D4AF37] hover:text-[#5F1517] transition" style={{ fontFamily: 'Montserrat, sans-serif' }}>↩ Revert</button>
         )}
       </div>
       <Alert msg={cMsg} />
       <form onSubmit={handleCatSubmit}>
-        <SCard icon="📂" title="Collection Settings">
+        <SCard icon="📂" title="Category Settings">
           <div className="space-y-5">
-            <Field label="Collection Name" name="name" value={cForm.name} onChange={handleCInput} required placeholder="e.g. Bridal Necklaces" />
-            <Field label="Description" name="description" value={cForm.description} onChange={handleCInput} rows={4} placeholder="Describe this collection..." />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="Category Name" name="name" value={cForm.name} onChange={handleCInput} required placeholder="e.g. Bridal Necklaces" />
+              <Field label="Slug" name="slug" value={(cForm as any).slug || ''} onChange={handleCInput} placeholder="e.g. bridal-necklaces" hint="URL-friendly name" />
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-[#5F1517]/70 uppercase tracking-widest mb-1.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Parent Category</label>
+                <select
+                  name="parent_id"
+                  value={(cForm as any).parent_id || ''}
+                  onChange={(e: any) => handleCInput(e)}
+                  className="w-full px-4 py-3 border border-[#D4AF37]/30 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/40 focus:border-[#D4AF37] transition shadow-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  <option value="">— None (Top Level) —</option>
+                  {categories.filter(c => c.id !== editCId).map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#5F1517]/70 uppercase tracking-widest mb-1.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Display Type</label>
+                <select
+                  name="display_type"
+                  value={(cForm as any).display_type || 'default'}
+                  onChange={(e: any) => handleCInput(e)}
+                  className="w-full px-4 py-3 border border-[#D4AF37]/30 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/40 focus:border-[#D4AF37] transition shadow-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  <option value="default">Default</option>
+                  <option value="products">Products</option>
+                  <option value="subcategories">Subcategories</option>
+                  <option value="both">Both</option>
+                </select>
+              </div>
+            </div>
+
+            <Field label="Description" name="description" value={cForm.description} onChange={handleCInput} rows={4} placeholder="Describe this category..." />
             <ImgUpload label="Cover Image" url={cForm.image_url}
               onUpload={uploadCatImg}
               onClear={() => setCForm(p => ({ ...p, image_url: '' }))}
@@ -1409,7 +1554,7 @@ const AdminPanel: React.FC = () => {
         </SCard>
         <div className="flex gap-4">
           <button type="submit" className="flex-1 py-4 bg-gradient-to-r from-[#5F1517] to-[#801416] text-[#D4AF37] font-bold rounded-2xl uppercase tracking-[0.2em] text-sm hover:from-[#801416] hover:to-[#a01a1c] transition-all shadow-[0_4px_15px_rgba(95,21,23,0.3)] hover:shadow-[0_6px_20px_rgba(95,21,23,0.4)]" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-            {editCId ? '💾 Save Collection' : '+ Create Collection'}
+            {editCId ? '💾 Save Category' : '+ Create Category'}
           </button>
           {editCId && (
             <button type="button" onClick={() => { setCForm({ ...emptyCat }); setEditCId(null); setSection('all-categories'); }} className="px-8 py-4 bg-white border border-[#D4AF37]/40 text-[#5F1517]/70 font-bold rounded-2xl uppercase tracking-[0.2em] text-xs hover:bg-[#FFF7F2] hover:text-[#5F1517] transition-all shadow-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>Cancel</button>
@@ -2110,13 +2255,13 @@ const AdminPanel: React.FC = () => {
             </svg>
           } />
 
-          <NavItem id="all-categories" label="Collections" count={stats.categories} icon={
+          <NavItem id="all-categories" label="Categories" count={stats.categories} icon={
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 7h7l2-3h7M3 12h18M3 17h7l2 3h7" />
             </svg>
           } />
 
-          <NavItem id="add-category" label={editCId ? 'Edit Collection' : 'Add Collection'} icon={
+          <NavItem id="add-category" label={editCId ? 'Edit Category' : 'Add Category'} icon={
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
@@ -2198,7 +2343,7 @@ const AdminPanel: React.FC = () => {
             </button>
             <div>
               <h1 className="text-base sm:text-lg font-bold text-[#5F1517] capitalize tracking-tight" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>
-                {section === 'all-products' ? 'Products' : section === 'add-product' ? (editPId ? 'Edit Product' : 'Add Product') : section === 'all-categories' ? 'Collections' : section === 'add-category' ? (editCId ? 'Edit Collection' : 'Add Collection') : section === 'change-password' ? 'Security Settings' : section === 'customers' ? 'Customers' : section === 'users' ? 'All Users' : section === 'metal-prices' ? 'Metal Rates' : section === 'virtual-bookings' ? 'Video Shopping' : section === 'subscriptions' ? 'Subscriptions' : section.charAt(0).toUpperCase() + section.slice(1)}
+                {section === 'all-products' ? 'Products' : section === 'add-product' ? (editPId ? 'Edit Product' : 'Add Product') : section === 'all-categories' ? 'Categories' : section === 'add-category' ? (editCId ? 'Edit Category' : 'Add Category') : section === 'change-password' ? 'Security Settings' : section === 'customers' ? 'Customers' : section === 'users' ? 'All Users' : section === 'metal-prices' ? 'Metal Rates' : section === 'virtual-bookings' ? 'Video Shopping' : section === 'subscriptions' ? 'Subscriptions' : section.charAt(0).toUpperCase() + section.slice(1)}
               </h1>
               <p className="text-[9px] sm:text-[10px] font-bold text-[#5F1517]/40 uppercase tracking-[0.2em] mt-0.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Siri Samruddhi Gold Palace</p>
             </div>
