@@ -245,6 +245,17 @@ const GoldRates: React.FC = () => {
                   Enquire Now
                 </Link>
               </div>
+
+              {/* WhatsApp Channel CTA */}
+              <div className="bg-[#25D366]/10 rounded-3xl border border-[#25D366]/30 p-6 text-left">
+                <h4 className="font-serif font-bold text-sm text-[#075E54] mb-2">Daily Rate Updates</h4>
+                <p className="text-xs text-[#075E54]/70 leading-relaxed font-semibold mb-4">
+                  Join our official WhatsApp channel to get instant daily notifications on gold and silver market rates directly on your phone.
+                </p>
+                <a href="https://whatsapp.com/channel/0029Va93M4cKmCPGRwv6lc1k" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold text-xs uppercase tracking-widest py-3.5 rounded-xl transition duration-300 shadow">
+                  Join WhatsApp Channel
+                </a>
+              </div>
             </div>
           </div>
         )}
