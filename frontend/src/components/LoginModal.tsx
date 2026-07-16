@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Lock, Mail, User } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 import api from '../api';
 
 interface LoginModalProps {
@@ -80,6 +81,29 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
       } else {
          setError(err.response?.data?.detail || err.message || 'An error occurred');
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    try {
+      setLoading(true);
+      setError('');
+      const res = await api.post('/auth/google', {
+        credential: credentialResponse.credential
+      });
+      const token = res.data.access_token;
+      localStorage.setItem('access_token', token);
+      
+      setSuccessMsg('Google Login Successful!');
+      setSuccess(true);
+      if (onLoginSuccess) {
+        onLoginSuccess(token);
+      }
+      setTimeout(() => resetAndClose(), 1500);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || err.message || 'Google Sign-In failed');
     } finally {
       setLoading(false);
     }
@@ -224,6 +248,25 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
               >
                 {loading ? 'Processing...' : (isLoginMode ? 'Sign In' : 'Create Account')}
               </button>
+
+              <div className="flex items-center my-6">
+                <div className="flex-grow h-px bg-[#E5D3B3]/50"></div>
+                <span className="px-4 text-[12px] text-[#5F1517]/60 font-semibold uppercase tracking-wider">or</span>
+                <div className="flex-grow h-px bg-[#E5D3B3]/50"></div>
+              </div>
+
+              <div className="flex justify-center w-full">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => setError('Google Sign-In was unsuccessful')}
+                  useOneTap
+                  theme="outline"
+                  size="large"
+                  shape="pill"
+                  width="100%"
+                />
+              </div>
+
             </form>
           )}
 

@@ -41,6 +41,10 @@ async def migrate():
         await conn.execute(text("CREATE INDEX IF NOT EXISTS ix_wishlist_items_user_id ON wishlist_items (user_id);"))
         await conn.execute(text("CREATE INDEX IF NOT EXISTS ix_wishlist_items_product_id ON wishlist_items (product_id);"))
 
+        # Add auth_provider to users
+        print("Checking auth_provider column in users...")
+        await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS auth_provider VARCHAR(50) DEFAULT 'local';"))
+
         
         print("Migration completed successfully!")
 

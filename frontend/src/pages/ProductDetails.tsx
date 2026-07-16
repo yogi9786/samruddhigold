@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import api, { getImageUrl, addToCart, addToWishlist, removeFromWishlist } from '../api';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { ChevronLeft, ChevronRight, Heart, ShoppingBag, Share2, Star, Search, Tag, Award, Truck, ShieldCheck, RotateCcw, BellRing } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart, ShoppingBag, Share2, Star, Search, Tag, Award, Truck, ShieldCheck, RotateCcw, BellRing, X } from 'lucide-react';
 import LogoSpinner from '../components/LogoSpinner';
 
 interface Product {
@@ -42,6 +42,7 @@ const ProductDetails: React.FC = () => {
   const [addingToCart, setAddingToCart] = useState(false);
   const [cartSuccess, setCartSuccess] = useState(false);
   const [isInWishlist, setIsInWishlist] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'price' | 'shipping'>('details');
 
   const similarScrollRef = useRef<HTMLDivElement>(null);
@@ -308,7 +309,7 @@ const ProductDetails: React.FC = () => {
                 <Star size={12} fill="currentColor" /> BESTSELLER
               </span>
               <div className="flex items-center gap-2">
-                <button onClick={handleCopyLink} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[var(--color-royal)] border border-gray-200 rounded-lg px-3 py-1.5 bg-white transition-all hover:bg-gray-50 font-medium">
+                <button onClick={() => setShowShareMenu(true)} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[var(--color-royal)] border border-gray-200 rounded-lg px-3 py-1.5 bg-white transition-all hover:bg-gray-50 font-medium">
                   <Share2 size={13} /> Share
                 </button>
                 <button onClick={toggleWishlist} className={`flex items-center gap-1.5 text-xs border rounded-lg px-3 py-1.5 bg-white transition-all hover:bg-gray-50 font-medium ${isInWishlist ? 'text-red-500 border-red-200 bg-red-50/20' : 'text-gray-500 border-gray-200'}`}>
@@ -762,6 +763,73 @@ const ProductDetails: React.FC = () => {
               })}
             </div>
           </section>
+        )}
+        {/* Share Action Sheet */}
+        {showShareMenu && (
+          <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center">
+            {/* Backdrop */}
+            <div 
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
+              onClick={() => setShowShareMenu(false)}
+            />
+            
+            {/* Bottom Sheet Modal */}
+            <div className="relative w-full max-w-md bg-white rounded-t-3xl sm:rounded-2xl p-6 pb-10 sm:pb-6 shadow-2xl animate-in slide-in-from-bottom-full duration-300">
+              <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6 sm:hidden" />
+              
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-serif text-[#5F1517] font-bold">Share with friends</h3>
+                <button onClick={() => setShowShareMenu(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                  <X size={20} className="text-gray-500" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-4 gap-4 mb-6">
+                <a href={`https://wa.me/?text=Check%20out%20this%20amazing%20jewelry:%20${window.location.href}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 group">
+                  <div className="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center group-hover:scale-105 group-hover:bg-green-100 transition-all">
+                    <svg className="text-green-600" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                  </div>
+                  <span className="text-xs font-semibold text-gray-600">WhatsApp</span>
+                </a>
+                
+                <a href={`https://www.facebook.com/sharer/sharer.php?u=${window.location.href}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 group">
+                  <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center group-hover:scale-105 group-hover:bg-blue-100 transition-all">
+                    <svg className="text-blue-600" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                  </div>
+                  <span className="text-xs font-semibold text-gray-600">Facebook</span>
+                </a>
+
+                <a href={`https://twitter.com/intent/tweet?url=${window.location.href}&text=Check%20out%20this%20beautiful%20jewelry!`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 group">
+                  <div className="w-14 h-14 bg-sky-50 rounded-2xl flex items-center justify-center group-hover:scale-105 group-hover:bg-sky-100 transition-all">
+                    <svg className="text-sky-500" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+                  </div>
+                  <span className="text-xs font-semibold text-gray-600">Twitter</span>
+                </a>
+
+                <a href={`mailto:?subject=Beautiful%20Jewelry&body=Check%20this%20out:%20${window.location.href}`} className="flex flex-col items-center gap-2 group">
+                  <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center group-hover:scale-105 group-hover:bg-red-100 transition-all">
+                    <svg className="text-red-500" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                  </div>
+                  <span className="text-xs font-semibold text-gray-600">Email</span>
+                </a>
+              </div>
+
+              <div className="flex items-center gap-2 p-3 bg-gray-50 border border-gray-200 rounded-xl">
+                <div className="flex-1 overflow-hidden">
+                  <p className="text-sm text-gray-500 truncate whitespace-nowrap">{window.location.href}</p>
+                </div>
+                <button 
+                  onClick={() => {
+                    handleCopyLink();
+                    setShowShareMenu(false);
+                  }} 
+                  className="shrink-0 flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold text-[#5F1517] hover:bg-gray-50 transition-colors"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg> Copy
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </main>
 

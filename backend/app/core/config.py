@@ -7,23 +7,26 @@ class Settings(BaseSettings):
     DEBUG: bool = True
 
     # Secret key for signing JWT tokens
-    SECRET_KEY: str = "samruddhi-super-secret-key-change-in-production"
+    SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
 
     # CORS origins (comma-separated in .env, e.g. "http://localhost:5173,https://yourdomain.com")
-    ALLOWED_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    ALLOWED_ORIGINS: list[str]
 
     # Database Settings
-    DATABASE_URL: str = "postgresql+asyncpg://siriuser:change_this_later_123@localhost:5432/sirisamruddhi"
+    DATABASE_URL: str
     
     # Admin Credentials
-    ADMIN_USERNAME: str = "siriadmin"
-    ADMIN_PASSWORD: str = "adminpassword"
+    ADMIN_USERNAME: str
+    ADMIN_PASSWORD: str
 
     # Razorpay Settings
-    RAZORPAY_KEY_ID: str = ""
-    RAZORPAY_KEY_SECRET: str = ""
+    RAZORPAY_KEY_ID: str | None = None
+    RAZORPAY_KEY_SECRET: str | None = None
+
+    # Google OAuth
+    GOOGLE_CLIENT_ID: str
 
     class Config:
         env_file = ".env"

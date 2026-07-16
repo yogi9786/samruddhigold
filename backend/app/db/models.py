@@ -14,6 +14,8 @@ class User(Base):
     full_name = Column(String, nullable=True)
     hashed_password = Column(String, nullable=False)
     disabled = Column(Boolean, default=False)
+    auth_provider = Column(String, default="local")
+    addresses = Column(JSON, nullable=True)
 
 class Category(Base):
     __tablename__ = "categories"

@@ -15,6 +15,11 @@ class TokenData(BaseModel):
     username: Optional[str] = None
 
 
+class GoogleLoginRequest(BaseModel):
+    """Payload received from Google Sign-In button on the frontend."""
+    credential: str
+
+
 # ── User Models ───────────────────────────────────────────────────────────────
 
 class UserBase(BaseModel):
@@ -32,6 +37,7 @@ class UserInDB(UserBase):
 class UserResponse(UserBase):
     """Safe user model returned to the client (no password)."""
     id: str
+    auth_provider: str = "local"
 
     class Config:
         populate_by_name = True

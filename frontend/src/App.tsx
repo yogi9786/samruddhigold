@@ -16,6 +16,7 @@ import Shipping from './pages/Shipping';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import PageLoader from './components/PageLoader';
 import GoldRates from './pages/GoldRates';
+import Account from './pages/Account';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -43,6 +44,7 @@ function App() {
           <Route path="/new-arrivals" element={<NewArrivals />} />
           <Route path="/virtual-shopping" element={<VirtualShopping />} />
           <Route path="/gold-rates" element={<GoldRates />} />
+          <Route path="/account" element={<Account />} />
         </Routes>
       </Router>
     </>

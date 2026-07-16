@@ -161,6 +161,35 @@ async def delete_user(user_id: str, current_user: dict = Depends(get_current_use
     return None
 
 
-# Include both sub-routers
+# ──────────────────────────────────────────────────────────────────────────────
+# Authenticated User routes
+# ──────────────────────────────────────────────────────────────────────────────
+me_router = APIRouter(prefix="/users/me", tags=["👤 User — Authenticated"])
+
+@me_router.put(
+    "/addresses",
+    summary="Update saved addresses"
+)
+async def update_my_addresses(
+    addresses: List[dict],
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    **Requires Bearer token.**
+    Update the user's saved addresses array.
+    """
+    username = current_user.get("username") if isinstance(current_user, dict) else current_user.username
+    result = await db.execute(select(DBUser).where(DBUser.username == username))
+    user = result.scalars().first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    user.addresses = addresses
+    await db.commit()
+    return {"message": "Addresses updated successfully", "addresses": user.addresses}
+
+# Include all sub-routers
 router.include_router(public_router)
 router.include_router(admin_router)
+router.include_router(me_router)

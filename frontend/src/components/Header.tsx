@@ -4,10 +4,11 @@ import logo from '../assets/samruddhi-logo.png';
 import LoginModal from './LoginModal';
 import SubscribeModal from './SubscribeModal';
 
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api, { getCart, getWishlist, getImageUrl } from '../api';
 
 const Header: React.FC = () => {
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedMobileCategory, setExpandedMobileCategory] = useState<string | null>(null);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
@@ -157,11 +158,13 @@ const Header: React.FC = () => {
     window.addEventListener('wishlistUpdated', handleCartUpdate);
     window.addEventListener('openSubscribeModal', handleOpenSubscribe);
     window.addEventListener('openLoginModal', handleOpenLogin);
+    window.addEventListener('userLogout', handleLogout);
     return () => {
       window.removeEventListener('cartUpdated', handleCartUpdate);
       window.removeEventListener('wishlistUpdated', handleCartUpdate);
       window.removeEventListener('openSubscribeModal', handleOpenSubscribe);
       window.removeEventListener('openLoginModal', handleOpenLogin);
+      window.removeEventListener('userLogout', handleLogout);
     };
   }, []);
 
@@ -400,9 +403,9 @@ const Header: React.FC = () => {
               </button>
               {/* Login */}
               {user ? (
-                <div className="flex items-center gap-2 cursor-pointer hover:opacity-80" onClick={handleLogout}>
-                  <span className="uppercase">LOGOUT</span> <User size={20} strokeWidth={1.5} />
-                </div>
+                <Link to="/account" className="flex items-center gap-2 cursor-pointer hover:opacity-80 no-underline text-[#801416]">
+                  <span className="uppercase">ACCOUNT</span> <User size={20} strokeWidth={1.5} />
+                </Link>
               ) : (
                 <div className="flex items-center gap-2 cursor-pointer hover:opacity-80" onClick={() => setIsLoginModalOpen(true)}>
                   <span>LOG IN</span> <User size={20} strokeWidth={1.5} />
@@ -437,12 +440,15 @@ const Header: React.FC = () => {
               <button className="hover:opacity-80 transition" onClick={() => setIsMobileSearchOpen(true)}>
                 <Search size={22} strokeWidth={1.5} />
               </button>
-              <button
-                className="hover:opacity-80 transition"
-                onClick={() => user ? handleLogout() : setIsLoginModalOpen(true)}
-              >
-                <User size={22} strokeWidth={1.5} />
-              </button>
+              {user ? (
+                <Link to="/account" className="hover:opacity-80 transition text-[#801416]">
+                  <User size={22} strokeWidth={1.5} />
+                </Link>
+              ) : (
+                <button className="hover:opacity-80 transition text-[#801416]" onClick={() => setIsLoginModalOpen(true)}>
+                  <User size={22} strokeWidth={1.5} />
+                </button>
+              )}
               {/* Shop icon — next to account */}
               <Link to="/cart" className="hover:opacity-80 transition relative">
                 <ShoppingBag size={22} strokeWidth={1.5} />
@@ -670,7 +676,10 @@ const Header: React.FC = () => {
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
-        onLoginSuccess={() => fetchUserProfile()}
+        onLoginSuccess={() => {
+          fetchUserProfile();
+          navigate('/account');
+        }}
       />
 
       <SubscribeModal

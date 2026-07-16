@@ -180,6 +180,39 @@ async def get_my_orders(current_user: dict = Depends(get_current_user), db: Asyn
     orders = result.scalars().all()
     return orders
 
+@user_router.get(
+    "/my-payments",
+    summary="Get current user's payment history"
+)
+async def get_my_payments(current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    username = current_user.get("username") if isinstance(current_user, dict) else current_user.username
+    # We join Payment with DBOrder to filter by the user's username
+    query = (
+        select(DBPayment, DBOrder)
+        .join(DBOrder, DBPayment.order_id == DBOrder.id)
+        .where(DBOrder.user_username == username)
+        .order_by(DBPayment.created_at.desc())
+    )
+    result = await db.execute(query)
+    payments = []
+    for payment, order in result.all():
+        payments.append({
+            "id": payment.id,
+            "order_id": payment.order_id,
+            "razorpay_payment_id": payment.razorpay_payment_id,
+            "razorpay_order_id": payment.razorpay_order_id,
+            "amount": payment.amount,
+            "status": payment.status,
+            "created_at": payment.created_at,
+            # include a summary of the order if needed
+            "order_summary": {
+                "total_amount": order.total_amount,
+                "status": order.status,
+                "created_at": order.created_at
+            }
+        })
+    return payments
+
 # ── Admin Routes ──────────────────────────────────────────────────────────────
 
 @admin_router.get(
