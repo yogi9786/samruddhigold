@@ -149,8 +149,16 @@ async def login_with_google(
         # Invalid token
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Google token",
+            detail=f"Invalid Google token: {str(e)}",
             headers={"WWW-Authenticate": "Bearer"},
+        )
+    except Exception as e:
+        # Catch and print database or network errors
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Google Login error: {type(e).__name__} - {str(e)}"
         )
 
 
