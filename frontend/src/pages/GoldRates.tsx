@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import api from '../api';
-import { Award, ShieldCheck, Scale, Calculator, RefreshCw, ChevronRight } from 'lucide-react';
+import { Award, ShieldCheck, Scale, Calculator, RefreshCw, ChevronRight, Coins } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface MetalRate {
@@ -84,7 +84,7 @@ const GoldRates: React.FC = () => {
         <div className="mb-10 text-center lg:text-left flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 border-b border-[#D4AF37]/25 pb-8">
           <div>
             <div className="flex items-center justify-center lg:justify-start gap-2 mb-2">
-              <span className="text-xl">🪙</span>
+              <span className="text-xl text-[#D4AF37]"><Coins className="w-6 h-6" /></span>
               <span className="font-sans text-[10px] text-[#D4AF37] tracking-[4px] uppercase font-bold">Live Market Price</span>
             </div>
             <h1 className="font-serif text-3xl sm:text-5xl text-[#5F1517] leading-tight">
@@ -132,7 +132,7 @@ const GoldRates: React.FC = () => {
                             Purity: {mp.id === 'gold_24k' ? '99.9%' : mp.id === 'gold_22k' ? '91.6% (Standard)' : mp.id === 'gold_18k' ? '75.0%' : '99.9%'}
                           </span>
                         </div>
-                        <span className="text-2xl">{isGold ? '✨' : '🪙'}</span>
+                        <span className="text-2xl text-[#D4AF37]">{isGold ? '✨' : <Coins className="w-6 h-6" />}</span>
                       </div>
 
                       {/* Main Rate Display */}

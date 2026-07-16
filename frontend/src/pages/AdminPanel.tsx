@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { FileText, Package, Link as LinkIcon, Image as ImageIcon, Ruler, Gem, Calculator, DollarSign, Folder, Shield, TrendingUp } from 'lucide-react';
 import api, { adminApi, getImageUrl } from '../api';
 import logo from '../assets/samruddhi-logo.png';
 
@@ -59,6 +60,31 @@ const emptyProduct = {
 };
 const emptyCat = { name: '', description: '', image_url: '', parent_id: '', slug: '', display_type: 'default' };
 
+const exportToCSV = (data: any[], filename: string) => {
+  if (!data || !data.length) {
+    alert('No data to export');
+    return;
+  }
+  const keys = Object.keys(data[0]);
+  const csvContent = [
+    keys.join(','),
+    ...data.map((row: any) => keys.map((k: string) => {
+      let val = row[k];
+      if (val === null || val === undefined) val = '';
+      if (typeof val === 'object') val = JSON.stringify(val);
+      if (typeof val === 'string') val = val.replace(/"/g, '""');
+      return `"${val}"`;
+    }).join(','))
+  ].join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 // ─── Toast ────────────────────────────────────────────────────────────────────
 const Toast: React.FC<{ msg: { text: string; type: string }; onClose: () => void }> = ({ msg, onClose }) => {
   useEffect(() => { if (msg.text) { const t = setTimeout(onClose, 4000); return () => clearTimeout(t); } }, [msg.text, onClose]);
@@ -112,7 +138,7 @@ const GoldDivider = () => (
 );
 
 // ─── Section Card ──────────────────────────────────────────────────────────────
-const SCard: React.FC<{ icon: string; title: string; children: React.ReactNode }> = ({ icon, title, children }) => (
+const SCard: React.FC<{ icon: React.ReactNode; title: string; children: React.ReactNode }> = ({ icon, title, children }) => (
   <div className="bg-white rounded-2xl shadow-sm border border-[#D4AF37]/20 p-6 sm:p-8 mb-6 relative overflow-hidden group">
     <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#D4AF37]/5 to-transparent rounded-bl-full opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none" />
     <div className="flex items-center gap-3 mb-5">
@@ -955,6 +981,7 @@ const AdminPanel: React.FC = () => {
           <p className="text-xs text-[#5F1517]/50 mt-1 uppercase tracking-widest font-semibold" style={{ fontFamily: 'Montserrat, sans-serif' }}>{filteredProducts.length} items found</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
+          <button onClick={() => exportToCSV(filteredProducts, 'products.csv')} className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517] text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition" style={{ fontFamily: 'Montserrat, sans-serif' }}>📥 Export</button>
           <button onClick={fetchProducts} className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517] text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition" style={{ fontFamily: 'Montserrat, sans-serif' }}>↺ Refresh</button>
           <button onClick={() => { setPForm({ ...emptyProduct }); setEditPId(null); setPMsg({ text: '', type: '' }); setSection('add-product'); }}
             className="px-5 py-2.5 bg-gradient-to-r from-[#5F1517] to-[#801416] text-[#D4AF37] text-xs font-bold rounded-xl hover:shadow-lg transition uppercase tracking-widest" style={{ fontFamily: 'Montserrat, sans-serif' }}>+ Add Product</button>
@@ -1116,7 +1143,7 @@ const AdminPanel: React.FC = () => {
             <div className="lg:col-span-2 space-y-6">
               
               {/* General Info */}
-              <SCard icon="📋" title="General Information">
+              <SCard icon={<FileText />} title="General Information">
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Field label="Product Title" name="name" value={pForm.name} onChange={handlePInput} required placeholder="e.g. 22K Gold Antique Choker" />
@@ -1158,7 +1185,7 @@ const AdminPanel: React.FC = () => {
               </SCard>
 
               {/* WooCommerce: Inventory & Shipping */}
-              <SCard icon="📦" title="Inventory & Shipping">
+              <SCard icon={<Package />} title="Inventory & Shipping">
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
@@ -1208,7 +1235,7 @@ const AdminPanel: React.FC = () => {
               </SCard>
 
               {/* WooCommerce: Advanced / Linked Products */}
-              <SCard icon="🔗" title="Advanced & Linked Products">
+              <SCard icon={<LinkIcon />} title="Advanced & Linked Products">
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Field label="Purchase Note" name="purchase_note" value={pForm.purchase_note} onChange={handlePInput} hint="Sent to customer after purchase" />
@@ -1229,7 +1256,7 @@ const AdminPanel: React.FC = () => {
               </SCard>
 
               {/* Images */}
-              <SCard icon="🖼️" title="Media & Gallery">
+              <SCard icon={<ImageIcon />} title="Media & Gallery">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <ImgUpload label="Primary Thumbnail" url={pForm.image_url} onUpload={uploadMain}
                     onClear={() => setPForm(p => ({ ...p, image_url: '' }))}
@@ -1265,7 +1292,7 @@ const AdminPanel: React.FC = () => {
               </SCard>
 
               {/* Physical Properties */}
-              <SCard icon="📏" title="Jewelry Specifications">
+              <SCard icon={<Ruler />} title="Jewelry Specifications">
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
                   <Field label="Gross Weight" name="approx_gross_weight" value={pForm.approx_gross_weight} onChange={handlePInput} placeholder="e.g. 15.5g" />
                   <Field label="Metal" name="metal" value={pForm.metal} onChange={handlePInput} placeholder="e.g. Yellow Gold" />
@@ -1283,7 +1310,7 @@ const AdminPanel: React.FC = () => {
               </SCard>
 
               {/* Stones / Diamonds */}
-              <SCard icon="💎" title="Diamond & Stone Details">
+              <SCard icon={<Gem />} title="Diamond & Stone Details">
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
                   <Field label="Gemstone Name" name="stone_1_name" value={pForm.stone_1_name} onChange={handlePInput} placeholder="e.g. Ruby" />
                   <Field label="Gemstone Wt" name="stone_1_weight" value={pForm.stone_1_weight} onChange={handlePInput} placeholder="e.g. 0.5 ct" />
@@ -1298,7 +1325,7 @@ const AdminPanel: React.FC = () => {
               </SCard>
 
               {/* Detailed Price Breakup */}
-              <SCard icon="💰" title="Price Breakup & Dynamic Calculator">
+              <SCard icon={<Calculator />} title="Price Breakup & Dynamic Calculator">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div className="bg-[#FFF7F2] p-4 rounded-xl border border-[#D4AF37]/30">
@@ -1364,7 +1391,7 @@ const AdminPanel: React.FC = () => {
 
             <div className="space-y-6">
               {/* Pricing Status (Sidebar) */}
-              <SCard icon="💵" title="Pricing & Status">
+              <SCard icon={<DollarSign />} title="Pricing & Status">
                 <div className="space-y-4">
                   <div>
                     <label className="block text-xs font-semibold text-[#5F1517]/70 uppercase tracking-widest mb-1.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Product Status</label>
@@ -1393,7 +1420,7 @@ const AdminPanel: React.FC = () => {
               </SCard>
 
               {/* Inventory (Sidebar) */}
-              <SCard icon="📦" title="Inventory & Shipping">
+              <SCard icon={<Package />} title="Inventory & Shipping">
                 <div className="space-y-4">
                   <Field label="Stock Quantity" name="stock" type="number" value={pForm.stock} onChange={handlePInput} />
                   <Field label="Weight for Shipping" name="weight" value={pForm.weight} onChange={handlePInput} placeholder="e.g. 0.5 kg" />
@@ -1440,7 +1467,8 @@ const AdminPanel: React.FC = () => {
         <div className="flex gap-3 flex-wrap">
           <input value={cSearch} onChange={e => setCSearch(e.target.value)} placeholder="Search categories…"
             className="px-4 py-2.5 border border-[#D4AF37]/30 shadow-sm rounded-xl text-xs bg-white focus:outline-none focus:border-[#D4AF37] w-full sm:w-56" style={{ fontFamily: 'Montserrat, sans-serif' }} />
-          <button onClick={fetchCategories} className="px-4 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517]/70 text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition" style={{ fontFamily: 'Montserrat, sans-serif' }}>↺</button>
+          <button onClick={() => exportToCSV(categories, 'categories.csv')} className="px-4 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517]/70 text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition" style={{ fontFamily: 'Montserrat, sans-serif' }}>📥 Export</button>
+            <button onClick={fetchCategories} className="px-4 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517]/70 text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition" style={{ fontFamily: 'Montserrat, sans-serif' }}>↺</button>
           <button onClick={() => { setCForm({ ...emptyCat }); setEditCId(null); setCMsg({ text: '', type: '' }); setSection('add-category'); }}
             className="px-5 py-2.5 bg-gradient-to-r from-[#5F1517] to-[#801416] text-[#D4AF37] text-xs font-bold rounded-xl hover:shadow-lg transition uppercase tracking-widest" style={{ fontFamily: 'Montserrat, sans-serif' }}>+ Add</button>
         </div>
@@ -1468,7 +1496,14 @@ const AdminPanel: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-5 py-4">
-                    <div className="font-bold text-[#5F1517] text-base" style={{ fontFamily: 'Montserrat, sans-serif' }}>{c.name}</div>
+                    <div className="font-bold text-[#5F1517] text-base flex items-center gap-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                      {c.name}
+                      {c.parent_id && (
+                        <span className="text-[9px] px-2 py-0.5 rounded-full bg-[#D4AF37]/10 text-[#5F1517]/70 border border-[#D4AF37]/20 uppercase tracking-widest whitespace-nowrap">
+                          Child of: {categories.find(parent => parent.id === c.parent_id)?.name || 'Unknown'}
+                        </span>
+                      )}
+                    </div>
                     <div className="text-xs text-[#5F1517]/50 max-w-[300px] truncate mt-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>{c.description || 'No description provided'}</div>
                   </td>
                   <td className="px-5 py-4">
@@ -1505,7 +1540,7 @@ const AdminPanel: React.FC = () => {
       </div>
       <Alert msg={cMsg} />
       <form onSubmit={handleCatSubmit}>
-        <SCard icon="📂" title="Category Settings">
+        <SCard icon={<Folder />} title="Category Settings">
           <div className="space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Category Name" name="name" value={cForm.name} onChange={handleCInput} required placeholder="e.g. Bridal Necklaces" />
@@ -1578,7 +1613,8 @@ const AdminPanel: React.FC = () => {
             <option value="">All Statuses</option>
             {['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'].map(s => <option key={s}>{s}</option>)}
           </select>
-          <button onClick={fetchOrders} className="px-4 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517]/70 text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition" style={{ fontFamily: 'Montserrat, sans-serif' }}>↺</button>
+          <button onClick={() => exportToCSV(filteredOrders, 'orders.csv')} className="px-4 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517]/70 text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition" style={{ fontFamily: 'Montserrat, sans-serif' }}>📥 Export</button>
+            <button onClick={fetchOrders} className="px-4 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517]/70 text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition" style={{ fontFamily: 'Montserrat, sans-serif' }}>↺</button>
         </div>
       </div>
       <div className="bg-white border border-[#D4AF37]/20 rounded-2xl overflow-hidden shadow-sm">
@@ -1646,7 +1682,10 @@ const AdminPanel: React.FC = () => {
           <h2 className="text-3xl font-bold text-[#5F1517] tracking-tight" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>Customers</h2>
           <p className="text-xs text-[#5F1517]/50 mt-1 uppercase tracking-widest font-semibold" style={{ fontFamily: 'Montserrat, sans-serif' }}>Users with at least 1 order</p>
         </div>
-        <button onClick={fetchUsers} className="px-4 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517]/70 text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition" style={{ fontFamily: 'Montserrat, sans-serif' }}>↺ Refresh Data</button>
+        <div className="flex gap-3 flex-wrap">
+          <button onClick={() => exportToCSV(customers, 'customers.csv')} className="px-4 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517]/70 text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition" style={{ fontFamily: 'Montserrat, sans-serif' }}>📥 Export</button>
+          <button onClick={fetchUsers} className="px-4 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517]/70 text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition" style={{ fontFamily: 'Montserrat, sans-serif' }}>↺ Refresh Data</button>
+        </div>
       </div>
       <div className="bg-white border border-[#D4AF37]/20 rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
@@ -1695,7 +1734,10 @@ const AdminPanel: React.FC = () => {
           <h2 className="text-3xl font-bold text-[#5F1517] tracking-tight" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>All Users</h2>
           <p className="text-xs text-[#5F1517]/50 mt-1 uppercase tracking-widest font-semibold" style={{ fontFamily: 'Montserrat, sans-serif' }}>{users.length} registered accounts</p>
         </div>
-        <button onClick={fetchUsers} className="px-4 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517]/70 text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition" style={{ fontFamily: 'Montserrat, sans-serif' }}>↺ Refresh Data</button>
+        <div className="flex gap-3 flex-wrap">
+          <button onClick={() => exportToCSV(users, 'users.csv')} className="px-4 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517]/70 text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition" style={{ fontFamily: 'Montserrat, sans-serif' }}>📥 Export</button>
+          <button onClick={fetchUsers} className="px-4 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517]/70 text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition" style={{ fontFamily: 'Montserrat, sans-serif' }}>↺ Refresh Data</button>
+        </div>
       </div>
       <div className="bg-white border border-[#D4AF37]/20 rounded-2xl overflow-hidden shadow-sm">
         <table className="w-full">
@@ -1742,7 +1784,7 @@ const AdminPanel: React.FC = () => {
         {/* Form Card */}
         <div className="lg:col-span-1">
           <form onSubmit={handleMetalSubmit}>
-            <SCard icon="🪙" title={editMId ? 'Edit Rate' : 'Add New Rate'}>
+            <SCard icon={<TrendingUp />} title={editMId ? 'Edit Rate' : 'Add New Rate'}>
               <div className="space-y-4">
                 {!editMId && (
                   <Field 
@@ -1782,7 +1824,7 @@ const AdminPanel: React.FC = () => {
 
         {/* List Card */}
         <div className="lg:col-span-2">
-          <SCard icon="📋" title="Daily Live Rates">
+          <SCard icon={<FileText />} title="Daily Live Rates">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
@@ -1866,24 +1908,27 @@ const AdminPanel: React.FC = () => {
               {filteredBookings.length} appointments scheduled
             </p>
           </div>
-          <button 
-            onClick={fetchVirtualBookings} 
-            disabled={loadingBookings}
-            className="px-5 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517] text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition disabled:opacity-50 flex items-center gap-1.5" 
-            style={{ fontFamily: 'Montserrat, sans-serif' }}
-          >
-            {loadingBookings ? (
-              <>
-                <svg className="animate-spin h-3.5 w-3.5 text-[#5F1517]" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                Refreshing...
-              </>
-            ) : (
-              '↺ Refresh Data'
-            )}
-          </button>
+          <div className="flex gap-3 flex-wrap">
+            <button onClick={() => exportToCSV(filteredBookings, 'virtual-bookings.csv')} className="px-5 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517] text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition flex items-center gap-1.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>📥 Export</button>
+            <button 
+              onClick={fetchVirtualBookings} 
+              disabled={loadingBookings}
+              className="px-5 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517] text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition disabled:opacity-50 flex items-center gap-1.5" 
+              style={{ fontFamily: 'Montserrat, sans-serif' }}
+            >
+              {loadingBookings ? (
+                <>
+                  <svg className="animate-spin h-3.5 w-3.5 text-[#5F1517]" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Refreshing...
+                </>
+              ) : (
+                '↺ Refresh Data'
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -2008,24 +2053,27 @@ const AdminPanel: React.FC = () => {
               {filteredSubs.length} subscribers found
             </p>
           </div>
-          <button 
-            onClick={fetchSubscriptions} 
-            disabled={loadingSubscriptions}
-            className="px-5 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517] text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition disabled:opacity-50 flex items-center gap-1.5" 
-            style={{ fontFamily: 'Montserrat, sans-serif' }}
-          >
-            {loadingSubscriptions ? (
-              <>
-                <svg className="animate-spin h-3.5 w-3.5 text-[#5F1517]" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                Refreshing...
-              </>
-            ) : (
-              '↺ Refresh Data'
-            )}
-          </button>
+          <div className="flex gap-3 flex-wrap">
+            <button onClick={() => exportToCSV(filteredSubs, 'subscriptions.csv')} className="px-5 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517] text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition flex items-center gap-1.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>📥 Export</button>
+            <button 
+              onClick={fetchSubscriptions} 
+              disabled={loadingSubscriptions}
+              className="px-5 py-2.5 bg-white border border-[#D4AF37]/30 shadow-sm text-[#5F1517] text-xs font-semibold rounded-xl hover:bg-[#FFF7F2] hover:border-[#D4AF37]/60 transition disabled:opacity-50 flex items-center gap-1.5" 
+              style={{ fontFamily: 'Montserrat, sans-serif' }}
+            >
+              {loadingSubscriptions ? (
+                <>
+                  <svg className="animate-spin h-3.5 w-3.5 text-[#5F1517]" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Refreshing...
+                </>
+              ) : (
+                '↺ Refresh Data'
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -2087,7 +2135,7 @@ const AdminPanel: React.FC = () => {
     <div className="max-w-xl animate-fade-in">
       <h2 className="text-3xl font-bold text-[#5F1517] mb-6 tracking-tight" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>Security Settings</h2>
       <Alert msg={pwMsg} />
-      <SCard icon="🛡️" title="Change Admin Password">
+      <SCard icon={<Shield />} title="Change Admin Password">
         <form onSubmit={handleChangePw} className="space-y-5">
           {[{ l: 'Current Password', k: 'cur' }, { l: 'New Password', k: 'nw', h: 'Min. 6 characters required for security' }, { l: 'Confirm New Password', k: 'conf' }].map(f => (
             <div key={f.k}>

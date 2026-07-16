@@ -132,7 +132,7 @@ const ProductDetails: React.FC = () => {
           const inWishlist = res.data.some((item: any) => item.id === product.id);
           setIsInWishlist(inWishlist);
         }
-      } catch (err) {}
+      } catch (err) { }
     };
     fetchWishlistStatus();
   }, [product]);
@@ -154,7 +154,7 @@ const ProductDetails: React.FC = () => {
           const filtered = stored.filter((p: any) => p.id !== data.id).slice(0, 11);
           filtered.unshift({ id: data.id, name: data.name, price: data.price, image_url: data.image_url, original_price: data.original_price });
           localStorage.setItem('recently_viewed', JSON.stringify(filtered.slice(0, 12)));
-        } catch {}
+        } catch { }
 
         // Fetch similar products
         try {
@@ -164,7 +164,7 @@ const ProductDetails: React.FC = () => {
             image_url: p.image_url ? getImageUrl(p.image_url) : undefined,
           }));
           setSimilarProducts(simData);
-        } catch {}
+        } catch { }
 
       } catch (error) {
         console.error('Error fetching product:', error);
@@ -190,23 +190,23 @@ const ProductDetails: React.FC = () => {
     if (!product) return null;
     const rate = product.price_breakup?.gold_rate || 13275;
     const weight = parseFloat(product.price_breakup?.gold_weight || product.basic_info?.approx_gross_weight || product.weight || '2.568');
-    
+
     // Fallback metal value
     const metalVal = product.price_breakup?.metal_value || Math.round(rate * weight);
-    
+
     // Making charges estimations
     const makingCharges = product.price_breakup?.making_charges_value || Math.round(metalVal * 0.207);
     const makingDiscount = product.price_breakup?.making_charges_discount || Math.round(makingCharges * 0.2);
     const makingFinal = product.price_breakup?.making_charges_final || (makingCharges - makingDiscount);
-    
+
     // Subtotals
     const subtotalVal = product.price_breakup?.sub_total_value || (metalVal + makingCharges);
     const subtotalFinal = product.price_breakup?.sub_total_final || (metalVal + makingFinal);
-    
+
     // Taxes (GST 3%)
     const taxVal = product.price_breakup?.tax_value || Math.round(subtotalVal * 0.03);
     const taxFinal = product.price_breakup?.tax_final || Math.round(subtotalFinal * 0.03);
-    
+
     // Grand Totals
     const grandVal = product.price_breakup?.grand_total_value || (subtotalVal + taxVal);
     const grandFinal = product.price_breakup?.grand_total_final || (subtotalFinal + taxFinal);
@@ -289,11 +289,10 @@ const ProductDetails: React.FC = () => {
               <div className="flex justify-center gap-3 flex-wrap">
                 {galleryImages.map((img, idx) => (
                   <button key={idx} onClick={() => { setSelectedImage(img); setSelectedImageIdx(idx); }}
-                    className={`w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all duration-300 ${
-                      selectedImageIdx === idx 
-                        ? 'border-[var(--color-royal)] shadow-sm' 
-                        : 'border-gray-200 opacity-70 hover:opacity-100 hover:border-gray-300'
-                    }`}>
+                    className={`w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all duration-300 ${selectedImageIdx === idx
+                      ? 'border-[var(--color-royal)] shadow-sm'
+                      : 'border-gray-200 opacity-70 hover:opacity-100 hover:border-gray-300'
+                      }`}>
                     <img src={img} alt={`View ${idx + 1}`} className="w-full h-full object-cover" />
                   </button>
                 ))}
@@ -362,11 +361,11 @@ const ProductDetails: React.FC = () => {
               <p className="text-[11px] text-gray-500 mt-1.5">
                 MRP inclusive of all taxes. <a href="#price-breakup" className="text-[var(--color-royal)] font-semibold underline ml-1">View Details</a>
               </p>
-              <button 
+              <button
                 onClick={() => window.dispatchEvent(new Event('openSubscribeModal'))}
                 className="text-[10px] sm:text-xs text-[var(--color-royal)] hover:text-opacity-80 mt-3.5 flex items-center gap-1.5 font-bold uppercase tracking-wider transition-colors border border-[var(--color-primary)]/20 px-3.5 py-2.5 bg-[var(--color-ivory)] hover:bg-[#FFF2EC] rounded-xl shadow-sm"
               >
-                <BellRing size={13} className="text-[#A56B25] fill-[#A56B25]/10 animate-bounce" /> 
+                <BellRing size={13} className="text-[#A56B25] fill-[#A56B25]/10 animate-bounce" />
                 Notify Price Drop
               </button>
             </div>
@@ -375,14 +374,13 @@ const ProductDetails: React.FC = () => {
             <div className="space-y-4 mb-6">
               <div className="flex flex-col sm:flex-row gap-3">
                 {/* Add to Cart Button */}
-                <button 
+                <button
                   onClick={handleAddToCart}
                   disabled={addingToCart}
-                  className={`px-8 py-3.5 rounded-xl font-bold uppercase text-xs tracking-wider transition-all duration-300 min-w-[160px] flex items-center justify-center gap-2 ${
-                    cartSuccess 
-                      ? 'bg-green-600 text-white shadow-md' 
-                      : 'bg-[#5F1517] hover:bg-[#4A1012] text-white shadow-md'
-                  }`}
+                  className={`px-8 py-3.5 rounded-xl font-bold uppercase text-xs tracking-wider transition-all duration-300 min-w-[160px] flex items-center justify-center gap-2 ${cartSuccess
+                    ? 'bg-green-600 text-white shadow-md'
+                    : 'bg-[#5F1517] hover:bg-[#4A1012] text-white shadow-md'
+                    }`}
                 >
                   <ShoppingBag size={14} />
                   {addingToCart ? 'Adding...' : cartSuccess ? 'View Cart' : 'Add to Cart'}
@@ -457,7 +455,7 @@ const ProductDetails: React.FC = () => {
             ].map((item) => (
               <div key={item.title} className="flex flex-col items-center text-center px-4 py-3 group">
                 {/* Icon circle */}
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center text-[var(--color-royal)] mb-4 sm:mb-5 transition-transform duration-300 group-hover:scale-105" style={{background: 'rgba(255, 203, 8, 0.15)', border: '1px solid rgba(130, 12, 15, 0.1)'}}>
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center text-[var(--color-royal)] mb-4 sm:mb-5 transition-transform duration-300 group-hover:scale-105" style={{ background: 'rgba(255, 203, 8, 0.15)', border: '1px solid rgba(130, 12, 15, 0.1)' }}>
                   {item.icon}
                 </div>
                 <h4 className="font-serif font-bold text-sm sm:text-base text-[var(--color-royal)] leading-tight mb-2 tracking-wide">{item.title}</h4>
@@ -473,7 +471,7 @@ const ProductDetails: React.FC = () => {
           <div className="relative flex items-center border-b border-[var(--color-primary)]/30 mb-8 -mx-4 px-4 sm:mx-0 sm:px-0">
             {/* Left Scroll Button */}
             {showLeftArrow && (
-              <button 
+              <button
                 onClick={() => handleTabsScroll('left')}
                 className="absolute left-1 z-20 p-1.5 bg-[#FFF7F2] border border-[#D4AF37]/30 rounded-full shadow-md text-[#5F1517] hover:bg-[#FFE8DC] hover:border-[#D4AF37] transition sm:hidden"
                 aria-label="Scroll Left"
@@ -483,7 +481,7 @@ const ProductDetails: React.FC = () => {
             )}
 
             {/* Scrollable Tabs Wrapper */}
-            <div 
+            <div
               ref={tabsRef}
               className="w-full overflow-x-auto scrollbar-hide flex scroll-smooth"
             >
@@ -496,11 +494,10 @@ const ProductDetails: React.FC = () => {
                   <button
                     key={tab.key}
                     onClick={() => setActiveTab(tab.key)}
-                    className={`relative flex-shrink-0 px-4 sm:px-10 py-4 font-serif font-bold tracking-widest uppercase transition-all duration-300 whitespace-nowrap text-[11px] sm:text-sm ${
-                      activeTab === tab.key
-                        ? 'text-[var(--color-royal)] scale-105'
-                        : 'text-gray-400 hover:text-[var(--color-royal)]/70'
-                    }`}
+                    className={`relative flex-shrink-0 px-4 sm:px-10 py-4 font-serif font-bold tracking-widest uppercase transition-all duration-300 whitespace-nowrap text-[11px] sm:text-sm ${activeTab === tab.key
+                      ? 'text-[var(--color-royal)] scale-105'
+                      : 'text-gray-400 hover:text-[var(--color-royal)]/70'
+                      }`}
                   >
                     {tab.label}
                     {activeTab === tab.key && (
@@ -513,7 +510,7 @@ const ProductDetails: React.FC = () => {
 
             {/* Right Scroll Button */}
             {showRightArrow && (
-              <button 
+              <button
                 onClick={() => handleTabsScroll('right')}
                 className="absolute right-1 z-20 p-1.5 bg-[#FFF7F2] border border-[#D4AF37]/30 rounded-full shadow-md text-[#5F1517] hover:bg-[#FFE8DC] hover:border-[#D4AF37] transition sm:hidden"
                 aria-label="Scroll Right"
@@ -524,7 +521,7 @@ const ProductDetails: React.FC = () => {
           </div>
 
           {/* Tab Content — high-end luxury card matching brand specs */}
-          <div className="rounded-2xl shadow-sm border border-[var(--color-primary)]/15 overflow-hidden transition-all duration-300" style={{background: 'linear-gradient(135deg, #FCF8F4, #FFFDFB)'}}>
+          <div className="rounded-2xl shadow-sm border border-[var(--color-primary)]/15 overflow-hidden transition-all duration-300" style={{ background: 'linear-gradient(135deg, #FCF8F4, #FFFDFB)' }}>
 
             {/* ── Story & Specs Tab ── */}
             {activeTab === 'details' && (
@@ -664,7 +661,7 @@ const ProductDetails: React.FC = () => {
                     { icon: <RotateCcw size={24} strokeWidth={1.2} />, title: '15 Days Returns', desc: 'Not satisfied? Enjoy easy returns or exchanges within 15 days of receiving the item. No questions asked.' },
                   ].map((p) => (
                     <div key={p.title} className="bg-white/80 border border-[var(--color-primary)]/15 rounded-2xl p-6 space-y-4 hover:border-[var(--color-royal)]/30 transition-all duration-300 shadow-sm group">
-                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-[var(--color-royal)] transition-transform duration-300 group-hover:scale-105" style={{background: 'rgba(255, 203, 8, 0.15)', border: '1px solid rgba(130, 12, 15, 0.05)'}}>
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-[var(--color-royal)] transition-transform duration-300 group-hover:scale-105" style={{ background: 'rgba(255, 203, 8, 0.15)', border: '1px solid rgba(130, 12, 15, 0.05)' }}>
                         {p.icon}
                       </div>
                       <h4 className="font-serif font-bold text-sm sm:text-base text-[var(--color-royal)]">{p.title}</h4>
@@ -709,7 +706,7 @@ const ProductDetails: React.FC = () => {
                 </button>
               </div>
             </div>
-            
+
             <div ref={similarScrollRef} className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-2">
               {similarProducts.map((p) => {
                 const discountVal = p.original_price && p.original_price > p.price
@@ -719,7 +716,7 @@ const ProductDetails: React.FC = () => {
                 return (
                   <Link to={`/shop/${p.id}`} key={p.id}
                     className="flex-shrink-0 w-[200px] sm:w-[260px] bg-white rounded-3xl overflow-hidden border border-gray-100 hover:border-[var(--color-primary)]/40 shadow-sm hover:shadow-lg transition-all duration-300 group flex flex-col justify-between">
-                    
+
                     {/* Image */}
                     <div className="relative aspect-square overflow-hidden bg-gray-50">
                       {p.image_url ? (
@@ -749,7 +746,7 @@ const ProductDetails: React.FC = () => {
                           <span className="font-sans text-[10px] sm:text-xs text-gray-400 line-through">₹{p.original_price.toLocaleString('en-IN')}</span>
                         )}
                       </div>
-                      
+
                       {discountVal ? (
                         <span className="text-[10px] text-red-500 font-bold mt-1">{discountVal}% Off</span>
                       ) : (

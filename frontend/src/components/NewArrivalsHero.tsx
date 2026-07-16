@@ -1,317 +1,190 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import logo from '../assets/samruddhi-logo.png';
 import { getImageUrl } from '../api';
-import { ChevronDown } from 'lucide-react';
 
-import imgGoldBride from '../assets/gen/gold_bride_1782213365863.png';
-import imgGoldSet from '../assets/gen/gold_set_1782213378462.png';
-import imgSangeet from '../assets/gen/sangeet_bride_1782213396287.png';
-import imgPolki from '../assets/gen/polki_set_1782213407545.png';
-import imgMehendi from '../assets/gen/mehendi_bride_1782213420944.png';
-import imgMeenakari from '../assets/gen/meenakari_set_1782213433201.png';
-import imgHaldiBride from '../assets/gen/haldi_bride_1782213760602.png';
-import imgHaldiSet from '../assets/gen/haldi_set_1782213772944.png';
-import imgReceptionBride from '../assets/gen/reception_bride_1782213788636.png';
-import imgReceptionSet from '../assets/gen/reception_set_1782213798792.png';
+// ─── LOCAL FALLBACK ASSETS ──────────────────────────────────────────────────
+import imgGoldBride        from '../assets/gen/gold_bride_1782213365863.png';
+import imgGoldSet          from '../assets/gen/gold_set_1782213378462.png';
+import imgSangeet          from '../assets/gen/sangeet_bride_1782213396287.png';
+import imgPolki            from '../assets/gen/polki_set_1782213407545.png';
+import imgMehendi          from '../assets/gen/mehendi_bride_1782213420944.png';
+import imgMeenakari        from '../assets/gen/meenakari_set_1782213433201.png';
+import imgHaldiBride       from '../assets/gen/haldi_bride_1782213760602.png';
+import imgHaldiSet         from '../assets/gen/haldi_set_1782213772944.png';
+import imgReceptionBride   from '../assets/gen/reception_bride_1782213788636.png';
+import imgReceptionSet     from '../assets/gen/reception_set_1782213798792.png';
+import imgCatBangles       from '../assets/gen/cat_bangles_1782214893370.png';
+import imgCatEarrings      from '../assets/gen/cat_earrings_1782214875918.png';
+import imgCatSets          from '../assets/gen/cat_jewellery_sets_1782214836263.png';
+import imgCatMangalsutra   from '../assets/gen/cat_mangalsutra_1782214906170.png';
+import imgCatPendants      from '../assets/gen/cat_pendants_1782214847919.png';
+import imgCatRings         from '../assets/gen/cat_rings_1782214860176.png';
+import imgHeroSlider       from '../assets/gen/hero_slider_1_1782215599212.png';
+import imgIndianModel      from '../assets/gen/indian_model_ship_1783420166146.png';
+import imgMangalsutraPrem  from '../assets/gen/mangalsutra_premium.png';
+import imgSignatureBridal  from '../assets/gen/signature_bridal_set.png';
+import imgSignatureNecklace from '../assets/gen/signature_gold_necklace.png';
+import imgFeaturedBridal   from '../assets/gen/featured_bridal_ring.png';
+import imgGenRing          from '../assets/gen/gen_ring_1_1784184765263.png';
+import imgGenNecklace      from '../assets/gen/gen_necklace_1_1784184778092.png';
+import imgGenBangles       from '../assets/gen/gen_bangles_1_1784184790868.png';
+import imgGenEarrings      from '../assets/gen/gen_earrings_1_1784184802864.png';
+import imgGenModel         from '../assets/gen/gen_model_1_1784184814361.png';
+import imgGenChoker        from '../assets/gen/gen_choker_1_1784185355465.png';
+import imgGenBracelet      from '../assets/gen/gen_bracelet_1_1784185369639.png';
+import imgGenDiamondNecklace from '../assets/gen/gen_diamond_necklace_1_1784185671024.png';
 
-const FALLBACK_IMAGES = [imgGoldBride, imgGoldSet, imgSangeet, imgPolki, imgMehendi, imgMeenakari];
-
-const FLOATING_IMAGES = [
-  // Top Row
-  { image: imgGoldBride, top: '13%', left: '3%', mobileTop: '10%', mobileLeft: '1.5%', speed: 0.02, size: 'w-14 sm:w-20 md:w-32 lg:w-40', rotate: 3 },
-  { image: imgGoldSet, top: '16%', right: '4%', mobileTop: '12%', mobileRight: '1.5%', speed: 0.015, size: 'w-16 sm:w-24 md:w-36 lg:w-44', rotate: -6 },
-  
-  // Mid-Upper Row
-  { image: imgSangeet, top: '28%', left: '7%', mobileTop: '22%', mobileLeft: '2.5%', speed: 0.01, size: 'w-12 sm:w-16 md:w-28 lg:w-36', rotate: 6 },
-  { image: imgPolki, top: '32%', right: '6%', mobileTop: '26%', mobileRight: '2.5%', speed: -0.01, size: 'w-14 sm:w-20 md:w-32 lg:w-40', rotate: -3 },
-  
-  // Mid-Lower Row
-  { image: imgMehendi, top: '44%', left: '2%', mobileTop: '38%', mobileLeft: '1.5%', speed: 0.02, size: 'w-16 sm:w-24 md:w-36 lg:w-44', rotate: 8 },
-  { image: imgMeenakari, top: '48%', right: '3%', mobileTop: '42%', mobileRight: '1.5%', speed: -0.015, size: 'w-12 sm:w-16 md:w-28 lg:w-36', rotate: -8 },
-  
-  // Bottom-Center Images (framed around center)
-  { image: imgHaldiBride, top: '74%', left: '34%', mobileTop: '72%', mobileLeft: '22%', speed: -0.01, size: 'w-14 sm:w-20 md:w-32 lg:w-40', rotate: 4 },
-  { image: imgHaldiSet, top: '76%', right: '34%', mobileTop: '74%', mobileRight: '22%', speed: -0.02, size: 'w-16 sm:w-24 md:w-36 lg:w-44', rotate: -5 },
-  
-  // Outer Bottom Corner Images (Desktop only)
-  { image: imgReceptionBride, top: '78%', left: '4%', speed: -0.02, size: 'w-14 sm:w-16 md:w-28 lg:w-36', rotate: 5, hideMobile: true },
-  { image: imgReceptionSet, top: '82%', right: '5%', speed: -0.02, size: 'w-18 sm:w-24 md:w-36 lg:w-44', rotate: -7, hideMobile: true },
+const LOCAL_IMAGES: string[] = [
+  imgGoldBride, imgGoldSet, imgSangeet, imgPolki, imgMehendi, imgMeenakari,
+  imgHaldiBride, imgHaldiSet, imgReceptionBride, imgReceptionSet,
+  imgCatBangles, imgCatEarrings, imgCatSets, imgCatMangalsutra,
+  imgCatPendants, imgCatRings, imgHeroSlider, imgIndianModel,
+  imgMangalsutraPrem, imgGenDiamondNecklace, imgSignatureBridal, imgSignatureNecklace,
+  imgFeaturedBridal, imgGenRing, imgGenNecklace, imgGenBangles,
+  imgGenEarrings, imgGenModel, imgGenChoker, imgGenBracelet
 ];
+
+const TOTAL_CELLS = 40;
 
 interface Product {
   id: string;
   name: string;
   sku: string;
   price: number;
-  original_price?: number;
-  discount_text?: string;
   image_url?: string;
+  status?: string;
 }
 
 interface NewArrivalsHeroProps {
-  products: Product[];
+  products?: Product[];
 }
 
-const NewArrivalsHero: React.FC<NewArrivalsHeroProps> = ({ products }) => {
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const bgRef = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLDivElement>(null);
-  const floatRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [isMobile, setIsMobile] = useState(false);
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+const GridCell = ({ src, index, productId, productName }: { src: string; index: number; productId?: string; productName?: string }) => {
+  // If there is absolutely no src, render empty black box
+  if (!src) {
+    return <div className="w-full h-full bg-black"></div>;
+  }
 
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    handleResize(); // Initial check
-    window.addEventListener('resize', handleResize, { passive: true });
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const content = (
+    <>
+      <img
+        src={src}
+        alt={productName || "Jewelry"}
+        className="w-full h-full object-cover transition-all duration-[800ms] grayscale-0 hover:grayscale hover:scale-110"
+        onError={(e) => {
+          (e.target as HTMLImageElement).src = LOCAL_IMAGES[index % LOCAL_IMAGES.length];
+        }}
+      />
+      {productId && (
+        <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-2 text-center pointer-events-none">
+           <span className="text-white font-serif text-sm md:text-base tracking-wider shadow-lg border border-white/40 px-3 py-1 bg-black/30 backdrop-blur-sm rounded">
+              View Product
+           </span>
+        </div>
+      )}
+    </>
+  );
 
-  useEffect(() => {
-    const wrap = wrapRef.current;
-    const bg = bgRef.current;
-    const textEl = textRef.current;
-    if (!wrap || !bg || !textEl) return;
+  const containerClass = `
+    relative w-full h-full overflow-hidden 
+    transition-all duration-300 ease-in-out group
+    ${productId ? 'cursor-pointer hover:z-50 hover:shadow-[0_0_30px_rgba(212,175,55,0.6)]' : ''}
+  `;
 
-    // Apply initial translation to floating images
-    floatRefs.current.forEach((el) => {
-      if (el) {
-        el.style.transform = 'translateY(0px) translateZ(0)';
-      }
-    });
+  if (productId) {
+    return (
+      <Link to={`/product/${productId}`} className={containerClass}>
+        {content}
+      </Link>
+    );
+  }
 
-    const onScroll = () => {
-      const scrolledPixels = window.scrollY;
+  // Render fake product without link
+  return <div className={containerClass}>{content}</div>;
+};
 
-      // Update parallax positions of floating images
-      floatRefs.current.forEach((el, idx) => {
-        if (!el) return;
-        const imgData = FLOATING_IMAGES[idx];
-        const yTranslation = scrolledPixels * imgData.speed;
-        el.style.transform = `translateY(${yTranslation}px) translateZ(0)`;
-      });
-
-      const { top } = wrap.getBoundingClientRect();
-      const scrollable = wrap.offsetHeight - window.innerHeight;
-      if (scrollable <= 0) return;
-      const p = Math.max(0, Math.min(1, -top / scrollable));
-
-      // Smooth zoom: slow and smooth start, linear progression
-      const zoomPower = 1.3;
-      const eased = Math.pow(p, zoomPower);
-
-      // High max scale to ensure text goes completely off-screen for a full zoom portal effect
-      const maxZoomScale = isMobile ? 22 : 32;
-      const scale = 1 + eased * maxZoomScale;
-      textEl.style.transform = `scale(${scale}) translateZ(0)`;
-
-      // Gracefully fade text out at the very end of the scroll range
-      const textOpacity = p < 0.70 ? 1 : 1 - ((p - 0.70) / 0.30);
-      textEl.style.opacity = String(Math.max(0, textOpacity));
-
-      // Fade background out continuously over the entire scroll duration
-      const bgOpacity = 1 - p;
-      bg.style.opacity = String(Math.max(0, bgOpacity));
-    };
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener('scroll', onScroll);
-  }, [isMobile]);
-
-  // Split text "NEW ARRIVALS" for per-letter hover
-  const BRAND_TEXT = "NEW ARRIVALS".split("");
-
-  // Determine hover image for each letter
-  const getHoverImage = (charIndex: number) => {
-    if (products.length > 0) {
-      // Find the index of non-space letters to map them cleanly
-      let nonSpaceCount = 0;
-      for (let i = 0; i <= charIndex; i++) {
-        if (BRAND_TEXT[i] !== " ") {
-          nonSpaceCount++;
-        }
-      }
-      const prod = products[nonSpaceCount % products.length];
-      if (prod && prod.image_url) {
-        return getImageUrl(prod.image_url);
-      }
+const NewArrivalsHero: React.FC<NewArrivalsHeroProps> = ({ products = [] }) => {
+  
+  // Create 40 grid cells. Use actual products first, then fill remainder with local fake images.
+  const gridCells = Array.from({ length: TOTAL_CELLS }).map((_, i) => {
+    if (products && i < products.length) {
+      const product = products[i];
+      return {
+        id: i,
+        src: getImageUrl(product.image_url),
+        productId: product.id,
+        productName: product.name
+      };
+    } else {
+      // Fake products to fill the grid
+      return {
+        id: i,
+        src: LOCAL_IMAGES[i % LOCAL_IMAGES.length],
+        productId: undefined,
+        productName: undefined
+      };
     }
-    return FALLBACK_IMAGES[charIndex % FALLBACK_IMAGES.length];
-  };
+  });
 
   return (
-    <div
-      ref={wrapRef}
-      className="w-full relative overflow-hidden"
-      style={{
-        height: isMobile ? '70vh' : '125vh', // Stretches scroll distance to make zoom slow and smooth
-        paddingTop: isMobile ? '8vh' : '10vh', // Reduced top padding to shift text to the top
-      }}
-    >
-      {/* Floating Parallax Jewellery Images */}
-      {FLOATING_IMAGES.map((item, index) => {
-        if (isMobile && item.hideMobile) return null;
+    <div className="relative w-full h-screen overflow-hidden bg-black">
+      
+      {/* IMAGE GRID */}
+      <div className="absolute inset-0 grid grid-cols-5 grid-rows-8 md:grid-cols-8 md:grid-rows-5 h-full w-full">
+        {gridCells.map((cell) => (
+          <GridCell 
+            key={cell.id} 
+            src={cell.src} 
+            index={cell.id} 
+            productId={cell.productId}
+            productName={cell.productName}
+          />
+        ))}
+      </div>
 
-        const topPos = isMobile && item.mobileTop !== undefined ? item.mobileTop : item.top;
-        const leftPos = isMobile && item.mobileLeft !== undefined ? item.mobileLeft : (item as any).left;
-        const rightPos = isMobile && item.mobileRight !== undefined ? item.mobileRight : (item as any).right;
-
-        return (
-          <div
-            key={index}
-            ref={el => { floatRefs.current[index] = el; }}
-            className="absolute transition-transform duration-75 ease-out z-20"
-            style={{
-              top: topPos,
-              ...(leftPos !== undefined ? { left: leftPos } : { right: rightPos }),
-              aspectRatio: '1/1',
-              willChange: 'transform',
-            }}
-          >
-            {/* Inner container to separate CSS hover scale/shadow from JS translations */}
-            <div
-              className={`pointer-events-auto cursor-pointer border-[3px] md:border-[6px] lg:border-[8px] border-white rounded-lg md:rounded-xl lg:rounded-2xl shadow-xl overflow-hidden transition-all duration-300 ease-out hover:scale-108 hover:shadow-2xl ${item.size}`}
-              style={{
-                transform: `rotate(${item.rotate}deg)`,
-              }}
-            >
-              <img
-                src={item.image}
-                alt="Showcase Jewellery"
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
-            </div>
-          </div>
-        );
-      })}
-
+      {/* VIGNETTE & DARKENING LAYER (Ensures center text is legible) */}
       <div
+        className="absolute inset-0 pointer-events-none z-10"
         style={{
-          position: 'sticky',
-          top: isMobile ? '8vh' : '10vh', // Reduced top sticky threshold
-          height: isMobile ? '30vh' : '45vh',
-          overflow: 'visible',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 10,
+          background: 'radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0.3) 20%, rgba(0,0,0,0.7) 100%)',
         }}
-      >
-        <div
-          ref={bgRef}
-          className="absolute inset-0 transition-opacity duration-75"
-          style={{
-            background: '#FFF7F2',
-            zIndex: 1,
-          }}
-        />
+      />
 
-        <div
-          ref={textRef}
-          style={{
-            position: 'relative',
-            zIndex: 2,
-            transformOrigin: 'center center',
-            willChange: 'transform, opacity',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '100vw',
-            padding: '0 8px',
-          }}
+      {/* CENTERED LOGO & HERO TEXT */}
+      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-4 text-center pointer-events-none">
+        
+        {/* Logo Group */}
+        <div 
+          className="absolute flex flex-col items-center justify-center pb-4 drop-shadow-2xl"
+          style={{ transform: 'translateY(-90%)' }}
         >
-          {/* Logo */}
           <img
             src={logo}
-            alt="Siri Samruddhi Gold"
+            alt="Samruddhi Gold Palace"
+            className="drop-shadow-2xl select-none"
             style={{
-              width: isMobile ? '70px' : 'clamp(70px, 8vw, 100px)',
+              width: 'clamp(80px, 14vw, 130px)',
               height: 'auto',
               objectFit: 'contain',
-              marginBottom: isMobile ? '8px' : '4px',
-              userSelect: 'none',
-              pointerEvents: 'none',
             }}
           />
-
-          <div className="flex items-center gap-1.5" style={{ marginBottom: isMobile ? '10px' : '6px' }}>
-            <span className="block w-4 h-[1px] bg-[#D4AF37] opacity-60" />
-            <span className="font-sans text-[#D4AF37] text-[9px] md:text-[10px] tracking-[2px] uppercase font-semibold leading-none whitespace-nowrap">
-              Freshly Crafted Treasures
-            </span>
-            <span className="block w-4 h-[1px] bg-[#D4AF37] opacity-60" />
-          </div>
-
-          <div
-            style={{
-              display: 'flex',
-              whiteSpace: 'nowrap',
-              fontFamily: '"Georgia", "Times New Roman", serif',
-              fontSize: isMobile ? 'clamp(1rem, 6.2vw, 2.1rem)' : 'clamp(2rem, 7vw, 6rem)',
-              fontWeight: 700,
-              color: '#5F1517',
-              letterSpacing: isMobile ? '0.02em' : '0.05em',
-              lineHeight: 1,
-              userSelect: 'none',
-            }}
-          >
-            {BRAND_TEXT.map((char, index) => {
-              if (char === " ") return <span key={index} style={{ width: '0.25em' }} />;
-
-              const imgUrl = getHoverImage(index);
-              const isHovered = hoveredIndex === index;
-
-              return (
-                <span
-                  key={index}
-                  onMouseEnter={() => setHoveredIndex(index)}
-                  onMouseLeave={() => setHoveredIndex(null)}
-                  className="relative transition-colors duration-300 cursor-default"
-                  style={{
-                    color: isHovered ? '#D4AF37' : '#5F1517',
-                  }}
-                >
-                  {char}
-                  {/* Hover Image popup */}
-                  <div
-                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 pointer-events-none transition-all duration-300 z-50"
-                    style={{
-                      opacity: isHovered ? 1 : 0,
-                      transform: isHovered ? 'translate(-50%, 0) scale(1)' : 'translate(-50%, 10px) scale(0.9)',
-                    }}
-                  >
-                    <div
-                      className="rounded-md overflow-hidden shadow-2xl border-2 border-white/95 bg-white"
-                      style={{
-                        width: isMobile ? '56px' : '96px',
-                        height: isMobile ? '72px' : '112px'
-                      }}
-                    >
-                      <img src={imgUrl} alt="New Arrival Preview" className="w-full h-full object-cover" />
-                    </div>
-                  </div>
-                </span>
-              );
-            })}
-          </div>
-
-          <span
-            className="block h-[1.5px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent"
-            style={{ width: '40px', marginTop: '10px' }}
-          />
-
-          {/* Bouncing Scroll Down Symbol */}
-          <div className="flex flex-col items-center gap-1 mt-6 animate-bounce text-[#D4AF37] pointer-events-none">
-            <span className="font-sans text-[8px] uppercase tracking-[3px] opacity-75">
-              Scroll Down
-            </span>
-            <ChevronDown size={14} strokeWidth={2.5} />
-          </div>
         </div>
+
+        {/* MAIN TITLE */}
+        <h1
+          className="absolute font-serif font-bold leading-none tracking-wide text-white select-none drop-shadow-2xl"
+          style={{
+            fontSize: 'clamp(2.2rem, 9vw, 7rem)',
+            letterSpacing: '0.07em',
+            textShadow: '0 2px 30px rgba(0,0,0,0.9), 0 0 80px rgba(0,0,0,0.5)',
+          }}
+        >
+          NEW ARRIVALS
+        </h1>
+        
       </div>
+
     </div>
   );
 };

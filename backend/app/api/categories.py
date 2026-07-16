@@ -45,6 +45,8 @@ async def get_category(category_id: str, db: AsyncSession = Depends(get_db)):
     summary="Create a new category (admin only)"
 )
 async def create_category(category: CategoryCreate, admin: dict = Depends(verify_admin), db: AsyncSession = Depends(get_db)):
+    if category.parent_id == "":
+        category.parent_id = None
     db_cat = DBCategory(**category.model_dump())
     db.add(db_cat)
     await db.commit()
@@ -68,6 +70,9 @@ async def update_category(category_id: str, category_update: CategoryUpdate, adm
         raise HTTPException(status_code=404, detail="Category not found")
         
     update_data = category_update.model_dump(exclude_unset=True)
+    if "parent_id" in update_data and update_data["parent_id"] == "":
+        update_data["parent_id"] = None
+        
     if update_data:
         for key, value in update_data.items():
             setattr(cat, key, value)

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Truck, Store, Search, User, Heart, ShoppingBag, Menu, X, ChevronDown, Calendar, MapPin, Bell } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { Truck, Store, Search, User, Heart, ShoppingBag, Menu, X, ChevronDown, Calendar, MapPin, Bell, Coins } from 'lucide-react';
 import logo from '../assets/samruddhi-logo.png';
 import LoginModal from './LoginModal';
 import SubscribeModal from './SubscribeModal';
@@ -9,13 +9,14 @@ import api, { getCart, getWishlist, getImageUrl } from '../api';
 
 const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [expandedMobileCategory, setExpandedMobileCategory] = useState<string | null>(null);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSubscribeOpen, setIsSubscribeOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [metalPrices, setMetalPrices] = useState<any[]>([]);
   const [showMetalPrices, setShowMetalPrices] = useState(false);
-  
+
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
 
@@ -42,7 +43,7 @@ const Header: React.FC = () => {
   useEffect(() => {
     const typeSpeed = isDeleting ? 50 : 100;
     const currentWord = searchPlaceholders[placeholderIndex];
-    
+
     const timeout = setTimeout(() => {
       if (!isDeleting && placeholderText === currentWord) {
         setTimeout(() => setIsDeleting(true), 1500);
@@ -53,7 +54,7 @@ const Header: React.FC = () => {
         setPlaceholderText(currentWord.substring(0, placeholderText.length + (isDeleting ? -1 : 1)));
       }
     }, typeSpeed);
-    
+
     return () => clearTimeout(timeout);
   }, [placeholderText, isDeleting, placeholderIndex]);
 
@@ -87,19 +88,19 @@ const Header: React.FC = () => {
 
   const filteredProducts = useMemo(() => {
     let result = allProducts.filter(p => !p.status || p.status === 'active');
-    
+
     if (selectedCategory !== 'all') {
       result = result.filter(p => p.category_id === selectedCategory);
     }
-    
+
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(p => {
-         const cat = allCategories.find(c => c.id === p.category_id);
-         const catName = cat ? cat.name.toLowerCase() : '';
-         return (p.name && p.name.toLowerCase().includes(q)) || 
-                (p.sku && p.sku.toLowerCase().includes(q)) || 
-                catName.includes(q);
+        const cat = allCategories.find(c => c.id === p.category_id);
+        const catName = cat ? cat.name.toLowerCase() : '';
+        return (p.name && p.name.toLowerCase().includes(q)) ||
+          (p.sku && p.sku.toLowerCase().includes(q)) ||
+          catName.includes(q);
       });
     }
     return result;
@@ -131,6 +132,14 @@ const Header: React.FC = () => {
       console.error('Failed to fetch counts:', err);
     }
   };
+
+  const topLevelCategories = useMemo(() => {
+    return allCategories.filter(c => !c.parent_id);
+  }, [allCategories]);
+
+  const getSubcategories = useCallback((parentId: string) => {
+    return allCategories.filter(c => c.parent_id === parentId);
+  }, [allCategories]);
 
   useEffect(() => {
     const handleCartUpdate = () => {
@@ -211,61 +220,61 @@ const Header: React.FC = () => {
         {/* Secondary Top Bar (White) */}
         <div className="hidden lg:block w-full bg-[#FFF7F2] border-b border-[#5F1517]/10">
           <div className="max-w-[1400px] mx-auto px-4 lg:px-10 xl:px-14 flex items-center justify-between py-1.5">
-             <div className="flex gap-4 items-center">
-                <span className="text-royal font-sans font-medium text-[13px] lg:text-[12px] tracking-wide">Our Branch: Yelahanka, Udupi, Kolar</span>
-             </div>
-             <div className="flex items-center gap-5 text-[12px] lg:text-[11px] text-[#801416] font-medium">
-                <div 
-                  className="relative flex items-center py-1"
-                  onMouseEnter={() => setShowMetalPrices(true)}
-                  onMouseLeave={() => setShowMetalPrices(false)}
-                >
-                  <Link to="/gold-rates" className="flex items-center gap-1 hover:opacity-80 no-underline text-[#801416] font-medium">
-                    <span className="text-[#A56B25]">🪙</span> 
-                    {metalPrices.find(p => p.id === 'gold_22k') 
-                      ? `TODAY'S GOLD RATE`
-                      : 'GOLD 22 KT/1g - ₹ 13,230'
-                    }
-                    <ChevronDown size={12}/>
-                  </Link>
-                  
-                  {showMetalPrices && metalPrices.length > 0 && (
-                    <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-[#D4AF37]/20 rounded-2xl shadow-xl p-4 text-[#5F1517] z-50 animate-fade-in">
-                      <h4 className="font-bold text-[10px] uppercase tracking-wider text-[#D4AF37] mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>Daily Metal Rates</h4>
-                      <div className="flex flex-col gap-2.5">
-                        {metalPrices.map(mp => (
-                          <div key={mp.id} className="flex justify-between items-center text-xs font-semibold py-1 border-b border-gray-100 last:border-0">
-                            <span>{mp.name} / {mp.unit}</span>
-                            <span className="font-mono text-[#801416]">₹{mp.price.toLocaleString('en-IN')}</span>
-                          </div>
-                        ))}
-                      </div>
+            <div className="flex gap-4 items-center">
+              <span className="text-royal font-sans font-medium text-[13px] lg:text-[12px] tracking-wide">Our Branch: Yelahanka, Udupi, Kolar</span>
+            </div>
+            <div className="flex items-center gap-5 text-[12px] lg:text-[11px] text-[#801416] font-medium">
+              <div
+                className="relative flex items-center py-1"
+                onMouseEnter={() => setShowMetalPrices(true)}
+                onMouseLeave={() => setShowMetalPrices(false)}
+              >
+                <Link to="/gold-rates" className="flex items-center gap-1 hover:opacity-80 no-underline text-[#801416] font-medium">
+                  <span className="text-[#A56B25]"><Coins className="w-5 h-5" /></span>
+                  {metalPrices.find(p => p.id === 'gold_22k')
+                    ? `TODAY'S GOLD RATE`
+                    : 'GOLD 22 KT/1g - ₹ 13,230'
+                  }
+                  <ChevronDown size={12} />
+                </Link>
+
+                {showMetalPrices && metalPrices.length > 0 && (
+                  <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-[#D4AF37]/20 rounded-2xl shadow-xl p-4 text-[#5F1517] z-50 animate-fade-in">
+                    <h4 className="font-bold text-[10px] uppercase tracking-wider text-[#D4AF37] mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>Daily Metal Rates</h4>
+                    <div className="flex flex-col gap-2.5">
+                      {metalPrices.map(mp => (
+                        <div key={mp.id} className="flex justify-between items-center text-xs font-semibold py-1 border-b border-gray-100 last:border-0">
+                          <span>{mp.name} / {mp.unit}</span>
+                          <span className="font-mono text-[#801416]">₹{mp.price.toLocaleString('en-IN')}</span>
+                        </div>
+                      ))}
                     </div>
-                  )}
-                </div>
-                <span className="flex items-center gap-1 cursor-pointer hover:opacity-80">
-                  <MapPin size={14} />
-                </span>
-                <span className="flex items-center gap-1 cursor-pointer hover:opacity-80">
-                  <Calendar size={14} />
-                </span>
-                <span className="flex items-center gap-1 cursor-pointer hover:opacity-80">
-                  <div className="w-3.5 h-3.5 bg-orange-500 rounded-full overflow-hidden flex flex-col relative">
-                    <div className="h-1/3 w-full bg-orange-500"></div>
-                    <div className="h-1/3 w-full bg-white flex justify-center items-center"><div className="w-[2px] h-[2px] bg-blue-800 rounded-full"></div></div>
-                    <div className="h-1/3 w-full bg-green-600"></div>
                   </div>
-                  INR
-                </span>
-                <Link to="/new-arrivals" className="flex items-center gap-1 cursor-pointer hover:opacity-80 no-underline text-[#801416] font-medium text-[11px]">New Arrivals</Link>
-             </div>
+                )}
+              </div>
+              <span className="flex items-center gap-1 cursor-pointer hover:opacity-80">
+                <MapPin size={14} />
+              </span>
+              <span className="flex items-center gap-1 cursor-pointer hover:opacity-80">
+                <Calendar size={14} />
+              </span>
+              <span className="flex items-center gap-1 cursor-pointer hover:opacity-80">
+                <div className="w-3.5 h-3.5 bg-orange-500 rounded-full overflow-hidden flex flex-col relative">
+                  <div className="h-1/3 w-full bg-orange-500"></div>
+                  <div className="h-1/3 w-full bg-white flex justify-center items-center"><div className="w-[2px] h-[2px] bg-blue-800 rounded-full"></div></div>
+                  <div className="h-1/3 w-full bg-green-600"></div>
+                </div>
+                INR
+              </span>
+              <Link to="/new-arrivals" className="flex items-center gap-1 cursor-pointer hover:opacity-80 no-underline text-[#801416] font-medium text-[11px]">New Arrivals</Link>
+            </div>
           </div>
         </div>
 
         {/* ── MAIN HEADER BAR ── */}
         <div className="w-full bg-[#FFF7F2] border-b border-[#5F1517]/10">
           <div className="max-w-[1400px] mx-auto px-4 lg:px-10 xl:px-14 flex items-center justify-between py-1.5 lg:py-2">
-            
+
             {/* Logo */}
             <Link to="/" className="flex-shrink-0 flex items-center cursor-pointer mr-6">
               <img
@@ -288,7 +297,7 @@ const Header: React.FC = () => {
             {/* Search Bar */}
             <div className="hidden lg:flex flex-1 max-w-[600px] mr-8 relative" ref={searchRef}>
               <div className="flex w-full items-center bg-white rounded-full overflow-hidden border border-[#5F1517]/20 shadow-sm focus-within:border-[#801416] focus-within:ring-1 focus-within:ring-[#801416]/30 transition-all duration-300">
-                <select 
+                <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="bg-transparent text-[#801416] font-semibold text-[13px] pl-4 pr-2 py-2.5 outline-none border-r border-[#5F1517]/10 cursor-pointer hover:bg-[#FFF7F2] transition-colors max-w-[140px] truncate"
@@ -309,7 +318,7 @@ const Header: React.FC = () => {
                   onFocus={() => setIsSearchOpen(true)}
                   className="bg-transparent py-2.5 px-1 outline-none text-sm lg:text-[13px] w-full text-[#5F1517] placeholder-[#5F1517]/50 font-medium"
                 />
-                <button 
+                <button
                   className="bg-[#801416] text-white px-6 py-2.5 hover:bg-[#5F1517] transition-colors flex items-center justify-center font-bold text-sm tracking-wide"
                   onClick={() => setIsSearchOpen(true)}
                 >
@@ -327,16 +336,16 @@ const Header: React.FC = () => {
                       <button onClick={() => setSearchQuery('')} className="text-[#A56B25] hover:text-[#801416] underline underline-offset-2 transition-colors font-semibold">Clear Search</button>
                     )}
                   </div>
-                  
+
                   {/* Results List */}
                   <div className="overflow-y-auto p-3 flex-grow scrollbar-thin scrollbar-thumb-[#801416]/20 scrollbar-track-transparent">
                     {filteredProducts.length > 0 ? (
                       <div className="grid grid-cols-1 gap-1.5">
                         {filteredProducts.map(product => {
-                           const cat = allCategories.find(c => c.id === product.category_id);
-                           return (
-                            <Link 
-                              key={product.id} 
+                          const cat = allCategories.find(c => c.id === product.category_id);
+                          return (
+                            <Link
+                              key={product.id}
                               to={`/shop/${product.id}`}
                               onClick={() => setIsSearchOpen(false)}
                               className="flex items-center gap-4 p-2.5 hover:bg-[#FFF7F2] rounded-xl transition-all duration-300 group border border-transparent hover:border-[#5F1517]/10"
@@ -361,13 +370,13 @@ const Header: React.FC = () => {
                                 )}
                               </div>
                             </Link>
-                           );
+                          );
                         })}
                       </div>
                     ) : (
                       <div className="py-12 text-center flex flex-col items-center">
                         <div className="w-16 h-16 bg-[#FFF7F2] rounded-full flex items-center justify-center mb-4">
-                           <Search size={28} className="text-[#A56B25]/40" />
+                          <Search size={28} className="text-[#A56B25]/40" />
                         </div>
                         <p className="text-[#801416] font-semibold text-[15px]">No Exquisite Pieces Found</p>
                         <p className="text-[12px] text-gray-500 mt-1">Try a different category or search term</p>
@@ -380,44 +389,44 @@ const Header: React.FC = () => {
 
             {/* Right Icons */}
             <div className="hidden lg:flex items-center gap-5 text-[#801416] font-medium text-[13px] lg:text-[12px]">
-               {/* Subscription Bell */}
-               <button 
-                 onClick={() => setIsSubscribeOpen(true)}
-                 className="relative cursor-pointer hover:opacity-80 text-[#801416] bg-transparent border-0 p-0 outline-none transition-all duration-300"
-                 aria-label="Subscribe to notifications"
-               >
-                 <Bell size={22} strokeWidth={1.5} />
-                 <span className="absolute -top-0.5 -right-0.5 bg-[#FFCB08] w-2 h-2 rounded-full animate-pulse"></span>
-               </button>
-               {/* Login */}
-               {user ? (
-                 <div className="flex items-center gap-2 cursor-pointer hover:opacity-80" onClick={handleLogout}>
-                   <span className="uppercase">LOGOUT</span> <User size={20} strokeWidth={1.5} />
-                 </div>
-               ) : (
-                 <div className="flex items-center gap-2 cursor-pointer hover:opacity-80" onClick={() => setIsLoginModalOpen(true)}>
-                   <span>LOG IN</span> <User size={20} strokeWidth={1.5} />
-                 </div>
-               )}
-               {/* Heart */}
-               <Link to="/wishlist" className="relative cursor-pointer hover:opacity-80">
-                 <Heart size={22} strokeWidth={1.5} />
-                 {wishlistCount > 0 && (
-                   <span className="absolute -top-2 -right-2 bg-[#801416] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{wishlistCount}</span>
-                 )}
-               </Link>
-               {/* Cart */}
-               <Link to="/cart" className="relative cursor-pointer hover:opacity-80">
-                 <ShoppingBag size={22} strokeWidth={1.5} />
-                 {cartCount > 0 && (
-                   <span className="absolute -top-2 -right-2 bg-[#801416] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{cartCount}</span>
-                 )}
-               </Link>
+              {/* Subscription Bell */}
+              <button
+                onClick={() => setIsSubscribeOpen(true)}
+                className="relative cursor-pointer hover:opacity-80 text-[#801416] bg-transparent border-0 p-0 outline-none transition-all duration-300"
+                aria-label="Subscribe to notifications"
+              >
+                <Bell size={22} strokeWidth={1.5} />
+                <span className="absolute -top-0.5 -right-0.5 bg-[#FFCB08] w-2 h-2 rounded-full animate-pulse"></span>
+              </button>
+              {/* Login */}
+              {user ? (
+                <div className="flex items-center gap-2 cursor-pointer hover:opacity-80" onClick={handleLogout}>
+                  <span className="uppercase">LOGOUT</span> <User size={20} strokeWidth={1.5} />
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 cursor-pointer hover:opacity-80" onClick={() => setIsLoginModalOpen(true)}>
+                  <span>LOG IN</span> <User size={20} strokeWidth={1.5} />
+                </div>
+              )}
+              {/* Heart */}
+              <Link to="/wishlist" className="relative cursor-pointer hover:opacity-80">
+                <Heart size={22} strokeWidth={1.5} />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-[#801416] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{wishlistCount}</span>
+                )}
+              </Link>
+              {/* Cart */}
+              <Link to="/cart" className="relative cursor-pointer hover:opacity-80">
+                <ShoppingBag size={22} strokeWidth={1.5} />
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-[#801416] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{cartCount}</span>
+                )}
+              </Link>
             </div>
 
             {/* Mobile Actions */}
             <div className="lg:hidden flex items-center gap-3.5 text-[#801416]">
-              <button 
+              <button
                 onClick={() => setIsSubscribeOpen(true)}
                 className="hover:opacity-80 transition relative"
                 aria-label="Subscribe to notifications"
@@ -428,7 +437,7 @@ const Header: React.FC = () => {
               <button className="hover:opacity-80 transition" onClick={() => setIsMobileSearchOpen(true)}>
                 <Search size={22} strokeWidth={1.5} />
               </button>
-              <button 
+              <button
                 className="hover:opacity-80 transition"
                 onClick={() => user ? handleLogout() : setIsLoginModalOpen(true)}
               >
@@ -452,32 +461,54 @@ const Header: React.FC = () => {
         </div>
 
         {/* ── NAVIGATION BAR (Desktop) ── */}
-        <nav className="hidden lg:flex w-full bg-[#FFF7F2] justify-center border-b border-[#5F1517]/10">
-          <ul className="flex items-center gap-4 xl:gap-5 py-2.5 text-[13.5px] lg:text-[12.5px] font-medium text-[#801416] font-sans">
-            <li className="whitespace-nowrap"><Link to="/shop" className="text-[#801416] no-underline hover:opacity-80 transition font-bold">Shop All</Link></li>
-            <li className="whitespace-nowrap"><Link to="/new-arrivals" className="text-[#801416] no-underline hover:opacity-80 transition font-bold">New Arrivals</Link></li>
-            <li className="whitespace-nowrap"><a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I'm%20interested%20in%20your%20Express%20Delivery%20options." target="_blank" rel="noopener noreferrer" className="text-[#801416] no-underline hover:opacity-80 transition">Express Delivery</a></li>
-            <li className="whitespace-nowrap"><a href="#gold" className="text-[#801416] no-underline hover:opacity-80 transition">Earrings</a></li>
-            <li className="whitespace-nowrap"><a href="#gold" className="text-[#801416] no-underline hover:opacity-80 transition">Pendants</a></li>
-            <li className="whitespace-nowrap"><a href="#gold" className="text-[#801416] no-underline hover:opacity-80 transition">Rings</a></li>
-            <li className="whitespace-nowrap"><a href="#diamond" className="text-[#801416] no-underline hover:opacity-80 transition">Diamond Jewellery</a></li>
-            <li className="whitespace-nowrap"><a href="#categories-section" className="text-[#801416] no-underline hover:opacity-80 transition">More Jewellery</a></li>
-            <li className="whitespace-nowrap"><a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I'm%20looking%20for%20gifting%20recommendations." target="_blank" rel="noopener noreferrer" className="text-[#801416] no-underline hover:opacity-80 transition">Gifting</a></li>
-            <li className="whitespace-nowrap"><a href="#look-book" className="text-[#801416] no-underline hover:opacity-80 transition">Wedding Collections</a></li>
-            <li className="whitespace-nowrap"><a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I'd%20like%20to%20know%20more%20about%20your%20current%20offers." target="_blank" rel="noopener noreferrer" className="text-[#801416] no-underline hover:opacity-80 transition">Offers</a></li>
-            <li className="whitespace-nowrap"><Link to="/gold-rates" className="text-[#801416] no-underline hover:opacity-80 transition">Today's Gold Rate</Link></li>
-            <li className="ml-2">
-              <Link 
-                to="/virtual-shopping"
-                className="inline-flex items-center gap-2 bg-[#25D366] text-white px-4 py-1.5 rounded-full text-[12px] font-bold tracking-wide shadow-sm hover:opacity-90 transition no-underline"
-              >
-                <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span></span>
-                Live Video Call
-              </Link>
-            </li>
-          </ul>
+        <nav className="hidden lg:flex w-full bg-[#FFF7F2] border-b border-[#5F1517]/10">
+          <div className="max-w-[1400px] mx-auto w-full px-4 lg:px-10 xl:px-14">
+            <ul className="flex items-center justify-center gap-5 xl:gap-6 py-2.5 text-[13.5px] lg:text-[12.5px] font-medium text-[#801416] font-sans w-full">
+              <li className="whitespace-nowrap"><Link to="/shop" className="text-[#801416] no-underline hover:opacity-80 transition font-bold">Shop All</Link></li>
+              <li className="whitespace-nowrap"><Link to="/new-arrivals" className="text-[#801416] no-underline hover:opacity-80 transition font-bold">New Arrivals</Link></li>
+              
+              {topLevelCategories.map(cat => {
+                const subCats = getSubcategories(cat.id);
+                if (subCats.length > 0) {
+                  return (
+                    <li key={cat.id} className="whitespace-nowrap group relative z-50">
+                      <Link to={`/shop?category=${cat.id}`} className="text-[#801416] no-underline flex items-center gap-1 hover:opacity-80 transition font-bold">
+                        {cat.name} <ChevronDown size={14} className="group-hover:rotate-180 transition-transform duration-300" />
+                      </Link>
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                        <div className="bg-white border border-[#5F1517]/10 shadow-xl rounded-xl w-48 py-2 relative before:absolute before:-top-3 before:left-0 before:w-full before:h-3">
+                          {subCats.map(sub => (
+                            <Link key={sub.id} to={`/shop?category=${sub.id}`} className="block px-5 py-2.5 text-[13px] text-[#801416] hover:bg-[#FFF7F2] font-semibold transition-colors border-b border-gray-50 last:border-0">
+                              {sub.name}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </li>
+                  );
+                } else {
+                  return (
+                    <li key={cat.id} className="whitespace-nowrap">
+                      <Link to={`/shop?category=${cat.id}`} className="text-[#801416] no-underline hover:opacity-80 transition font-bold">{cat.name}</Link>
+                    </li>
+                  );
+                }
+              })}
+
+              <li className="whitespace-nowrap"><Link to="/gold-rates" className="text-[#801416] no-underline hover:opacity-80 transition font-bold">Today's Gold Rate</Link></li>
+              <li className="ml-2">
+                <Link
+                  to="/virtual-shopping"
+                  className="inline-flex items-center gap-2 bg-[#25D366] text-white px-4 py-1.5 rounded-full text-[12px] font-bold tracking-wide shadow-sm hover:opacity-90 transition no-underline"
+                >
+                  <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span></span>
+                  Live Video Call
+                </Link>
+              </li>
+            </ul>
+          </div>
         </nav>
-        
+
 
 
         {/* ── MOBILE DRAWER ── */}
@@ -493,33 +524,51 @@ const Header: React.FC = () => {
               <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
                 <Link to="/virtual-shopping" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-bold text-sm no-underline">Virtual Shopping</Link>
               </li>
-              <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
-                <a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I%20have%20an%20enquiry%20about%20Express%20Delivery%20options." target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Express Delivery</a>
-              </li>
-              <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
-                <a href="#gold" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Earrings</a>
-              </li>
-              <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
-                <a href="#gold" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Pendants</a>
-              </li>
-              <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
-                <a href="#gold" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Rings</a>
-              </li>
-              <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
-                <a href="#diamond" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Diamond Jewellery</a>
-              </li>
-              <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
-                <a href="#categories-section" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">More Jewellery</a>
-              </li>
-              <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
-                <a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I'm%20looking%20for%20gifting%20recommendations." target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Gifting</a>
-              </li>
-              <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
-                <a href="#look-book" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Wedding Collections</a>
-              </li>
-              <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
-                <a href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I'd%20like%20to%20know%20more%20about%20your%20current%20offers." target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Offers</a>
-              </li>
+              
+              {/* Divider for Categories */}
+              {topLevelCategories.length > 0 && (
+                <li className="px-6 py-4 bg-[#FFF7F2] flex items-center gap-3">
+                  <div className="flex-grow h-px bg-[#5F1517]/10"></div>
+                  <span className="text-[10px] uppercase tracking-widest text-[#801416]/60 font-bold whitespace-nowrap">Collections</span>
+                  <div className="flex-grow h-px bg-[#5F1517]/10"></div>
+                </li>
+              )}
+              {topLevelCategories.length > 0 && (
+                <li className="px-4 py-4 border-b border-gray-50">
+                  <div className="grid grid-cols-2 gap-3">
+                    {topLevelCategories.map(cat => {
+                      const subCats = getSubcategories(cat.id);
+                      const isExpanded = expandedMobileCategory === cat.id;
+                      
+                      return (
+                        <div key={cat.id} className="bg-white border border-[#5F1517]/10 rounded-xl overflow-hidden shadow-sm flex flex-col">
+                          <div className="flex items-stretch justify-between">
+                            <Link to={`/shop?category=${cat.id}`} onClick={() => setIsMobileMenuOpen(false)} className="flex-grow p-3 text-[#801416] font-bold text-[13px] flex items-center justify-center text-center leading-tight no-underline">
+                              {cat.name}
+                            </Link>
+                            {subCats.length > 0 && (
+                              <button onClick={() => setExpandedMobileCategory(isExpanded ? null : cat.id)} className="px-2 text-[#801416] border-l border-[#5F1517]/10 bg-[#FFF7F2]/30 hover:bg-[#FFF7F2] flex items-center justify-center">
+                                <ChevronDown size={16} className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                              </button>
+                            )}
+                          </div>
+                          
+                          {/* Subcategories Accordion */}
+                          {isExpanded && subCats.length > 0 && (
+                            <div className="bg-[#FFF7F2]/50 border-t border-[#5F1517]/10 flex flex-col">
+                              {subCats.map(sub => (
+                                <Link key={sub.id} to={`/shop?category=${sub.id}`} onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-[#801416]/80 font-medium text-[11px] no-underline hover:bg-white/50 border-b border-white last:border-0">
+                                  {sub.name}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </li>
+              )}
               <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
                 <Link to="/gold-rates" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Today's Gold Rate</Link>
               </li>
@@ -536,7 +585,7 @@ const Header: React.FC = () => {
               </button>
               <div className="flex-grow flex items-center bg-[#FFF7F2] border border-[#5F1517]/20 rounded-full overflow-hidden px-4 focus-within:border-[#801416] focus-within:ring-1 focus-within:ring-[#801416]/20 transition-all">
                 <Search size={16} className="text-[#A56B25] flex-shrink-0" />
-                <input 
+                <input
                   type="text"
                   autoFocus
                   placeholder={placeholderText}
@@ -546,21 +595,21 @@ const Header: React.FC = () => {
                 />
               </div>
             </div>
-            
+
             <div className="px-5 py-3 bg-white border-b border-[#5F1517]/10 flex items-center justify-between">
-               <span className="text-[11px] uppercase tracking-widest text-[#A56B25] font-bold whitespace-nowrap">Filter By:</span>
-               <select 
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="bg-transparent text-[#801416] font-bold text-[13px] outline-none text-right appearance-none pl-4 cursor-pointer"
-                  style={{ backgroundImage: 'none' }}
-               >
-                 <option value="all">All Categories</option>
-                 {allCategories.map(cat => (
-                   <option key={cat.id} value={cat.id}>{cat.name}</option>
-                 ))}
-               </select>
-               <ChevronDown size={14} className="text-[#801416] ml-1 pointer-events-none" />
+              <span className="text-[11px] uppercase tracking-widest text-[#A56B25] font-bold whitespace-nowrap">Filter By:</span>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="bg-transparent text-[#801416] font-bold text-[13px] outline-none text-right appearance-none pl-4 cursor-pointer"
+                style={{ backgroundImage: 'none' }}
+              >
+                <option value="all">All Categories</option>
+                {allCategories.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+              <ChevronDown size={14} className="text-[#801416] ml-1 pointer-events-none" />
             </div>
 
             <div className="flex-grow overflow-y-auto p-4">
@@ -568,10 +617,10 @@ const Header: React.FC = () => {
               {filteredProducts.length > 0 ? (
                 <div className="flex flex-col gap-3">
                   {filteredProducts.map(product => {
-                     const cat = allCategories.find(c => c.id === product.category_id);
-                     return (
-                      <Link 
-                        key={product.id} 
+                    const cat = allCategories.find(c => c.id === product.category_id);
+                    return (
+                      <Link
+                        key={product.id}
                         to={`/shop/${product.id}`}
                         onClick={() => setIsMobileSearchOpen(false)}
                         className="flex items-center gap-4 p-3 bg-white rounded-2xl shadow-sm border border-[#5F1517]/5 active:scale-[0.98] transition-transform"
@@ -596,7 +645,7 @@ const Header: React.FC = () => {
                           </div>
                         </div>
                       </Link>
-                     );
+                    );
                   })}
                 </div>
               ) : (
@@ -618,13 +667,13 @@ const Header: React.FC = () => {
         Flat 20% off on VA, for Online Gold Jewellery
       </div>
 
-      <LoginModal 
-        isOpen={isLoginModalOpen} 
-        onClose={() => setIsLoginModalOpen(false)} 
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
         onLoginSuccess={() => fetchUserProfile()}
       />
 
-      <SubscribeModal 
+      <SubscribeModal
         isOpen={isSubscribeOpen}
         onClose={() => setIsSubscribeOpen(false)}
       />

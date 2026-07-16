@@ -16,6 +16,9 @@ class CategoryUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     image_url: Optional[str] = None
+    parent_id: Optional[str] = None
+    slug: Optional[str] = None
+    display_type: Optional[str] = None
 
 class CategoryResponse(CategoryBase):
     id: str

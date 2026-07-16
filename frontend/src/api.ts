@@ -4,16 +4,30 @@ const BASE_URL = import.meta.env.VITE_API_URL || 'https://sirisamruddhigold.com/
 
 export const getImageUrl = (url?: string) => {
   if (!url) return '';
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url;
+  
+  // If url is a JSON array string, parse it and use the first image
+  let parsedUrl = url;
+  if (url.startsWith('[') && url.endsWith(']')) {
+    try {
+      const arr = JSON.parse(url);
+      if (Array.isArray(arr) && arr.length > 0) {
+        parsedUrl = arr[0];
+      }
+    } catch (e) {
+      // Ignore parse error
+    }
   }
-  if (url.startsWith('/api/')) {
-    return `${BASE_URL.replace(/\/api$/, '')}${url}`;
+
+  if (parsedUrl.startsWith('http://') || parsedUrl.startsWith('https://')) {
+    return parsedUrl;
   }
-  if (url.startsWith('/')) {
-    return `${BASE_URL.replace(/\/api$/, '')}${url}`;
+  if (parsedUrl.startsWith('/api/')) {
+    return `${BASE_URL.replace(/\/api$/, '')}${parsedUrl}`;
   }
-  return `${BASE_URL}/uploads/${url}`;
+  if (parsedUrl.startsWith('/')) {
+    return `${BASE_URL.replace(/\/api$/, '')}${parsedUrl}`;
+  }
+  return `${BASE_URL}/uploads/${parsedUrl}`;
 };
 
 // ─── User API ────────────────────────────────────────────────────────────────
