@@ -218,8 +218,7 @@ async def forgot_password(
     user = result.scalars().first()
 
     if not user:
-        # Prevent email enumeration by returning a generic success message
-        return {"message": "If that email exists in our system, a reset link has been sent."}
+        raise HTTPException(status_code=404, detail="Email not found in our system")
 
     # Generate a secure token
     token = secrets.token_urlsafe(32)
@@ -261,10 +260,9 @@ async def forgot_password(
                 response.raise_for_status()
             except Exception as e:
                 print(f"Failed to send email via Brevo: {e}")
-                # We can choose to raise an error or just let the token generate
-                # raise HTTPException(status_code=500, detail="Failed to send reset email.")
+                raise HTTPException(status_code=500, detail="Failed to send reset email. Please contact support or check mail configuration.")
 
-    return {"message": "If that email exists in our system, a reset link has been sent."}
+    return {"message": "Password reset link has been sent to your email."}
 
 
 @public_router.post(
