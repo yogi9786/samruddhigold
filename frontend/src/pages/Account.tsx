@@ -3,8 +3,9 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import BottomNav from '../components/BottomNav';
 import { useNavigate } from 'react-router-dom';
-import { User, LogOut, Package, MapPin, Heart, CreditCard, Plus, Trash2 } from 'lucide-react';
+import { User, LogOut, Package, MapPin, Heart, CreditCard, Plus, Trash2, Download } from 'lucide-react';
 import { getImageUrl } from '../api';
+import { generateInvoicePDF } from '../utils/pdfGenerator';
 
 const Account: React.FC = () => {
   const navigate = useNavigate();
@@ -376,6 +377,7 @@ const Account: React.FC = () => {
                             <th className="p-4 font-semibold border-b border-[#5F1517]/10">Order ID</th>
                             <th className="p-4 font-semibold border-b border-[#5F1517]/10">Amount</th>
                             <th className="p-4 font-semibold border-b border-[#5F1517]/10">Status</th>
+                            <th className="p-4 font-semibold border-b border-[#5F1517]/10 text-right">Action</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -386,9 +388,20 @@ const Account: React.FC = () => {
                               <td className="p-4 text-sm text-gray-600 font-mono text-xs">{p.order_id.substring(0,8)}...</td>
                               <td className="p-4 font-bold text-[#801416]">₹{p.amount.toLocaleString('en-IN')}</td>
                               <td className="p-4">
-                                <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${p.status.toLowerCase() === 'captured' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${p.status.toLowerCase() === 'captured' || p.status.toLowerCase() === 'success' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                                   {p.status}
                                 </span>
+                              </td>
+                              <td className="p-4 text-right">
+                                <button 
+                                  onClick={() => {
+                                    const matchingOrder = orders.find(o => o.id === p.order_id) || { id: p.order_id, total_amount: p.amount };
+                                    generateInvoicePDF(matchingOrder, p, user);
+                                  }}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#D4AF37]/50 text-[#5F1517] text-xs font-bold rounded-lg hover:bg-[#FFF7F2] transition shadow-sm"
+                                >
+                                  <Download size={14} /> Invoice
+                                </button>
                               </td>
                             </tr>
                           ))}

@@ -49,6 +49,21 @@ class UserCreate(UserBase):
     password: str
 
 
+class AdminUpdateUser(BaseModel):
+    """Admin endpoint payload to update a user's details."""
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    disabled: Optional[bool] = None
+    password: Optional[str] = None
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+
 class UserUpdate(BaseModel):
     """Model for updating an existing user."""
     email: Optional[str] = None

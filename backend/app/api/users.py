@@ -1,13 +1,14 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from app.core.security import get_password_hash, get_current_user, verify_admin
 from app.core.database import get_db
 from app.models.auth import UserResponse, UserCreate, UserUpdate
-from app.db.models import User as DBUser
+from app.db.models import User as DBUser, Order as DBOrder, Payment as DBPayment, CartItem as DBCartItem, WishlistItem as DBWishlistItem
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Public User routes — No authentication required
@@ -85,6 +86,53 @@ async def get_user(user_id: str, admin: dict = Depends(verify_admin), db: AsyncS
             detail="User not found"
         )
     return user
+
+
+@admin_router.get(
+    "/{user_id}/comprehensive",
+    summary="Get comprehensive user details (admin only)"
+)
+async def get_user_comprehensive(user_id: str, admin: dict = Depends(verify_admin), db: AsyncSession = Depends(get_db)):
+    """
+    **Admin only** — Requires Bearer token.
+    Get a specific user's full details including orders, payments, cart, and wishlist.
+    """
+    result = await db.execute(select(DBUser).where(DBUser.id == user_id))
+    user = result.scalars().first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+        
+    username = user.username
+    
+    # Fetch Orders
+    orders_result = await db.execute(select(DBOrder).where(DBOrder.user_username == username))
+    orders = orders_result.scalars().all()
+    
+    # Fetch Payments (Joined with Orders where possible, but we'll fetch via order IDs)
+    order_ids = [order.id for order in orders]
+    payments = []
+    if order_ids:
+        payments_result = await db.execute(select(DBPayment).where(DBPayment.order_id.in_(order_ids)))
+        payments = payments_result.scalars().all()
+        
+    # Fetch Cart Items (using session_id as user_id for logged in users)
+    cart_result = await db.execute(select(DBCartItem).where(DBCartItem.user_id == user_id))
+    cart_items = cart_result.scalars().all()
+    
+    # Fetch Wishlist Items
+    wishlist_result = await db.execute(select(DBWishlistItem).where(DBWishlistItem.user_id == user_id))
+    wishlist_items = wishlist_result.scalars().all()
+    
+    return jsonable_encoder({
+        "user": user,
+        "orders": orders,
+        "payments": payments,
+        "cart": cart_items,
+        "wishlist": wishlist_items
+    })
 
 
 @admin_router.put(

@@ -60,6 +60,14 @@ api.interceptors.response.use(
 // ─── Admin API ────────────────────────────────────────────────────────────────
 // Used exclusively by AdminPanel.
 // Injects admin_token and redirects to '/' on 401.
+export const login = (data: any) => api.post('/auth/token', data, {
+  headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+});
+export const register = (data: any) => api.post('/users/', data);
+export const googleLogin = (credential: string) => api.post('/auth/google', { credential });
+export const forgotPassword = (email: string) => api.post('/auth/forgot-password', { email });
+export const resetPassword = (token: string, new_password: string) => api.post('/auth/reset-password', { token, new_password });
+
 export const adminApi = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
@@ -99,7 +107,7 @@ export const getCart = () => api.get(`/cart/${getCartUserId()}`);
 export const addToCart = (productId: string, quantity: number = 1) => api.post('/cart', { user_id: getCartUserId(), product_id: productId, quantity });
 export const updateCartItem = (id: string, quantity: number) => api.put(`/cart/${id}`, { quantity });
 export const removeFromCart = (id: string) => api.delete(`/cart/${id}`);
-export const clearCart = () => api.delete('/cart');
+export const clearCart = () => api.delete(`/cart?user_id=${getCartUserId()}`);
 
 // Wishlist API
 export const getWishlist = () => api.get('/wishlist/');

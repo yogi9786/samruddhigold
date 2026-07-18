@@ -86,6 +86,10 @@ async def init_db():
             await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS razorpay_payment_id VARCHAR;"))
             await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS razorpay_signature VARCHAR;"))
             await conn.execute(text("ALTER TABLE orders ALTER COLUMN user_username DROP NOT NULL;"))
+            
+            # Ensure Users columns exist for password reset
+            await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR;"))
+            await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP WITH TIME ZONE;"))
         logger.info("Database tables created and migrated successfully")
         
         # Seed default metal prices if none exist

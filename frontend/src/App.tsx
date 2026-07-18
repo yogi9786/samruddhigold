@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
-import AdminPanel from './pages/AdminPanel';
+import AdminPanel from './pages/admin';
 import Shop from './pages/Shop';
 import ProductDetails from './pages/ProductDetails';
 import AboutUs from './pages/AboutUs';
@@ -17,6 +17,10 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import PageLoader from './components/PageLoader';
 import GoldRates from './pages/GoldRates';
 import Account from './pages/Account';
+import Success from './pages/Success';
+import ResetPassword from './pages/ResetPassword';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsAndConditions from './pages/TermsAndConditions';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -45,6 +49,10 @@ function App() {
           <Route path="/virtual-shopping" element={<VirtualShopping />} />
           <Route path="/gold-rates" element={<GoldRates />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/success/:orderId" element={<Success />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
         </Routes>
       </Router>
     </>

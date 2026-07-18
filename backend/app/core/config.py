@@ -24,9 +24,16 @@ class Settings(BaseSettings):
     # Razorpay Settings
     RAZORPAY_KEY_ID: str | None = None
     RAZORPAY_KEY_SECRET: str | None = None
+    RAZORPAY_WEBHOOK_SECRET: str | None = None
 
     # Google OAuth
     GOOGLE_CLIENT_ID: str
+
+    # Brevo Email & Frontend
+    BREVO_API_KEY: str | None = None
+    BREVO_SENDER_EMAIL: str = "support@sirisamruddhigold.com"
+    BREVO_SENDER_NAME: str = "Samruddhi Gold Palace Support"
+    FRONTEND_URL: str = "http://localhost:5173"
 
     class Config:
         env_file = ".env"

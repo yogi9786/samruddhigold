@@ -14,3 +14,4 @@ alembic
 psycopg2-binary
 razorpay
 google-auth
+httpx

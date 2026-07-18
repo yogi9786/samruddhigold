@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -8,7 +8,7 @@ from app.core.security import verify_admin, get_current_user, get_current_user_o
 from app.core.config import settings
 from app.core.database import get_db
 from app.models.order import OrderCreate, OrderUpdate, OrderResponse
-from app.db.models import Order as DBOrder, Payment as DBPayment
+from app.db.models import Order as DBOrder, Payment as DBPayment, User as DBUser
 from pydantic import BaseModel
 import razorpay
 import hmac
@@ -38,6 +38,40 @@ async def checkout_order(order: OrderCreate, current_user: dict = Depends(get_cu
     if current_user:
         username = current_user.get("username") if isinstance(current_user, dict) else current_user.username
         order_dict["user_username"] = username
+        
+        # Save address to user profile
+        result = await db.execute(select(DBUser).where(DBUser.username == username))
+        db_user = result.scalars().first()
+        if db_user:
+            current_addresses = db_user.addresses or []
+            # Make sure it's a list
+            if isinstance(current_addresses, str):
+                import json
+                try:
+                    current_addresses = json.loads(current_addresses)
+                except:
+                    current_addresses = []
+                    
+            if isinstance(current_addresses, list):
+                # Ensure address doesn't already exist
+                address_exists = False
+                for addr in current_addresses:
+                    if isinstance(addr, dict) and addr.get("fullAddress") == order.shipping_address:
+                        address_exists = True
+                        break
+                    elif isinstance(addr, str) and addr == order.shipping_address:
+                        address_exists = True
+                        break
+                
+                if not address_exists:
+                    current_addresses.append({
+                        "id": str(datetime.now().timestamp()),
+                        "label": "Home",
+                        "fullAddress": order.shipping_address,
+                        "isDefault": len(current_addresses) == 0
+                    })
+                    db_user.addresses = current_addresses
+                    await db.commit()
     else:
         order_dict["user_username"] = None
         
@@ -111,11 +145,19 @@ async def verify_payment(payload: VerifyPaymentRequest, db: AsyncSession = Depen
                 razorpay_payment_id=payload.razorpay_payment_id,
                 razorpay_order_id=payload.razorpay_order_id,
                 amount=db_order.total_amount,
-                status="Captured"
+                status="Success"
             )
             db.add(new_payment)
             
             await db.commit()
+            
+            # --- MOCK NOTIFICATIONS ---
+            print(f"✅ MOCK: Sending WhatsApp confirmation to {db_order.contact_phone} for order {db_order.id}")
+            if db_order.email:
+                print(f"✅ MOCK: Sending Email confirmation to {db_order.email} for order {db_order.id}")
+            print(f"✅ MOCK: Sending SMS confirmation to {db_order.contact_phone} for order {db_order.id}")
+            # --------------------------
+            
             return {"status": "success", "message": "Payment verified and captured successfully"}
         except razorpay.errors.SignatureVerificationError:
             db_order.status = "Payment Failed"
@@ -137,12 +179,68 @@ async def verify_payment(payload: VerifyPaymentRequest, db: AsyncSession = Depen
             razorpay_payment_id=payload.razorpay_payment_id,
             razorpay_order_id=payload.razorpay_order_id,
             amount=db_order.total_amount,
-            status="Captured (Mock)"
+            status="Success (Mock)"
         )
         db.add(new_payment)
         
         await db.commit()
+        
+        # --- MOCK NOTIFICATIONS ---
+        print(f"✅ MOCK: Sending WhatsApp confirmation to {db_order.contact_phone} for order {db_order.id}")
+        if db_order.email:
+            print(f"✅ MOCK: Sending Email confirmation to {db_order.email} for order {db_order.id}")
+        print(f"✅ MOCK: Sending SMS confirmation to {db_order.contact_phone} for order {db_order.id}")
+        # --------------------------
+        
         return {"status": "success", "message": "Payment mock verified successfully (No keys provided)"}
+
+@router.post("/webhook", summary="Razorpay Webhook Endpoint")
+async def razorpay_webhook(request: Request, db: AsyncSession = Depends(get_db)):
+    if not settings.RAZORPAY_WEBHOOK_SECRET:
+        # If no secret is configured, just return ok to avoid failing unnecessarily
+        return {"status": "ignored", "message": "Webhook secret not configured"}
+        
+    payload = await request.body()
+    signature = request.headers.get("X-Razorpay-Signature")
+    
+    if not signature:
+        raise HTTPException(status_code=400, detail="Missing signature")
+        
+    try:
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+        client.utility.verify_webhook_signature(
+            payload.decode("utf-8"),
+            signature,
+            settings.RAZORPAY_WEBHOOK_SECRET
+        )
+    except razorpay.errors.SignatureVerificationError:
+        raise HTTPException(status_code=400, detail="Invalid webhook signature")
+        
+    import json
+    data = json.loads(payload)
+    
+    event = data.get("event")
+    if event in ["payment.captured", "order.paid"]:
+        payload_entity = data.get("payload", {})
+        rzp_order_id = None
+        
+        if event == "payment.captured":
+            payment_entity = payload_entity.get("payment", {}).get("entity", {})
+            rzp_order_id = payment_entity.get("order_id")
+        else:
+            order_entity = payload_entity.get("order", {}).get("entity", {})
+            rzp_order_id = order_entity.get("id")
+            
+        if rzp_order_id:
+            result = await db.execute(select(DBOrder).where(DBOrder.razorpay_order_id == rzp_order_id))
+            db_order = result.scalars().first()
+            if db_order and db_order.status != "Payment Successful":
+                db_order.status = "Payment Successful"
+                db_order.updated_at = datetime.now(timezone.utc)
+                await db.commit()
+                print(f"✅ WEBHOOK: Order {db_order.id} status updated to Payment Successful via webhook")
+
+    return {"status": "ok"}
 
 @user_router.post(
     "/legacy",

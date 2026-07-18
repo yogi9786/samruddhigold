@@ -123,14 +123,22 @@ const Header: React.FC = () => {
 
   const fetchCounts = async () => {
     try {
-      const [cartRes, wishRes] = await Promise.all([
-        getCart(),
-        getWishlist()
-      ]);
-      setCartCount(cartRes.data.length || 0);
-      setWishlistCount(wishRes.data.length || 0);
+      const cartRes = await getCart();
+      const totalQty = cartRes.data.reduce((sum: number, item: any) => sum + item.quantity, 0);
+      setCartCount(totalQty);
     } catch (err) {
-      console.error('Failed to fetch counts:', err);
+      console.error('Failed to fetch cart count:', err);
+    }
+    
+    if (localStorage.getItem('access_token')) {
+      try {
+        const wishRes = await getWishlist();
+        setWishlistCount(wishRes.data.length || 0);
+      } catch (err) {
+        console.error('Failed to fetch wishlist count:', err);
+      }
+    } else {
+      setWishlistCount(0);
     }
   };
 
@@ -144,9 +152,7 @@ const Header: React.FC = () => {
 
   useEffect(() => {
     const handleCartUpdate = () => {
-      if (localStorage.getItem('access_token')) {
-        fetchCounts();
-      }
+      fetchCounts();
     };
     const handleOpenSubscribe = () => {
       setIsSubscribeOpen(true);
@@ -166,6 +172,10 @@ const Header: React.FC = () => {
       window.removeEventListener('openLoginModal', handleOpenLogin);
       window.removeEventListener('userLogout', handleLogout);
     };
+  }, []);
+
+  useEffect(() => {
+    fetchCounts(); // Fetch initial cart count for guests
   }, []);
 
   useEffect(() => {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import api, { getCart, checkoutOrder, verifyPayment } from '../api';
+import api, { getCart, checkoutOrder, verifyPayment, getCartUserId } from '../api';
 import { ShieldCheck, CreditCard, Lock } from 'lucide-react';
 
 interface CartItem {
@@ -98,7 +98,11 @@ const Checkout: React.FC = () => {
         items: cartItems.map(item => ({
           product_id: item.product_id,
           quantity: item.quantity,
-          price: item.product?.price || 0
+          price: item.product?.price || 0,
+          product: {
+            name: item.product?.name,
+            image_url: item.product?.image_url
+          }
         })),
         total_amount: total,
         shipping_address: fullAddress,
@@ -127,10 +131,10 @@ const Checkout: React.FC = () => {
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature
               });
-              await api.delete('/cart');
+              await api.delete(`/cart?user_id=${getCartUserId()}`);
               window.dispatchEvent(new Event('cartUpdated'));
               alert('Payment Successful!');
-              navigate('/');
+              navigate('/shop');
             } catch (err) {
               alert('Payment verification failed.');
               console.error(err);
@@ -158,10 +162,10 @@ const Checkout: React.FC = () => {
           razorpay_payment_id: "mock_payment_" + Math.random().toString(36).substring(7),
           razorpay_signature: "mock_signature"
         });
-        await api.delete('/cart');
+        await api.delete(`/cart?user_id=${getCartUserId()}`);
         window.dispatchEvent(new Event('cartUpdated'));
-        alert('Order Placed Successfully! (Mock Payment)');
-        navigate('/');
+        alert('Payment Successful! (Mock)');
+        navigate('/shop');
       }
     } catch (err: any) {
       console.error('Checkout error:', err);

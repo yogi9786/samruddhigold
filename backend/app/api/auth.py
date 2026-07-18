@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime, timezone
 import os
 import re
 
@@ -15,6 +15,8 @@ from sqlalchemy import select
 import secrets
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
+import httpx
+from app.models.auth import Token, UserResponse, GoogleLoginRequest, ForgotPasswordRequest, ResetPasswordRequest
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Public auth routes
@@ -199,6 +201,105 @@ async def update_user_password(
     user_record.hashed_password = await get_password_hash(new_password)
     await db.commit()
     return {"message": "Password updated successfully"}
+
+
+@public_router.post(
+    "/forgot-password",
+    summary="Request a password reset link"
+)
+async def forgot_password(
+    request: ForgotPasswordRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Generate a password reset token and send an email via Brevo.
+    """
+    result = await db.execute(select(User).where(User.email == request.email))
+    user = result.scalars().first()
+
+    if not user:
+        # Prevent email enumeration by returning a generic success message
+        return {"message": "If that email exists in our system, a reset link has been sent."}
+
+    # Generate a secure token
+    token = secrets.token_urlsafe(32)
+    user.reset_token = token
+    user.reset_token_expires = datetime.now(timezone.utc) + timedelta(minutes=15)
+    await db.commit()
+
+    # Send Email via Brevo
+    if settings.BREVO_API_KEY:
+        reset_link = f"{settings.FRONTEND_URL}/reset-password?token={token}"
+        email_data = {
+            "sender": {"name": settings.BREVO_SENDER_NAME, "email": settings.BREVO_SENDER_EMAIL},
+            "to": [{"email": user.email, "name": user.full_name or user.username}],
+            "subject": "Password Reset Request",
+            "htmlContent": f"""
+            <html>
+                <body>
+                    <h2>Password Reset Request</h2>
+                    <p>Hi {user.full_name or user.username},</p>
+                    <p>You requested to reset your password. Click the link below to set a new password. This link will expire in 15 minutes.</p>
+                    <p><a href="{reset_link}" style="display:inline-block;padding:10px 20px;background-color:#5F1517;color:white;text-decoration:none;border-radius:5px;">Reset Password</a></p>
+                    <p>If you did not request this, please ignore this email.</p>
+                </body>
+            </html>
+            """
+        }
+        
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.post(
+                    "https://api.brevo.com/v3/smtp/email",
+                    json=email_data,
+                    headers={
+                        "api-key": settings.BREVO_API_KEY,
+                        "accept": "application/json",
+                        "content-type": "application/json"
+                    }
+                )
+                response.raise_for_status()
+            except Exception as e:
+                print(f"Failed to send email via Brevo: {e}")
+                # We can choose to raise an error or just let the token generate
+                # raise HTTPException(status_code=500, detail="Failed to send reset email.")
+
+    return {"message": "If that email exists in our system, a reset link has been sent."}
+
+
+@public_router.post(
+    "/reset-password",
+    summary="Reset password using a token"
+)
+async def reset_password(
+    request: ResetPasswordRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Verify the reset token and update the user's password.
+    """
+    result = await db.execute(
+        select(User).where(
+            User.reset_token == request.token,
+            User.reset_token_expires > datetime.now(timezone.utc)
+        )
+    )
+    user = result.scalars().first()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token"
+        )
+
+    # Hash the new password and update user
+    user.hashed_password = await get_password_hash(request.new_password)
+    user.reset_token = None
+    user.reset_token_expires = None
+    await db.commit()
+
+    return {"message": "Password successfully reset"}
+
 
 
 # Include both sub-routers

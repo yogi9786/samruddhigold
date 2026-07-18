@@ -138,3 +138,15 @@ async def remove_from_cart(item_id: str, db: AsyncSession = Depends(get_db)):
         
     await db.delete(cart_item)
     await db.commit()
+
+@router.delete("", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
+async def clear_cart(user_id: str, db: AsyncSession = Depends(get_db)):
+    """
+    Clear all items in the cart for a user.
+    """
+    result = await db.execute(select(DBCartItem).where(DBCartItem.user_id == user_id))
+    items = result.scalars().all()
+    for item in items:
+        await db.delete(item)
+    await db.commit()

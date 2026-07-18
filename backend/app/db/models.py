@@ -16,6 +16,8 @@ class User(Base):
     disabled = Column(Boolean, default=False)
     auth_provider = Column(String, default="local")
     addresses = Column(JSON, nullable=True)
+    reset_token = Column(String, nullable=True, index=True)
+    reset_token_expires = Column(DateTime(timezone=True), nullable=True)
 
 class Category(Base):
     __tablename__ = "categories"

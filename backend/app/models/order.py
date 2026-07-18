@@ -6,6 +6,7 @@ class OrderItem(BaseModel):
     product_id: str
     quantity: int
     price: float
+    product: Optional[dict] = None
 
 class OrderBase(BaseModel):
     items: List[OrderItem]
