@@ -237,6 +237,41 @@ async def update_my_addresses(
     await db.commit()
     return {"message": "Addresses updated successfully", "addresses": user.addresses}
 
+
+@me_router.put(
+    "/profile",
+    response_model=UserResponse,
+    summary="Update current user profile details"
+)
+async def update_my_profile(
+    profile_data: UserUpdate,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    **Requires Bearer token.**
+    Update the user's profile info (full_name, email, phone).
+    """
+    username = current_user.get("username") if isinstance(current_user, dict) else current_user.username
+    result = await db.execute(select(DBUser).where(DBUser.username == username))
+    user = result.scalars().first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    if profile_data.full_name is not None:
+        user.full_name = profile_data.full_name
+    if profile_data.email is not None:
+        user.email = profile_data.email
+    if profile_data.phone is not None:
+        user.phone = profile_data.phone
+    if profile_data.password:
+        user.hashed_password = await get_password_hash(profile_data.password)
+
+    await db.commit()
+    await db.refresh(user)
+    return user
+
+
 # Include all sub-routers
 router.include_router(public_router)
 router.include_router(admin_router)

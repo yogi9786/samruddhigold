@@ -64,7 +64,10 @@ async def migrate():
         print("Checking addresses column in users...")
         await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS addresses JSON;"))
 
-        
+        # Add phone to users
+        print("Checking phone column in users...")
+        await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(50);"))
+
         print("Migration completed successfully!")
 
 if __name__ == "__main__":

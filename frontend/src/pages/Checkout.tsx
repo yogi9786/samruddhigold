@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import api, { getCart, checkoutOrder, verifyPayment, getCartUserId } from '../api';
-import { ShieldCheck, CreditCard, Lock } from 'lucide-react';
+import logo from '../assets/samruddhi-logo.png';
+import { generateInvoicePDF } from '../utils/pdfGenerator';
+import { ShieldCheck, CreditCard, Lock, CheckCircle, Download, ShoppingBag } from 'lucide-react';
 
 interface CartItem {
   id: string;
@@ -23,6 +25,10 @@ const Checkout: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [completedOrder, setCompletedOrder] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -40,11 +46,39 @@ const Checkout: React.FC = () => {
         if (localStorage.getItem('access_token')) {
           const userRes = await api.get('/auth/me');
           if (userRes.data) {
+            setUserProfile(userRes.data);
+            
+            let streetVal = '';
+            let cityVal = '';
+            let stateVal = '';
+            let zipVal = '';
+            let countryVal = 'India';
+
+            if (userRes.data.addresses && Array.isArray(userRes.data.addresses) && userRes.data.addresses.length > 0) {
+              const defAddr = userRes.data.addresses.find((a: any) => a.isDefault) || userRes.data.addresses[0];
+              if (defAddr) {
+                if (typeof defAddr === 'object') {
+                  streetVal = defAddr.street || defAddr.fullAddress || '';
+                  cityVal = defAddr.city || '';
+                  stateVal = defAddr.state || '';
+                  zipVal = defAddr.zip || '';
+                  countryVal = defAddr.country || 'India';
+                } else if (typeof defAddr === 'string') {
+                  streetVal = defAddr;
+                }
+              }
+            }
+
             setFormData(prev => ({
               ...prev,
-              fullName: userRes.data.full_name || '',
-              email: userRes.data.email || '',
-              phone: userRes.data.phone || '' // Assuming phone exists or is empty
+              fullName: userRes.data.full_name || prev.fullName,
+              email: userRes.data.email || prev.email,
+              phone: userRes.data.phone || prev.phone,
+              street: streetVal || prev.street,
+              city: cityVal || prev.city,
+              state: stateVal || prev.state,
+              zip: zipVal || prev.zip,
+              country: countryVal || prev.country
             }));
           }
         }
@@ -82,6 +116,37 @@ const Checkout: React.FC = () => {
   }, 0);
   const gst = Math.round(subtotal * 0.03);
   const total = subtotal + gst;
+
+  const handlePaymentSuccess = async (order: any, paymentId: string) => {
+    try {
+      await api.delete(`/cart?user_id=${getCartUserId()}`);
+      window.dispatchEvent(new Event('cartUpdated'));
+
+      const finishedOrder = {
+        id: order.id || order.razorpay_order_id,
+        razorpay_order_id: order.razorpay_order_id,
+        razorpay_payment_id: paymentId,
+        full_name: formData.fullName,
+        email: formData.email,
+        contact_phone: formData.phone,
+        shipping_address: `${formData.street}, ${formData.city}, ${formData.state} ${formData.zip}, ${formData.country}`,
+        total_amount: total,
+        items: cartItems.map(item => ({
+          name: item.product?.name || 'Jewellery Item',
+          price: item.product?.price || 0,
+          quantity: item.quantity,
+          product: item.product
+        })),
+        created_at: new Date().toISOString(),
+        status: 'Payment Successful'
+      };
+
+      setCompletedOrder(finishedOrder);
+      setShowSuccessModal(true);
+    } catch (err) {
+      console.error('Error finishing payment flow:', err);
+    }
+  };
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,17 +189,14 @@ const Checkout: React.FC = () => {
           name: "Samruddhi Gold Palace",
           description: "Jewellery Purchase",
           order_id: order.razorpay_order_id,
-          handler: async function (response: any) {
+          handler: async function (res: any) {
             try {
               await verifyPayment({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature
+                razorpay_order_id: res.razorpay_order_id,
+                razorpay_payment_id: res.razorpay_payment_id,
+                razorpay_signature: res.razorpay_signature
               });
-              await api.delete(`/cart?user_id=${getCartUserId()}`);
-              window.dispatchEvent(new Event('cartUpdated'));
-              alert('Payment Successful!');
-              navigate('/shop');
+              await handlePaymentSuccess(order, res.razorpay_payment_id);
             } catch (err) {
               alert('Payment verification failed.');
               console.error(err);
@@ -146,26 +208,24 @@ const Checkout: React.FC = () => {
             contact: formData.phone
           },
           theme: {
-            color: "#1e3a8a" // Royal blue
+            color: "#5F1517"
           }
         };
         // @ts-ignore
         const rzp1 = new window.Razorpay(options);
-        rzp1.on('payment.failed', function (response: any){
-          alert("Payment Failed: " + response.error.description);
+        rzp1.on('payment.failed', function (res: any){
+          alert("Payment Failed: " + res.error.description);
         });
         rzp1.open();
       } else {
         // Mock success flow
+        const mockPaymentId = "mock_payment_" + Math.random().toString(36).substring(7);
         await verifyPayment({
           razorpay_order_id: order.razorpay_order_id,
-          razorpay_payment_id: "mock_payment_" + Math.random().toString(36).substring(7),
+          razorpay_payment_id: mockPaymentId,
           razorpay_signature: "mock_signature"
         });
-        await api.delete(`/cart?user_id=${getCartUserId()}`);
-        window.dispatchEvent(new Event('cartUpdated'));
-        alert('Payment Successful! (Mock)');
-        navigate('/shop');
+        await handlePaymentSuccess(order, mockPaymentId);
       }
     } catch (err: any) {
       console.error('Checkout error:', err);
@@ -187,7 +247,7 @@ const Checkout: React.FC = () => {
     );
   }
 
-  if (cartItems.length === 0) {
+  if (cartItems.length === 0 && !showSuccessModal) {
     return (
       <div className="min-h-screen bg-[#faf9f8] flex flex-col font-outfit">
         <Header />
@@ -383,6 +443,83 @@ const Checkout: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {/* ── THANK YOU / PAYMENT SUCCESS MODAL ── */}
+      {showSuccessModal && completedOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-xl w-full p-6 sm:p-8 text-center relative border border-[var(--color-gold)]/30 overflow-hidden">
+            {/* Top Logo */}
+            <div className="flex justify-center mb-4">
+              <img src={logo} alt="Samruddhi Gold Palace" className="h-14 object-contain" />
+            </div>
+
+            {/* Checkmark Icon */}
+            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-green-200 shadow-sm">
+              <CheckCircle className="w-12 h-12 text-green-600 animate-bounce" />
+            </div>
+
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[var(--color-royal)] mb-1">
+              Thank You for Shopping!
+            </h2>
+            <p className="text-gray-600 text-sm mb-6 font-medium">
+              Your order has been placed successfully and is protected with 100% insured delivery.
+            </p>
+
+            {/* Order Brief Box */}
+            <div className="bg-[#FAF7F2] rounded-2xl p-4 sm:p-5 text-left mb-6 border border-[#5F1517]/10 space-y-2.5 text-xs sm:text-sm text-gray-700">
+              <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+                <span className="font-semibold text-[var(--color-royal)]">Order Reference</span>
+                <span className="font-mono font-bold text-gray-900">
+                  #{String(completedOrder.id).substring(0, 10).toUpperCase()}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Payment ID</span>
+                <span className="font-mono text-gray-800">{completedOrder.razorpay_payment_id}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Customer</span>
+                <span className="font-semibold text-gray-900">{completedOrder.full_name}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Total Amount Paid</span>
+                <span className="font-bold text-base text-[var(--color-royal)]">
+                  ₹{completedOrder.total_amount.toLocaleString('en-IN')}
+                </span>
+              </div>
+              <div className="pt-2 border-t border-gray-200 text-xs text-gray-500 truncate">
+                <span className="font-semibold text-gray-700">Delivery Address: </span>
+                {completedOrder.shipping_address}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                onClick={() => generateInvoicePDF(completedOrder, { razorpay_payment_id: completedOrder.razorpay_payment_id, status: 'Success' }, userProfile)}
+                className="flex items-center justify-center gap-2 bg-[var(--color-royal)] hover:bg-blue-900 text-white px-5 py-3 rounded-full font-semibold text-sm transition-all shadow-md hover:shadow-lg"
+              >
+                <Download className="w-4 h-4" /> Download Invoice
+              </button>
+              <button
+                onClick={() => navigate('/shop')}
+                className="flex items-center justify-center gap-2 bg-[#5F1517] hover:bg-[#801416] text-white px-5 py-3 rounded-full font-semibold text-sm transition-all shadow-md"
+              >
+                <ShoppingBag className="w-4 h-4" /> Explore More Jewellery
+              </button>
+            </div>
+
+            <div className="mt-4">
+              <button
+                onClick={() => navigate('/account')}
+                className="text-xs text-gray-500 hover:text-[var(--color-royal)] underline font-medium"
+              >
+                View My Orders & Profile
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

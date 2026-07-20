@@ -81,6 +81,12 @@ const Account: React.FC = () => {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) setPayments(await res.json());
+        
+        // Also fetch orders so payment invoices have full order items context
+        const resO = await fetch(`${import.meta.env.VITE_API_URL}/orders/my-orders`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (resO.ok) setOrders(await resO.json());
       } else if (tab === 'wishlist') {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/wishlist/`, {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -346,8 +352,19 @@ const Account: React.FC = () => {
                             ))}
                           </div>
                           <div className="mt-4 pt-3 border-t border-[#5F1517]/5 flex justify-between items-center">
-                            <p className="font-medium text-[#5F1517]">Total Amount</p>
-                            <p className="font-bold text-lg text-[#801416]">₹{order.total_amount.toLocaleString('en-IN')}</p>
+                            <div>
+                              <p className="font-medium text-[#5F1517]">Total Amount</p>
+                              <p className="font-bold text-lg text-[#801416]">₹{order.total_amount.toLocaleString('en-IN')}</p>
+                            </div>
+                            <button
+                              onClick={() => {
+                                const payment = payments.find(p => p.order_id === order.id) || { razorpay_payment_id: order.razorpay_payment_id || 'N/A', status: order.status, amount: order.total_amount, created_at: order.created_at };
+                                generateInvoicePDF(order, payment, user);
+                              }}
+                              className="px-4 py-2 bg-[#FFF7F2] text-[#801416] font-bold text-xs rounded-xl flex items-center gap-2 border border-[#D4AF37]/40 hover:bg-[#801416] hover:text-white transition shadow-sm"
+                            >
+                              <Download size={14} /> Download Invoice
+                            </button>
                           </div>
                         </div>
                       ))}

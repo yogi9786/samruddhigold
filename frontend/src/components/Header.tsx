@@ -688,7 +688,13 @@ const Header: React.FC = () => {
         onClose={() => setIsLoginModalOpen(false)}
         onLoginSuccess={() => {
           fetchUserProfile();
-          navigate('/account');
+          const redirectUrl = sessionStorage.getItem('redirect_after_login');
+          if (redirectUrl) {
+            sessionStorage.removeItem('redirect_after_login');
+            navigate(redirectUrl);
+          } else {
+            navigate('/account');
+          }
         }}
       />
 

@@ -1,6 +1,5 @@
-import React from 'react';
-
-
+import React, { useState } from 'react';
+import UserModal from './UserModal';
 
 interface CustomerListProps {
   customers: any[];
@@ -10,6 +9,8 @@ interface CustomerListProps {
 }
 
 const CustomerList: React.FC<CustomerListProps> = ({ customers, orders, exportToCSV, fetchUsers }) => {
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+
   return (
 <div className="animate-fade-in">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
@@ -37,7 +38,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, orders, exportTo
                 const userOrders = orders.filter(o => o.user_username === u.username);
                 const ltv = userOrders.reduce((acc, o) => acc + o.total_amount, 0);
                 return (
-                  <tr key={u.id} className="hover:bg-[#FFF7F2]/60 transition-colors">
+                  <tr key={u.id} onClick={() => setSelectedUserId(u.id)} className="hover:bg-[#FFF7F2]/60 transition-colors cursor-pointer">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#5F1517] to-[#801416] flex items-center justify-center text-[#D4AF37] font-bold text-lg shadow-inner">
@@ -66,8 +67,10 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, orders, exportTo
           </table>
         </div>
       </div>
+      {selectedUserId && <UserModal userId={selectedUserId} onClose={() => setSelectedUserId(null)} />}
     </div>
 );
 };
 
 export default CustomerList;
+

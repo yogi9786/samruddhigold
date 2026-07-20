@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { getImageUrl } from '../../../api';
+import { AlertCircle, CheckCircle2, Info } from 'lucide-react';
 
 export const Toast: React.FC<{ msg: { text: string; type: string }; onClose: () => void }> = ({ msg, onClose }) => {
   useEffect(() => {
@@ -31,16 +32,20 @@ export const Toast: React.FC<{ msg: { text: string; type: string }; onClose: () 
 export const Alert: React.FC<{ msg: { text: string; type: string } }> = ({ msg }) => {
   if (!msg.text) return null;
   const c = {
-    success: 'bg-[#FFF7F2] border-[#D4AF37] text-[#5F1517]',
-    error: 'bg-red-50 border-red-400 text-red-700',
-    info: 'bg-amber-50 border-amber-400 text-amber-800'
+    success: 'bg-green-50/50 border-green-200 text-green-700',
+    error: 'bg-red-50/50 border-red-200 text-red-600',
+    info: 'bg-blue-50/50 border-blue-200 text-blue-700'
   };
+  
+  const Icon = msg.type === 'success' ? CheckCircle2 : msg.type === 'error' ? AlertCircle : Info;
+  
   return (
     <div
-      className={`border-l-4 px-4 py-3 rounded-r-lg text-sm mb-4 ${c[msg.type as keyof typeof c] || c.info}`}
+      className={`flex items-start gap-2 border px-4 py-3 rounded-xl text-sm mb-4 font-medium ${c[msg.type as keyof typeof c] || c.info}`}
       style={{ fontFamily: 'Montserrat, sans-serif' }}
     >
-      {msg.text}
+      <Icon size={18} className="shrink-0 mt-0.5" />
+      <span>{msg.text}</span>
     </div>
   );
 };

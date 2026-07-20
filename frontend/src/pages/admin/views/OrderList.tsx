@@ -1,4 +1,6 @@
 import React from 'react';
+import { Download } from 'lucide-react';
+import { generateInvoicePDF } from '../../../utils/pdfGenerator';
 
 const STATUS_COLORS: Record<string, string> = {
   Pending: 'bg-amber-100 text-amber-700',
@@ -42,7 +44,7 @@ const OrderList: React.FC<OrderListProps> = ({ filteredOrders, oSearch, setOSear
           <table className="w-full">
             <thead>
               <tr className="border-b border-[#D4AF37]/20 bg-[#FFF7F2]">
-                {['Order ID & Date', 'Customer', 'Address', 'Total', 'Payment', 'Status'].map(h => (
+                {['Order ID & Date', 'Customer', 'Address', 'Total', 'Payment', 'Status', 'Invoice'].map(h => (
                   <th key={h} className="text-left px-5 py-4 text-[10px] font-bold text-[#5F1517]/50 uppercase tracking-[0.15em]" style={{ fontFamily: 'Montserrat, sans-serif' }}>{h}</th>
                 ))}
               </tr>
@@ -84,9 +86,22 @@ const OrderList: React.FC<OrderListProps> = ({ filteredOrders, oSearch, setOSear
                       {['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'].map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </td>
+                  <td className="px-5 py-4">
+                    <button
+                      onClick={() => {
+                        const payment = { razorpay_payment_id: o.razorpay_payment_id || 'N/A', status: o.status, amount: o.total_amount, created_at: o.created_at };
+                        const customer = { full_name: o.full_name, username: o.user_username, email: o.email };
+                        generateInvoicePDF(o, payment, customer);
+                      }}
+                      className="px-3 py-1.5 bg-[#FFF7F2] text-[#801416] font-bold text-[11px] rounded-lg flex items-center gap-1.5 hover:bg-[#801416] hover:text-white transition shadow-sm"
+                      title="Download Invoice PDF"
+                    >
+                      <Download size={13} /> Invoice
+                    </button>
+                  </td>
                 </tr>
               ))}
-              {filteredOrders.length === 0 && <tr><td colSpan={6} className="text-center py-16 text-[#5F1517]/40 text-sm font-bold uppercase tracking-widest" style={{ fontFamily: 'Montserrat, sans-serif' }}>No orders found.</td></tr>}
+              {filteredOrders.length === 0 && <tr><td colSpan={7} className="text-center py-16 text-[#5F1517]/40 text-sm font-bold uppercase tracking-widest" style={{ fontFamily: 'Montserrat, sans-serif' }}>No orders found.</td></tr>}
             </tbody>
           </table>
         </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Package, CreditCard, Heart, ShoppingCart, Download } from 'lucide-react';
-import api from '../../../api';
+import { adminApi } from '../../../api';
 import { generateInvoicePDF } from '../../../utils/pdfGenerator';
 
 interface UserModalProps {
@@ -16,10 +16,7 @@ const UserModal: React.FC<UserModalProps> = ({ userId, onClose }) => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const token = localStorage.getItem('access_token');
-        const res = await api.get(`/users/${userId}/comprehensive`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await adminApi.get(`/users/${userId}/comprehensive`);
         setData(res.data);
       } catch (err) {
         console.error("Failed to fetch user data", err);
@@ -87,6 +84,17 @@ const UserModal: React.FC<UserModalProps> = ({ userId, onClose }) => {
                     <p className="font-bold text-[#5F1517]">Rs. {p.amount.toLocaleString('en-IN')}</p>
                     <p className="text-sm text-gray-600 mt-1">Status: <span className="font-semibold text-green-700">{p.status}</span></p>
                     <p className="text-xs text-gray-400 mt-2">{new Date(p.created_at).toLocaleString()}</p>
+                  </div>
+                  <div className="flex items-center">
+                    <button 
+                      onClick={() => {
+                        const matchingOrder = orders.find((o: any) => o.id === p.order_id) || { id: p.order_id, total_amount: p.amount, razorpay_payment_id: p.razorpay_payment_id, status: p.status };
+                        generateInvoicePDF(matchingOrder, p, user);
+                      }}
+                      className="px-3 py-1.5 bg-[#FFF7F2] text-[#801416] font-bold text-xs rounded-lg flex items-center gap-2 hover:bg-[#801416] hover:text-white transition"
+                    >
+                      <Download size={14} /> Download Invoice
+                    </button>
                   </div>
                 </div>
               ))

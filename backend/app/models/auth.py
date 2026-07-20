@@ -26,6 +26,7 @@ class UserBase(BaseModel):
     username: str
     email: Optional[str] = None
     full_name: Optional[str] = None
+    phone: Optional[str] = None
     disabled: Optional[bool] = False
 
 
@@ -38,6 +39,7 @@ class UserResponse(UserBase):
     """Safe user model returned to the client (no password)."""
     id: str
     auth_provider: str = "local"
+    addresses: Optional[list] = None
 
     class Config:
         populate_by_name = True
@@ -68,5 +70,6 @@ class UserUpdate(BaseModel):
     """Model for updating an existing user."""
     email: Optional[str] = None
     full_name: Optional[str] = None
+    phone: Optional[str] = None
     password: Optional[str] = None
     disabled: Optional[bool] = None

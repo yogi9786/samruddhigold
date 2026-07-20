@@ -14,6 +14,7 @@ import Settings from './views/Settings';
 import { Toast } from './components/UIComponents';
 import api, { adminApi } from '../../api';
 import logo from '../../assets/samruddhi-logo.png';
+import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 // ─── Brand Colors ─────────────────────────────────────────────────────────────
 // Primary: #5F1517  Accent: #801416  Gold: #D4AF37  Cream: #FFF7F2
@@ -108,6 +109,7 @@ const AdminPanel: React.FC = () => {
   const [loginU, setLoginU] = useState('');
   const [loginP, setLoginP] = useState('');
   const [loginErr, setLoginErr] = useState('');
+  const [showAdminPassword, setShowAdminPassword] = useState(false);
   
   const [section, setSection] = useState<Section>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -683,19 +685,33 @@ const AdminPanel: React.FC = () => {
           </div>
           <div className="bg-[#1a0305]/60 backdrop-blur-2xl rounded-3xl border border-[#D4AF37]/20 p-8 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#D4AF37]/50 to-transparent" />
-            {loginErr && <div className="bg-red-900/40 border border-red-500/40 text-red-300 p-3 rounded-xl mb-5 text-xs text-center font-medium tracking-wide" style={{ fontFamily: 'Montserrat, sans-serif' }}>{loginErr}</div>}
+            {loginErr && (
+              <div className="flex items-center gap-2 bg-red-900/30 border border-red-500/50 text-red-300 p-3 rounded-xl mb-5 text-xs font-medium tracking-wide" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                <AlertCircle size={16} className="shrink-0" />
+                <span>{loginErr}</span>
+              </div>
+            )}
             <form onSubmit={handleLogin} className="space-y-5">
               <div>
                 <label className="block text-[10px] text-[#D4AF37]/70 uppercase tracking-widest mb-2 font-semibold" style={{ fontFamily: 'Montserrat, sans-serif' }}>Username</label>
-                <input type="text" value={loginU} onChange={e => setLoginU(e.target.value)} required
-                  className="w-full px-4 py-3.5 bg-black/20 border border-[#D4AF37]/20 rounded-xl text-[#FFF7F2] placeholder-[#FFF7F2]/20 focus:outline-none focus:border-[#D4AF37]/80 focus:ring-1 focus:ring-[#D4AF37]/30 transition text-sm shadow-inner"
+                <input type="text" value={loginU} onChange={e => {setLoginU(e.target.value); setLoginErr('');}} required
+                  className={`w-full px-4 py-3.5 bg-black/20 border ${loginErr ? 'border-red-500/50 focus:border-red-500/80 focus:ring-red-500/30' : 'border-[#D4AF37]/20 focus:border-[#D4AF37]/80 focus:ring-[#D4AF37]/30'} rounded-xl text-[#FFF7F2] placeholder-[#FFF7F2]/20 focus:outline-none focus:ring-1 transition text-sm shadow-inner`}
                   style={{ fontFamily: 'Montserrat, sans-serif' }} placeholder="Enter username" />
               </div>
               <div>
                 <label className="block text-[10px] text-[#D4AF37]/70 uppercase tracking-widest mb-2 font-semibold" style={{ fontFamily: 'Montserrat, sans-serif' }}>Password</label>
-                <input type="password" value={loginP} onChange={e => setLoginP(e.target.value)} required
-                  className="w-full px-4 py-3.5 bg-black/20 border border-[#D4AF37]/20 rounded-xl text-[#FFF7F2] placeholder-[#FFF7F2]/20 focus:outline-none focus:border-[#D4AF37]/80 focus:ring-1 focus:ring-[#D4AF37]/30 transition text-sm shadow-inner"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }} placeholder="Enter password" />
+                <div className="relative">
+                  <input type={showAdminPassword ? "text" : "password"} value={loginP} onChange={e => {setLoginP(e.target.value); setLoginErr('');}} required
+                    className={`w-full pl-4 pr-12 py-3.5 bg-black/20 border ${loginErr ? 'border-red-500/50 focus:border-red-500/80 focus:ring-red-500/30' : 'border-[#D4AF37]/20 focus:border-[#D4AF37]/80 focus:ring-[#D4AF37]/30'} rounded-xl text-[#FFF7F2] placeholder-[#FFF7F2]/20 focus:outline-none focus:ring-1 transition text-sm shadow-inner`}
+                    style={{ fontFamily: 'Montserrat, sans-serif' }} placeholder="Enter password" />
+                  <button 
+                    type="button" 
+                    onClick={() => setShowAdminPassword(!showAdminPassword)}
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-[#D4AF37]/50 hover:text-[#D4AF37] transition-colors"
+                  >
+                    {showAdminPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
               <button type="submit"
                 className="w-full py-3.5 bg-gradient-to-r from-[#D4AF37] via-[#e8c547] to-[#D4AF37] text-[#3a0c0e] font-bold rounded-xl text-xs uppercase tracking-[0.2em] hover:brightness-110 transition-all shadow-[0_0_20px_rgba(212,175,55,0.2)] hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] mt-4"

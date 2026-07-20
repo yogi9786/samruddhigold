@@ -4,35 +4,35 @@ import logo from '../assets/samruddhi-logo.png';
 import { getImageUrl } from '../api';
 
 // ─── LOCAL FALLBACK ASSETS ──────────────────────────────────────────────────
-import imgGoldBride        from '../assets/gen/gold_bride_1782213365863.png';
-import imgGoldSet          from '../assets/gen/gold_set_1782213378462.png';
-import imgSangeet          from '../assets/gen/sangeet_bride_1782213396287.png';
-import imgPolki            from '../assets/gen/polki_set_1782213407545.png';
-import imgMehendi          from '../assets/gen/mehendi_bride_1782213420944.png';
-import imgMeenakari        from '../assets/gen/meenakari_set_1782213433201.png';
-import imgHaldiBride       from '../assets/gen/haldi_bride_1782213760602.png';
-import imgHaldiSet         from '../assets/gen/haldi_set_1782213772944.png';
-import imgReceptionBride   from '../assets/gen/reception_bride_1782213788636.png';
-import imgReceptionSet     from '../assets/gen/reception_set_1782213798792.png';
-import imgCatBangles       from '../assets/gen/cat_bangles_1782214893370.png';
-import imgCatEarrings      from '../assets/gen/cat_earrings_1782214875918.png';
-import imgCatSets          from '../assets/gen/cat_jewellery_sets_1782214836263.png';
-import imgCatMangalsutra   from '../assets/gen/cat_mangalsutra_1782214906170.png';
-import imgCatPendants      from '../assets/gen/cat_pendants_1782214847919.png';
-import imgCatRings         from '../assets/gen/cat_rings_1782214860176.png';
-import imgHeroSlider       from '../assets/gen/hero_slider_1_1782215599212.png';
-import imgIndianModel      from '../assets/gen/indian_model_ship_1783420166146.png';
-import imgMangalsutraPrem  from '../assets/gen/mangalsutra_premium.png';
-import imgSignatureBridal  from '../assets/gen/signature_bridal_set.png';
+import imgGoldBride from '../assets/gen/gold_bride_1782213365863.png';
+import imgGoldSet from '../assets/gen/gold_set_1782213378462.png';
+import imgSangeet from '../assets/gen/sangeet_bride_1782213396287.png';
+import imgPolki from '../assets/gen/polki_set_1782213407545.png';
+import imgMehendi from '../assets/gen/mehendi_bride_1782213420944.png';
+import imgMeenakari from '../assets/gen/meenakari_set_1782213433201.png';
+import imgHaldiBride from '../assets/gen/haldi_bride_1782213760602.png';
+import imgHaldiSet from '../assets/gen/haldi_set_1782213772944.png';
+import imgReceptionBride from '../assets/gen/reception_bride_1782213788636.png';
+import imgReceptionSet from '../assets/gen/reception_set_1782213798792.png';
+import imgCatBangles from '../assets/gen/cat_bangles_1782214893370.png';
+import imgCatEarrings from '../assets/gen/cat_earrings_1782214875918.png';
+import imgCatSets from '../assets/gen/cat_jewellery_sets_1782214836263.png';
+import imgCatMangalsutra from '../assets/gen/cat_mangalsutra_1782214906170.png';
+import imgCatPendants from '../assets/gen/cat_pendants_1782214847919.png';
+import imgCatRings from '../assets/gen/cat_rings_1782214860176.png';
+import imgHeroSlider from '../assets/gen/hero_slider_1_1782215599212.png';
+import imgIndianModel from '../assets/gen/indian_model_ship_1783420166146.png';
+import imgMangalsutraPrem from '../assets/gen/mangalsutra_premium.png';
+import imgSignatureBridal from '../assets/gen/signature_bridal_set.png';
 import imgSignatureNecklace from '../assets/gen/signature_gold_necklace.png';
-import imgFeaturedBridal   from '../assets/gen/featured_bridal_ring.png';
-import imgGenRing          from '../assets/gen/gen_ring_1_1784184765263.png';
-import imgGenNecklace      from '../assets/gen/gen_necklace_1_1784184778092.png';
-import imgGenBangles       from '../assets/gen/gen_bangles_1_1784184790868.png';
-import imgGenEarrings      from '../assets/gen/gen_earrings_1_1784184802864.png';
-import imgGenModel         from '../assets/gen/gen_model_1_1784184814361.png';
-import imgGenChoker        from '../assets/gen/gen_choker_1_1784185355465.png';
-import imgGenBracelet      from '../assets/gen/gen_bracelet_1_1784185369639.png';
+import imgFeaturedBridal from '../assets/gen/featured_bridal_ring.png';
+import imgGenRing from '../assets/gen/gen_ring_1_1784184765263.png';
+import imgGenNecklace from '../assets/gen/gen_necklace_1_1784184778092.png';
+import imgGenBangles from '../assets/gen/gen_bangles_1_1784184790868.png';
+import imgGenEarrings from '../assets/gen/gen_earrings_1_1784184802864.png';
+import imgGenModel from '../assets/gen/gen_model_1_1784184814361.png';
+import imgGenChoker from '../assets/gen/gen_choker_1_1784185355465.png';
+import imgGenBracelet from '../assets/gen/gen_bracelet_1_1784185369639.png';
 import imgGenDiamondNecklace from '../assets/gen/gen_diamond_necklace_1_1784185671024.png';
 
 const LOCAL_IMAGES: string[] = [
@@ -71,16 +71,16 @@ const GridCell = ({ src, index, productId, productName }: { src: string; index: 
       <img
         src={src}
         alt={productName || "Jewelry"}
-        className="w-full h-full object-cover transition-all duration-[800ms] grayscale-0 hover:grayscale hover:scale-110"
+        className="w-full h-full object-cover transition-all duration-[800ms] grayscale hover:grayscale-0 hover:scale-110"
         onError={(e) => {
           (e.target as HTMLImageElement).src = LOCAL_IMAGES[index % LOCAL_IMAGES.length];
         }}
       />
       {productId && (
         <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-2 text-center pointer-events-none">
-           <span className="text-white font-serif text-sm md:text-base tracking-wider shadow-lg border border-white/40 px-3 py-1 bg-black/30 backdrop-blur-sm rounded">
-              View Product
-           </span>
+          <span className="text-white font-serif text-sm md:text-base tracking-wider shadow-lg border border-white/40 px-3 py-1 bg-black/30 backdrop-blur-sm rounded">
+            View Product
+          </span>
         </div>
       )}
     </>
@@ -105,7 +105,7 @@ const GridCell = ({ src, index, productId, productName }: { src: string; index: 
 };
 
 const NewArrivalsHero: React.FC<NewArrivalsHeroProps> = ({ products = [] }) => {
-  
+
   // Create 40 grid cells. Use actual products first, then fill remainder with local fake images.
   const gridCells = Array.from({ length: TOTAL_CELLS }).map((_, i) => {
     if (products && i < products.length) {
@@ -129,14 +129,14 @@ const NewArrivalsHero: React.FC<NewArrivalsHeroProps> = ({ products = [] }) => {
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-black">
-      
+
       {/* IMAGE GRID */}
       <div className="absolute inset-0 grid grid-cols-5 grid-rows-8 md:grid-cols-8 md:grid-rows-5 h-full w-full">
         {gridCells.map((cell) => (
-          <GridCell 
-            key={cell.id} 
-            src={cell.src} 
-            index={cell.id} 
+          <GridCell
+            key={cell.id}
+            src={cell.src}
+            index={cell.id}
             productId={cell.productId}
             productName={cell.productName}
           />
@@ -153,9 +153,9 @@ const NewArrivalsHero: React.FC<NewArrivalsHeroProps> = ({ products = [] }) => {
 
       {/* CENTERED LOGO & HERO TEXT */}
       <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-4 text-center pointer-events-none">
-        
+
         {/* Logo Group */}
-        <div 
+        <div
           className="absolute flex flex-col items-center justify-center pb-4 drop-shadow-2xl"
           style={{ transform: 'translateY(-90%)' }}
         >
@@ -182,7 +182,7 @@ const NewArrivalsHero: React.FC<NewArrivalsHeroProps> = ({ products = [] }) => {
         >
           NEW ARRIVALS
         </h1>
-        
+
       </div>
 
     </div>

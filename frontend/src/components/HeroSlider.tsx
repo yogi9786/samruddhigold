@@ -30,7 +30,7 @@ const HeroSlider: React.FC = () => {
 
   return (
     <div className="w-full relative">
-      <div className="relative w-full h-[250px] sm:h-[350px] md:h-[450px] lg:h-[450px] xl:h-[500px] overflow-hidden bg-luxury">
+      <div className="relative w-full h-[250px] sm:h-[350px] md:h-[450px] lg:h-[450px] xl:h-[500px] 2xl:h-[650px] min-[2560px]:h-[800px] min-[3840px]:h-[1000px] overflow-hidden bg-luxury">
         {slides.map((slide, index) => (
           <div
             key={slide.id}

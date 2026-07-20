@@ -39,10 +39,15 @@ async def checkout_order(order: OrderCreate, current_user: dict = Depends(get_cu
         username = current_user.get("username") if isinstance(current_user, dict) else current_user.username
         order_dict["user_username"] = username
         
-        # Save address to user profile
+        # Save address & user details to user profile
         result = await db.execute(select(DBUser).where(DBUser.username == username))
         db_user = result.scalars().first()
         if db_user:
+            if order.contact_phone and not db_user.phone:
+                db_user.phone = order.contact_phone
+            if order.full_name and not db_user.full_name:
+                db_user.full_name = order.full_name
+
             current_addresses = db_user.addresses or []
             # Make sure it's a list
             if isinstance(current_addresses, str):
@@ -68,10 +73,11 @@ async def checkout_order(order: OrderCreate, current_user: dict = Depends(get_cu
                         "id": str(datetime.now().timestamp()),
                         "label": "Home",
                         "fullAddress": order.shipping_address,
+                        "phone": order.contact_phone,
                         "isDefault": len(current_addresses) == 0
                     })
                     db_user.addresses = current_addresses
-                    await db.commit()
+            await db.commit()
     else:
         order_dict["user_username"] = None
         

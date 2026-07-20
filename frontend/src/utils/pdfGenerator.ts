@@ -2,119 +2,184 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 export const generateInvoicePDF = (order: any, payment: any, user: any) => {
-  const doc = new jsPDF();
-  
-  // Colors and styling constants
-  const primaryColor: [number, number, number] = [95, 21, 23]; // #5F1517
-  const secondaryColor: [number, number, number] = [128, 20, 22]; // #801416
-  const goldColor: [number, number, number] = [212, 175, 55]; // #D4AF37
-  
-  // Helper to format currency
-  const formatCurrency = (amount: number) => `Rs. ${amount.toLocaleString('en-IN')}`;
+  try {
+    const doc = new jsPDF();
+    
+    // Colors and styling constants
+    const primaryColor: [number, number, number] = [95, 21, 23]; // #5F1517
+    const secondaryColor: [number, number, number] = [128, 20, 22]; // #801416
+    const goldColor: [number, number, number] = [212, 175, 55]; // #D4AF37
+    
+    // Helper to format currency
+    const formatCurrency = (amount: number) => `Rs. ${(Number(amount) || 0).toLocaleString('en-IN')}`;
 
-  // 1. Header Section
-  doc.setFillColor(...primaryColor);
-  doc.rect(0, 0, 210, 40, 'F');
-  
-  doc.setTextColor(255, 255, 255);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(24);
-  doc.text("SAMRUDDHI GOLD PALACE", 14, 25);
-  
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.text("Invoice & Payment Receipt", 14, 32);
+    // 1. Header Section
+    doc.setFillColor(...primaryColor);
+    doc.rect(0, 0, 210, 40, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.text("SAMRUDDHI GOLD PALACE", 14, 22);
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("Official Invoice & Payment Receipt", 14, 30);
 
-  // 2. Invoice Meta Information
-  doc.setTextColor(0, 0, 0);
-  doc.setFontSize(10);
-  
-  const rightColumnX = 120;
-  
-  doc.setFont("helvetica", "bold");
-  doc.text("INVOICE TO:", 14, 55);
-  doc.setFont("helvetica", "normal");
-  doc.text(order?.full_name || user?.full_name || user?.username || 'Customer', 14, 62);
-  doc.text(order?.email || user?.email || '', 14, 67);
-  doc.text(order?.contact_phone || '', 14, 72);
-  
-  const splitAddress = doc.splitTextToSize(order?.shipping_address || 'N/A', 80);
-  doc.text(splitAddress, 14, 77);
+    // 2. Customer & Order Meta Information
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    
+    const rightColumnX = 120;
+    
+    doc.setFont("helvetica", "bold");
+    doc.text("INVOICE TO:", 14, 55);
+    doc.setFont("helvetica", "normal");
+    const customerName = order?.full_name || user?.full_name || user?.username || 'Valued Customer';
+    const customerEmail = order?.email || user?.email || '';
+    const customerPhone = order?.contact_phone || user?.phone || '';
 
-  doc.setFont("helvetica", "bold");
-  doc.text("INVOICE DETAILS:", rightColumnX, 55);
-  doc.setFont("helvetica", "normal");
-  
-  const invoiceDate = payment?.created_at || order?.created_at ? new Date(payment?.created_at || order?.created_at).toLocaleDateString() : new Date().toLocaleDateString();
-  
-  doc.text(`Order ID:`, rightColumnX, 62);
-  doc.text(order?.id?.substring(0, 12)?.toUpperCase() || 'N/A', rightColumnX + 25, 62);
-  
-  doc.text(`Payment ID:`, rightColumnX, 67);
-  doc.text(payment?.razorpay_payment_id || 'N/A', rightColumnX + 25, 67);
-  
-  doc.text(`Date:`, rightColumnX, 72);
-  doc.text(invoiceDate, rightColumnX + 25, 72);
-  
-  doc.text(`Status:`, rightColumnX, 77);
-  doc.setTextColor(0, 128, 0); // Green
-  doc.text(payment?.status || order?.status || 'Success', rightColumnX + 25, 77);
-  doc.setTextColor(0, 0, 0);
-
-  // 3. Items Table
-  let currentY = 100;
-  
-  const tableData = (order?.items || []).map((item: any, index: number) => [
-    index + 1,
-    item.product?.name || `Product ID: ${item.product_id?.substring(0,8) || ''}`,
-    item.quantity,
-    formatCurrency(item.price),
-    formatCurrency(item.price * item.quantity)
-  ]);
-
-  autoTable(doc, {
-    startY: currentY,
-    head: [['#', 'Item Description', 'Qty', 'Unit Price', 'Total']],
-    body: tableData.length > 0 ? tableData : [['1', 'Jewellery Purchase', '1', formatCurrency(order?.total_amount || 0), formatCurrency(order?.total_amount || 0)]],
-    theme: 'grid',
-    headStyles: {
-      fillColor: primaryColor,
-      textColor: 255,
-      fontStyle: 'bold'
-    },
-    styles: {
-      font: 'helvetica',
-      fontSize: 9,
-      cellPadding: 5,
-    },
-    columnStyles: {
-      0: { cellWidth: 15, halign: 'center' },
-      2: { cellWidth: 20, halign: 'center' },
-      3: { halign: 'right' },
-      4: { halign: 'right' },
+    doc.text(String(customerName), 14, 62);
+    if (customerEmail) doc.text(String(customerEmail), 14, 67);
+    if (customerPhone) doc.text(String(customerPhone), 14, 72);
+    
+    // Safe Address formatting
+    let addrStr = 'N/A';
+    if (order?.shipping_address) {
+      if (typeof order.shipping_address === 'string') {
+        addrStr = order.shipping_address;
+      } else if (typeof order.shipping_address === 'object') {
+        const a = order.shipping_address;
+        addrStr = a.fullAddress || [a.street, a.city, a.state, a.zip, a.country].filter(Boolean).join(', ') || JSON.stringify(a);
+      }
     }
-  });
+    const splitAddress = doc.splitTextToSize(addrStr, 85);
+    doc.text(splitAddress, 14, customerPhone ? 77 : (customerEmail ? 72 : 67));
 
-  // 4. Totals Section
-  const finalY = (doc as any).lastAutoTable.finalY + 15;
-  
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.text("Total Amount Paid:", 120, finalY);
-  
-  doc.setTextColor(...secondaryColor);
-  doc.text(formatCurrency(payment?.amount || order?.total_amount || 0), 165, finalY, { align: 'left' });
+    // Order Meta
+    doc.setFont("helvetica", "bold");
+    doc.text("INVOICE DETAILS:", rightColumnX, 55);
+    doc.setFont("helvetica", "normal");
+    
+    const rawDate = payment?.created_at || order?.created_at;
+    let invoiceDate = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    if (rawDate) {
+      try {
+        const d = new Date(rawDate);
+        if (!isNaN(d.getTime())) {
+          invoiceDate = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+      } catch (e) {}
+    }
+    
+    const orderIdStr = order?.id ? String(order.id).substring(0, 12).toUpperCase() : (order?.razorpay_order_id || 'N/A');
+    const paymentIdStr = payment?.razorpay_payment_id || order?.razorpay_payment_id || 'N/A';
+    const statusStr = payment?.status || order?.status || 'Completed';
 
-  // 5. Footer
-  const pageHeight = doc.internal.pageSize.height;
-  doc.setFillColor(...goldColor);
-  doc.rect(0, pageHeight - 15, 210, 15, 'F');
-  
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.text("Thank you for shopping with Samruddhi Gold Palace!", 105, pageHeight - 6, { align: 'center' });
+    doc.text(`Order ID:`, rightColumnX, 62);
+    doc.text(orderIdStr, rightColumnX + 25, 62);
+    
+    doc.text(`Payment ID:`, rightColumnX, 67);
+    doc.text(paymentIdStr, rightColumnX + 25, 67);
+    
+    doc.text(`Date:`, rightColumnX, 72);
+    doc.text(invoiceDate, rightColumnX + 25, 72);
+    
+    doc.text(`Status:`, rightColumnX, 77);
+    doc.setTextColor(0, 128, 0); // Green
+    doc.text(String(statusStr), rightColumnX + 25, 77);
+    doc.setTextColor(0, 0, 0);
 
-  // Download
-  doc.save(`Invoice_${order?.id?.substring(0,8) || 'receipt'}.pdf`);
+    // 3. Items Extraction
+    let rawItems: any[] = [];
+    if (Array.isArray(order?.items)) {
+      rawItems = order.items;
+    } else if (typeof order?.items === 'string') {
+      try {
+        const parsed = JSON.parse(order.items);
+        if (Array.isArray(parsed)) rawItems = parsed;
+      } catch (e) {
+        rawItems = [];
+      }
+    } else if (order?.items && typeof order.items === 'object') {
+      rawItems = Object.values(order.items);
+    }
+
+    const totalAmount = Number(order?.total_amount || payment?.amount) || 0;
+
+    const tableData = rawItems.map((item: any, index: number) => {
+      const itemName = item?.name || item?.product?.name || (item?.product_id ? `Product ID: ${String(item.product_id).substring(0,8)}` : 'Jewellery Purchase');
+      const qty = Number(item?.quantity) || 1;
+      const price = Number(item?.price || item?.product?.price) || (totalAmount / Math.max(rawItems.length, 1));
+      return [
+        index + 1,
+        String(itemName),
+        qty,
+        formatCurrency(price),
+        formatCurrency(price * qty)
+      ];
+    });
+
+    const autoTableOptions = {
+      startY: 100,
+      head: [['#', 'Item Description', 'Qty', 'Unit Price', 'Total']],
+      body: tableData.length > 0 ? tableData : [['1', 'Jewellery Purchase', '1', formatCurrency(totalAmount), formatCurrency(totalAmount)]],
+      theme: 'grid',
+      headStyles: {
+        fillColor: primaryColor,
+        textColor: 255,
+        fontStyle: 'bold'
+      },
+      styles: {
+        font: 'helvetica',
+        fontSize: 9,
+        cellPadding: 5,
+      },
+      columnStyles: {
+        0: { cellWidth: 15, halign: 'center' },
+        2: { cellWidth: 20, halign: 'center' },
+        3: { halign: 'right' },
+        4: { halign: 'right' },
+      }
+    };
+
+    // Execute autoTable safely
+    try {
+      if (typeof autoTable === 'function') {
+        autoTable(doc, autoTableOptions as any);
+      } else if (typeof (doc as any).autoTable === 'function') {
+        (doc as any).autoTable(autoTableOptions);
+      }
+    } catch (autoErr) {
+      console.warn('autoTable warning:', autoErr);
+    }
+
+    // 4. Totals Section
+    const lastAutoTable = (doc as any).lastAutoTable;
+    const finalY = lastAutoTable && lastAutoTable.finalY ? lastAutoTable.finalY + 15 : 140;
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("Total Amount Paid:", 120, finalY);
+    
+    doc.setTextColor(...secondaryColor);
+    doc.text(formatCurrency(totalAmount), 165, finalY, { align: 'left' });
+
+    // 5. Footer
+    const pageHeight = doc.internal.pageSize.height;
+    doc.setFillColor(...goldColor);
+    doc.rect(0, pageHeight - 15, 210, 15, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text("Thank you for shopping with Samruddhi Gold Palace!", 105, pageHeight - 6, { align: 'center' });
+
+    // Save PDF file
+    const filename = `Invoice_${orderIdStr !== 'N/A' ? orderIdStr : paymentIdStr}.pdf`;
+    doc.save(filename);
+  } catch (err: any) {
+    console.error("PDF generation failed:", err);
+    alert("Failed to generate PDF invoice. " + (err?.message || 'Please try again.'));
+  }
 };

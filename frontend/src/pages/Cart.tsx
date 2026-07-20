@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getCart, updateCartItem, removeFromCart, getImageUrl } from '../api';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -24,6 +24,7 @@ interface CartItem {
 }
 
 const Cart: React.FC = () => {
+  const navigate = useNavigate();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -204,9 +205,19 @@ const Cart: React.FC = () => {
               </div>
 
               {/* Checkout details or checkout button */}
-              <Link to="/checkout" className="w-full bg-[var(--color-royal)] hover:bg-blue-900 text-white py-3.5 rounded-full font-semibold transition-colors flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
+              <button 
+                onClick={() => {
+                  if (localStorage.getItem('access_token')) {
+                    navigate('/checkout');
+                  } else {
+                    sessionStorage.setItem('redirect_after_login', '/checkout');
+                    window.dispatchEvent(new Event('openLoginModal'));
+                  }
+                }}
+                className="w-full bg-[var(--color-royal)] hover:bg-blue-900 text-white py-3.5 rounded-full font-semibold transition-colors flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+              >
                 Proceed to Checkout <ArrowRight className="w-4 h-4" />
-              </Link>
+              </button>
 
               <div className="pt-4 border-t border-gray-100 flex items-center gap-3 text-xs text-gray-500 justify-center">
                 <ShieldCheck className="w-5 h-5 text-[var(--color-gold)] flex-shrink-0" />

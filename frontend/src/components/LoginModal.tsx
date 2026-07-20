@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Lock, Mail, User } from 'lucide-react';
+import { X, Lock, Mail, User, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import api from '../api';
 
@@ -22,6 +22,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   if (!isOpen) return null;
 
@@ -179,8 +180,9 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
           ) : (
             <form onSubmit={isForgotMode ? handleForgotSubmit : handleSubmit} className="space-y-4 animate-in fade-in duration-300">
               {error && (
-                <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-sm text-center font-medium">
-                  {error}
+                <div className="flex items-center gap-2 text-red-500 bg-red-50/50 px-3 py-2 rounded-lg text-sm font-medium">
+                  <AlertCircle size={16} />
+                  <span>{error}</span>
                 </div>
               )}
 
@@ -214,7 +216,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
                         required
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-white border border-[#E5D3B3] rounded-xl focus:bg-white focus:ring-2 focus:ring-[#5F1517]/20 focus:border-[#5F1517] outline-none transition text-[#5F1517] shadow-sm font-medium placeholder:text-gray-400 placeholder:font-normal"
+                        className={`w-full pl-10 pr-4 py-3 bg-white border ${error && !isForgotMode ? 'border-red-400 focus:ring-red-400' : 'border-[#E5D3B3] focus:ring-[#5F1517]/20 focus:border-[#5F1517]'} rounded-xl focus:bg-white focus:ring-2 outline-none transition text-[#5F1517] shadow-sm font-medium placeholder:text-gray-400 placeholder:font-normal`}
                         placeholder="johndoe"
                       />
                     </div>
@@ -263,13 +265,20 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
                         <Lock size={18} />
                       </div>
                       <input
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-white border border-[#E5D3B3] rounded-xl focus:bg-white focus:ring-2 focus:ring-[#5F1517]/20 focus:border-[#5F1517] outline-none transition text-[#5F1517] shadow-sm font-medium placeholder:text-gray-400 placeholder:font-normal"
+                        className={`w-full pl-10 pr-12 py-3 bg-white border ${error && !isForgotMode ? 'border-red-400 focus:ring-red-400' : 'border-[#E5D3B3] focus:ring-[#5F1517]/20 focus:border-[#5F1517]'} rounded-xl focus:bg-white focus:ring-2 outline-none transition text-[#5F1517] shadow-sm font-medium placeholder:text-gray-400 placeholder:font-normal`}
                         placeholder="••••••••"
                       />
+                      <button 
+                        type="button" 
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#5F1517]/40 hover:text-[#5F1517]/70 transition-colors"
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
                     </div>
                   </div>
 
