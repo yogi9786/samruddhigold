@@ -17,6 +17,8 @@ const Header: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [metalPrices, setMetalPrices] = useState<any[]>([]);
   const [showMetalPrices, setShowMetalPrices] = useState(false);
+  const [showBranchPopover, setShowBranchPopover] = useState(false);
+  const [showAppointmentPopover, setShowAppointmentPopover] = useState(false);
 
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
@@ -265,12 +267,73 @@ const Header: React.FC = () => {
                   </div>
                 )}
               </div>
-              <span className="flex items-center gap-1 cursor-pointer hover:opacity-80">
-                <MapPin size={14} />
-              </span>
-              <span className="flex items-center gap-1 cursor-pointer hover:opacity-80">
-                <Calendar size={14} />
-              </span>
+              {/* Store Locations Popover (Icon Only) */}
+              <div
+                className="relative flex items-center py-1"
+                onMouseEnter={() => setShowBranchPopover(true)}
+                onMouseLeave={() => setShowBranchPopover(false)}
+              >
+                <Link
+                  to="/contact"
+                  className="flex items-center text-[#801416] hover:opacity-80 transition-opacity p-1 rounded-full hover:bg-[#5F1517]/5 no-underline"
+                  title="Store Locator / Branches"
+                  aria-label="Store Locator"
+                >
+                  <MapPin size={15} />
+                </Link>
+
+                {showBranchPopover && (
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-64 bg-white border border-[#D4AF37]/20 rounded-2xl shadow-xl p-4 text-[#5F1517] z-50 animate-fade-in">
+                    <h4 className="font-bold text-[10px] uppercase tracking-wider text-[#D4AF37] mb-2 font-sans flex items-center gap-1.5">
+                      <MapPin size={13} /> Our Store Branches
+                    </h4>
+                    <div className="flex flex-col gap-1.5 text-xs py-1 border-b border-gray-100">
+                      <div className="font-semibold text-[#801416]">📍 Yelahanka (Bengaluru)</div>
+                      <div className="font-semibold text-[#801416]">📍 Udupi</div>
+                      <div className="font-semibold text-[#801416]">📍 Kolar</div>
+                    </div>
+                    <Link
+                      to="/contact"
+                      className="mt-2.5 block text-center text-[11px] font-bold text-[#801416] hover:underline no-underline"
+                    >
+                      Find Store & Details →
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              {/* Book Appointment Popover (Icon Only) */}
+              <div
+                className="relative flex items-center py-1"
+                onMouseEnter={() => setShowAppointmentPopover(true)}
+                onMouseLeave={() => setShowAppointmentPopover(false)}
+              >
+                <Link
+                  to="/virtual-shopping"
+                  className="flex items-center text-[#801416] hover:opacity-80 transition-opacity p-1 rounded-full hover:bg-[#5F1517]/5 no-underline"
+                  title="Book Appointment / Virtual Shopping"
+                  aria-label="Book Appointment"
+                >
+                  <Calendar size={15} />
+                </Link>
+
+                {showAppointmentPopover && (
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-64 bg-white border border-[#D4AF37]/20 rounded-2xl shadow-xl p-4 text-[#5F1517] z-50 animate-fade-in">
+                    <h4 className="font-bold text-[10px] uppercase tracking-wider text-[#D4AF37] mb-1.5 font-sans flex items-center gap-1.5">
+                      <Calendar size={13} /> Book Appointment
+                    </h4>
+                    <p className="text-[11px] text-gray-600 mb-2.5 leading-snug">
+                      Schedule a live video consultation or in-store appointment with our experts.
+                    </p>
+                    <Link
+                      to="/virtual-shopping"
+                      className="block text-center py-1.5 px-3 bg-[#801416] text-white rounded-lg text-[11px] font-bold hover:bg-[#5F1517] transition-colors no-underline"
+                    >
+                      Book Appointment Slot
+                    </Link>
+                  </div>
+                )}
+              </div>
               <span className="flex items-center gap-1 cursor-pointer hover:opacity-80">
                 <div className="w-3.5 h-3.5 bg-orange-500 rounded-full overflow-hidden flex flex-col relative">
                   <div className="h-1/3 w-full bg-orange-500"></div>
@@ -538,7 +601,16 @@ const Header: React.FC = () => {
                 <Link to="/new-arrivals" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-bold text-sm no-underline">New Arrivals</Link>
               </li>
               <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
-                <Link to="/virtual-shopping" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-bold text-sm no-underline">Virtual Shopping</Link>
+                <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-6 py-3 text-[#801416] font-bold text-sm no-underline">
+                  <MapPin size={16} />
+                  <span>Store Locator</span>
+                </Link>
+              </li>
+              <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
+                <Link to="/virtual-shopping" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-6 py-3 text-[#801416] font-bold text-sm no-underline">
+                  <Calendar size={16} />
+                  <span>Book Appointment</span>
+                </Link>
               </li>
               
               {/* Divider for Categories */}

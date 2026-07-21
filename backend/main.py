@@ -34,9 +34,10 @@ app = FastAPI(
 )
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Middleware
-# ──────────────────────────────────────────────────────────────────────────────
+from app.middleware.security import register_security_headers
+
 register_cors(app)
+register_security_headers(app)
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Static Files & Uploads

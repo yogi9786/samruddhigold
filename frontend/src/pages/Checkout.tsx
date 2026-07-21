@@ -164,6 +164,8 @@ const Checkout: React.FC = () => {
           product_id: item.product_id,
           quantity: item.quantity,
           price: item.product?.price || 0,
+          name: item.product?.name || 'Jewellery Item',
+          image_url: item.product?.image_url || '',
           product: {
             name: item.product?.name,
             image_url: item.product?.image_url

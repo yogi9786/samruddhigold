@@ -86,7 +86,11 @@ adminApi.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('admin_token');
-      window.location.href = '/';
+      if (window.location.pathname.startsWith('/siriadmin') || window.location.pathname.startsWith('/admin')) {
+        window.location.reload();
+      } else {
+        window.location.href = '/siriadmin';
+      }
     }
     return Promise.reject(error);
   }

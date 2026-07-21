@@ -21,6 +21,7 @@ import Success from './pages/Success';
 import ResetPassword from './pages/ResetPassword';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsAndConditions from './pages/TermsAndConditions';
+import NotFound from './pages/NotFound';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -33,6 +34,11 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/siriadmin" element={
+            <ErrorBoundary>
+              <AdminPanel />
+            </ErrorBoundary>
+          } />
+          <Route path="/admin" element={
             <ErrorBoundary>
               <AdminPanel />
             </ErrorBoundary>
@@ -53,6 +59,7 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </>

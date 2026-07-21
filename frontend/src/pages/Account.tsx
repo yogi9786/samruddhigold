@@ -338,18 +338,27 @@ const Account: React.FC = () => {
                             </div>
                           </div>
                           <div className="space-y-3">
-                            {order.items.map((item: any, i: number) => (
-                              <div key={i} className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                                  {item.image_url && <img src={getImageUrl(item.image_url)} alt="item" className="w-full h-full object-cover" />}
+                            {order.items.map((item: any, i: number) => {
+                              const itemName = item?.name || item?.product?.name || item?.title || item?.product_name || item?.product_title || 'Jewellery Item';
+                              const itemImg = item?.image_url || item?.product?.image_url || item?.image || item?.product_image || '';
+                              const itemPrice = Number(item?.price || item?.product?.price || 0);
+                              return (
+                                <div key={i} className="flex items-center gap-4">
+                                  <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center border border-gray-200">
+                                    {itemImg ? (
+                                      <img src={getImageUrl(itemImg)} alt={itemName} className="w-full h-full object-cover" />
+                                    ) : (
+                                      <span className="text-[10px] text-gray-400 font-semibold">No Image</span>
+                                    )}
+                                  </div>
+                                  <div className="flex-grow min-w-0">
+                                    <p className="text-sm font-medium text-[#5F1517] truncate">{itemName}</p>
+                                    <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                                  </div>
+                                  <p className="font-bold text-[#801416] text-sm flex-shrink-0">₹{(itemPrice * item.quantity).toLocaleString('en-IN')}</p>
                                 </div>
-                                <div className="flex-grow min-w-0">
-                                  <p className="text-sm font-medium text-[#5F1517] truncate">{item.name}</p>
-                                  <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
-                                </div>
-                                <p className="font-bold text-[#801416] text-sm flex-shrink-0">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                           <div className="mt-4 pt-3 border-t border-[#5F1517]/5 flex justify-between items-center">
                             <div>
