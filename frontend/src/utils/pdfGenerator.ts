@@ -40,12 +40,12 @@ export const generateInvoicePDF = (order: any, payment: any, user: any) => {
       doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(20);
-      doc.text("SAMRUDDHI GOLD PALACE", textX, 21);
+      doc.text("SIRISAMRUDDHI GOLD PALACE", textX, 21);
       
       doc.setTextColor(...goldColor);
       doc.setFontSize(10);
       doc.setFont("helvetica", "bold");
-      doc.text("OFFICIAL INVOICE & PAYMENT RECEIPT", textX, 29);
+      doc.text("INVOICE & PAYMENT RECEIPT", textX, 29);
 
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(8);

@@ -9,6 +9,7 @@ import BestSellersBanner from '../components/BestSellersBanner';
 import PromoBanner from '../components/PromoBanner';
 import GenderCategories from '../components/GenderCategories';
 import CollectionShowcase from '../components/CollectionShowcase';
+import SareeCollectionShowcase from '../components/SareeCollectionShowcase';
 import WeddingLookBook from '../components/WeddingLookBook';
 import ScrollReveal from '../components/ScrollReveal';
 import HoverGallery from '../components/HoverGallery';
@@ -67,6 +68,8 @@ const Home: React.FC = () => {
         <CollectionShowcase />
       </ScrollReveal>
 
+     
+
       {/* Bridal Collection (Wedding Look Book) */}
       <ScrollReveal>
         <WeddingLookBook />
@@ -111,6 +114,11 @@ const Home: React.FC = () => {
 
       {/* Featured Products Showcase */}
       <FeaturedProducts />
+
+       {/* Pure Silk & Royal Saree Showcase */}
+      <ScrollReveal>
+        <SareeCollectionShowcase />
+      </ScrollReveal>
 
       <ScrollReveal>
         <TrustMarkers />

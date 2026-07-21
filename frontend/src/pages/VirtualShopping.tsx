@@ -311,14 +311,11 @@ const VirtualShopping: React.FC = () => {
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 focus:border-[#D4AF37] transition bg-[#FFF7F2]/30 text-gray-700"
                   >
                     <option value="">--Select Category--</option>
-                    <option value="Earrings">Earrings</option>
-                    <option value="Pendants">Pendants</option>
-                    <option value="Rings">Rings</option>
-                    <option value="Diamond Jewellery">Diamond Jewellery</option>
-                    <option value="Bangles">Bangles</option>
-                    <option value="Necklaces">Necklaces</option>
-                    <option value="Gold Coins">Gold Coins</option>
-                    <option value="Others">Others</option>
+                    <option value="Gold">Gold</option>
+                    <option value="Silver">Silver</option>
+                    <option value="Diamond">Diamond</option>
+                    <option value="Saree">Saree</option>
+                    <option value="Wedding Kit">Wedding Kit</option>
                   </select>
                 </div>
 

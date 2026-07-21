@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import catMangalsutra from '../assets/gen/cat_mangalsutra_1782214906170.png';
 
 const categories = [
+  { label: "Silk Saree",   img: "/images/saree_banner.png",                     wa: "Sarees",       vs: "Saree" },
   { label: "Ring",         img: "/images/gallery/gold_rings_coral.png",         wa: "Rings",        vs: "Rings" },
   { label: "Necklace",     img: "/images/gallery/chunky_gold_chain.png",        wa: "Necklaces",    vs: "Necklaces" },
   { label: "Bracelet",     img: "/images/gallery/gold_bracelet_hand.png",       wa: "Bracelets",    vs: "Others" },
@@ -103,8 +104,8 @@ const CollectionShowcase = () => {
         </button>
       </div>
 
-      {/* Desktop: 9 columns grid */}
-      <div className="hidden lg:grid grid-cols-9 gap-4">
+      {/* Desktop: 10 columns grid */}
+      <div className="hidden lg:grid grid-cols-5 lg:grid-cols-10 gap-3">
         {categories.map((cat, i) => (
           <Link
             key={i}
