@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import api, { getImageUrl, getWishlist, addToWishlist, removeFromWishlist } from '../api';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -47,6 +47,7 @@ const getCategoryFallbackImage = (name: string) => {
 };
 
 const Shop: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,6 +66,18 @@ const Shop: React.FC = () => {
 
   // Category carousel
   const carouselRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const catParam = searchParams.get('category');
+    const searchParam = searchParams.get('search') || searchParams.get('q');
+    if (catParam) {
+      setSelectedCategoryId(catParam);
+    }
+    if (searchParam) {
+      setSearchQuery(searchParam);
+    }
+  }, [searchParams]);
+
 
   useEffect(() => {
     const fetchData = async () => {

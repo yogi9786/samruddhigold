@@ -36,7 +36,8 @@ const Success: React.FC = () => {
             Continue Shopping
           </Link>
           <Link 
-            to="/account" 
+            to="/account?tab=orders" 
+            state={{ tab: 'orders' }}
             className="w-full py-4 bg-transparent border-2 border-[#5F1517] text-[#5F1517] font-bold rounded-xl uppercase tracking-[0.2em] text-sm hover:bg-[#5F1517] hover:text-[#D4AF37] transition-all"
           >
             View Order History

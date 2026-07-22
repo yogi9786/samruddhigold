@@ -513,10 +513,10 @@ const Checkout: React.FC = () => {
 
             <div className="mt-4">
               <button
-                onClick={() => navigate('/account')}
-                className="text-xs text-gray-500 hover:text-[var(--color-royal)] underline font-medium"
+                onClick={() => navigate('/account?tab=orders', { state: { tab: 'orders' } })}
+                className="text-xs text-gray-500 hover:text-[var(--color-royal)] underline font-medium cursor-pointer"
               >
-                View My Orders & Profile
+                View My Orders
               </button>
             </div>
           </div>

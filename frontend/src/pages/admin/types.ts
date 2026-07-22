@@ -21,9 +21,14 @@ export interface Order {
   razorpay_payment_id?: string;
   user_username: string;
   status: string;
+  shipping_status?: string;
+  courier_name?: string;
+  tracking_number?: string;
+  shipped_at?: string;
   created_at: string;
   updated_at: string;
 }
+
 
 export interface User {
   id: string;

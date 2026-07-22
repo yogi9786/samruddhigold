@@ -532,6 +532,14 @@ const AdminPanel: React.FC = () => {
     } catch { showToast('Update failed', 'error'); }
   };
 
+  const updateShippingDetails = async (id: string, payload: { shipping_status?: string; courier_name?: string; tracking_number?: string; status?: string }) => {
+    try {
+      await adminApi.patch(`/orders/${id}`, payload);
+      fetchOrders(); showToast('Shipping details updated successfully');
+    } catch { showToast('Update shipping failed', 'error'); }
+  };
+
+
   // ─── Virtual Shopping Bookings Handlers ──────────────────────────────────────
   const updateBookingStatus = async (id: string, status: string) => {
     try {
@@ -979,7 +987,8 @@ const AdminPanel: React.FC = () => {
           {section === 'add-product' && <ProductForm editPId={editPId} setSection={setSection} setEditPId={setEditPId} setPForm={setPForm} emptyProduct={emptyProduct} setPMsg={setPMsg} hasSnapshot={!!pSnapshot.current} handleRollbackProduct={handleRollbackProduct} pMsg={pMsg} handlePSubmit={handleProductSubmit} pForm={pForm} handlePInput={handlePInput} categories={categories} uploadMain={uploadMain} uploadingMain={uploadingMain} uploadGallery={uploadGallery} uploadingGallery={uploadingGallery} fetchProducts={fetchProducts} />}
           {section === 'all-categories' && <CategoryList categories={categories} cSearch={cSearch} setCSearch={setCSearch} exportToCSV={exportToCSV} fetchCategories={fetchCategories} emptyCat={emptyCat} setCForm={setCForm} setEditCId={setEditCId} setCMsg={setCMsg} setSection={setSection} startEditCat={startEditCat} deleteCat={deleteCat} products={products} />}
           {section === 'add-category' && <CategoryForm editCId={editCId} setSection={setSection} setEditCId={setEditCId} setCForm={setCForm} emptyCat={emptyCat} cMsg={cMsg} hasSnapshot={!!cSnapshot.current} handleRollbackCat={handleRollbackCat} handleCatSubmit={handleCatSubmit} cForm={cForm} handleCInput={handleCInput} categories={categories} uploadCatImg={uploadCatImg} uploadingCat={uploadingCat} />}
-          {section === 'orders' && <OrderList filteredOrders={filteredOrders} oSearch={oSearch} setOSearch={setOSearch} oStatusFilter={oStatusFilter} setOStatusFilter={setOStatusFilter} exportToCSV={exportToCSV} fetchOrders={fetchOrders} updateOrderStatus={updateOrderStatus} />}
+          {section === 'orders' && <OrderList filteredOrders={filteredOrders} oSearch={oSearch} setOSearch={setOSearch} oStatusFilter={oStatusFilter} setOStatusFilter={setOStatusFilter} exportToCSV={exportToCSV} fetchOrders={fetchOrders} updateOrderStatus={updateOrderStatus} updateShippingDetails={updateShippingDetails} />}
+
           {section === 'virtual-bookings' && <VirtualBookings virtualBookings={virtualBookings} vSearch={vSearch} setVSearch={setVSearch} vStatusFilter={vStatusFilter} setVStatusFilter={setVStatusFilter} exportToCSV={exportToCSV} fetchVirtualBookings={fetchVirtualBookings} loadingBookings={loadingBookings} updateBookingStatus={updateBookingStatus} viewBookingDetails={viewBookingDetails} deleteBooking={deleteBooking} />}
           {section === 'subscriptions' && <Subscriptions subscriptions={subscriptions} subSearch={subSearch} setSubSearch={setSubSearch} exportToCSV={exportToCSV} fetchSubscriptions={fetchSubscriptions} loadingSubscriptions={loadingSubscriptions} />}
           {section === 'customers' && <CustomerList customers={customers} orders={orders} exportToCSV={exportToCSV} fetchUsers={fetchUsers} />}

@@ -348,12 +348,25 @@ async def update_order(order_id: str, order_update: OrderUpdate, admin: dict = D
     update_data = order_update.model_dump(exclude_unset=True)
     if update_data:
         update_data["updated_at"] = datetime.now(timezone.utc)
+        
+        # If overall status or shipping_status is updated to Shipped, update shipping_status & set shipped_at timestamp
+        new_status = update_data.get("status")
+        new_shipping_status = update_data.get("shipping_status")
+        
+        if new_status == "Shipped" and "shipping_status" not in update_data:
+            update_data["shipping_status"] = "Shipped"
+            
+        if (new_shipping_status == "Shipped" or new_status == "Shipped") and not db_order.shipped_at:
+            update_data["shipped_at"] = datetime.now(timezone.utc)
+
         for key, value in update_data.items():
             setattr(db_order, key, value)
+            
         await db.commit()
         await db.refresh(db_order)
     
     return db_order
+
 
 router.include_router(user_router)
 router.include_router(admin_router)

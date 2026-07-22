@@ -108,6 +108,12 @@ class Order(Base):
     razorpay_payment_id = Column(String, nullable=True)
     razorpay_signature = Column(String, nullable=True)
     
+    # Shipping & Tracking fields
+    shipping_status = Column(String, default="Not Shipped")
+    courier_name = Column(String, nullable=True)
+    tracking_number = Column(String, nullable=True)
+    shipped_at = Column(DateTime(timezone=True), nullable=True)
+    
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 

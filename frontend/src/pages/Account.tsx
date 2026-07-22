@@ -2,15 +2,25 @@ import React, { useEffect, useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import BottomNav from '../components/BottomNav';
-import { useNavigate } from 'react-router-dom';
-import { User, LogOut, Package, MapPin, Heart, CreditCard, Plus, Trash2, Download } from 'lucide-react';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { User, LogOut, Package, MapPin, Heart, CreditCard, Plus, Trash2, Download, Truck } from 'lucide-react';
+
 import { getImageUrl } from '../api';
 import { generateInvoicePDF } from '../utils/pdfGenerator';
 
 const Account: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
+  const getInitialTab = () => {
+    const tabFromState = (location.state as any)?.tab;
+    const tabFromQuery = searchParams.get('tab');
+    return tabFromState || tabFromQuery || 'profile';
+  };
+
   const [user, setUser] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState(getInitialTab);
   
   const [orders, setOrders] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
@@ -58,6 +68,15 @@ const Account: React.FC = () => {
   useEffect(() => {
     fetchUserProfile();
   }, [navigate]);
+
+  useEffect(() => {
+    const tabFromState = (location.state as any)?.tab;
+    const tabFromQuery = searchParams.get('tab');
+    const targetTab = tabFromState || tabFromQuery;
+    if (targetTab && targetTab !== activeTab) {
+      setActiveTab(targetTab);
+    }
+  }, [location.state, searchParams]);
 
   useEffect(() => {
     if (user) {
@@ -326,57 +345,103 @@ const Account: React.FC = () => {
                     <div className="py-10 text-center"><div className="w-6 h-6 border-2 border-[#801416] border-t-transparent rounded-full animate-spin mx-auto"></div></div>
                   ) : orders.length > 0 ? (
                     <div className="space-y-4">
-                      {orders.map((order, idx) => (
-                        <div key={idx} className="border border-[#5F1517]/10 rounded-xl p-5 bg-white">
-                          <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-[#5F1517]/5 pb-3 mb-3">
-                            <div>
-                              <p className="text-sm text-gray-500">Order ID: {order.id.substring(0,8)}...</p>
-                              <p className="text-sm font-medium text-[#5F1517]">Placed on {new Date(order.created_at).toLocaleDateString()}</p>
+                      {orders.map((order, idx) => {
+                        const shipStatus = order.shipping_status || (order.status === 'Shipped' ? 'Shipped' : 'Not Shipped');
+                        return (
+                          <div key={idx} className="border border-[#5F1517]/10 rounded-xl p-5 bg-white shadow-sm hover:shadow transition">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-[#5F1517]/5 pb-3 mb-3 gap-2">
+                              <div>
+                                <p className="text-xs text-gray-400 font-mono font-semibold">Order ID: #{order.id.substring(0,8).toUpperCase()}</p>
+                                <p className="text-sm font-medium text-[#5F1517]">Placed on {new Date(order.created_at).toLocaleDateString()}</p>
+                              </div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                                  order.status === 'Payment Successful' || order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
+                                  order.status === 'Shipped' ? 'bg-purple-100 text-purple-800' : 'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                  {order.status}
+                                </span>
+                              </div>
                             </div>
-                            <div className="mt-2 md:mt-0 text-right">
-                              <span className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold uppercase">{order.status}</span>
-                            </div>
-                          </div>
-                          <div className="space-y-3">
-                            {order.items.map((item: any, i: number) => {
-                              const itemName = item?.name || item?.product?.name || item?.title || item?.product_name || item?.product_title || 'Jewellery Item';
-                              const itemImg = item?.image_url || item?.product?.image_url || item?.image || item?.product_image || '';
-                              const itemPrice = Number(item?.price || item?.product?.price || 0);
-                              return (
-                                <div key={i} className="flex items-center gap-4">
-                                  <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center border border-gray-200">
-                                    {itemImg ? (
-                                      <img src={getImageUrl(itemImg)} alt={itemName} className="w-full h-full object-cover" />
-                                    ) : (
-                                      <span className="text-[10px] text-gray-400 font-semibold">No Image</span>
-                                    )}
-                                  </div>
-                                  <div className="flex-grow min-w-0">
-                                    <p className="text-sm font-medium text-[#5F1517] truncate">{itemName}</p>
-                                    <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
-                                  </div>
-                                  <p className="font-bold text-[#801416] text-sm flex-shrink-0">₹{(itemPrice * item.quantity).toLocaleString('en-IN')}</p>
+
+                            {/* Shipping & Delivery Info Banner */}
+                            <div className="mb-4 p-3 bg-[#FFF7F2] rounded-xl border border-[#D4AF37]/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-8 h-8 rounded-lg bg-[#801416]/10 text-[#801416] flex items-center justify-center flex-shrink-0">
+                                  <Truck size={18} />
                                 </div>
-                              );
-                            })}
-                          </div>
-                          <div className="mt-4 pt-3 border-t border-[#5F1517]/5 flex justify-between items-center">
-                            <div>
-                              <p className="font-medium text-[#5F1517]">Total Amount</p>
-                              <p className="font-bold text-lg text-[#801416]">₹{order.total_amount.toLocaleString('en-IN')}</p>
+                                <div>
+                                  <p className="text-xs font-bold text-[#5F1517] flex items-center gap-2">
+                                    Shipping Status: 
+                                    <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                                      shipStatus === 'Shipped' ? 'bg-purple-100 text-purple-800' :
+                                      shipStatus === 'In Transit' ? 'bg-blue-100 text-blue-800' :
+                                      shipStatus === 'Delivered' ? 'bg-green-100 text-green-800' :
+                                      'bg-amber-100 text-amber-800'
+                                    }`}>
+                                      {shipStatus}
+                                    </span>
+                                  </p>
+                                  {order.shipped_at && (
+                                    <p className="text-[11px] text-gray-500">Shipped on {new Date(order.shipped_at).toLocaleDateString()}</p>
+                                  )}
+                                </div>
+                              </div>
+
+                              {(order.courier_name || order.tracking_number) && (
+                                <div className="text-xs bg-white p-2 rounded-lg border border-[#5F1517]/10 flex flex-col sm:items-end">
+                                  {order.courier_name && (
+                                    <span className="font-semibold text-[#5F1517]">Courier: <span className="text-[#801416] font-bold">{order.courier_name}</span></span>
+                                  )}
+                                  {order.tracking_number && (
+                                    <span className="font-mono text-gray-600 text-[11px]">Tracking #: <span className="font-bold text-gray-900">{order.tracking_number}</span></span>
+                                  )}
+                                </div>
+                              )}
                             </div>
-                            <button
-                              onClick={() => {
-                                const payment = payments.find(p => p.order_id === order.id) || { razorpay_payment_id: order.razorpay_payment_id || 'N/A', status: order.status, amount: order.total_amount, created_at: order.created_at };
-                                generateInvoicePDF(order, payment, user);
-                              }}
-                              className="px-4 py-2 bg-[#FFF7F2] text-[#801416] font-bold text-xs rounded-xl flex items-center gap-2 border border-[#D4AF37]/40 hover:bg-[#801416] hover:text-white transition shadow-sm"
-                            >
-                              <Download size={14} /> Download Invoice
-                            </button>
+
+                            <div className="space-y-3">
+                              {order.items.map((item: any, i: number) => {
+                                const itemName = item?.name || item?.product?.name || item?.title || item?.product_name || item?.product_title || 'Jewellery Item';
+                                const itemImg = item?.image_url || item?.product?.image_url || item?.image || item?.product_image || '';
+                                const itemPrice = Number(item?.price || item?.product?.price || 0);
+                                return (
+                                  <div key={i} className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center border border-gray-200">
+                                      {itemImg ? (
+                                        <img src={getImageUrl(itemImg)} alt={itemName} className="w-full h-full object-cover" />
+                                      ) : (
+                                        <span className="text-[10px] text-gray-400 font-semibold">No Image</span>
+                                      )}
+                                    </div>
+                                    <div className="flex-grow min-w-0">
+                                      <p className="text-sm font-medium text-[#5F1517] truncate">{itemName}</p>
+                                      <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                                    </div>
+                                    <p className="font-bold text-[#801416] text-sm flex-shrink-0">₹{(itemPrice * item.quantity).toLocaleString('en-IN')}</p>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            <div className="mt-4 pt-3 border-t border-[#5F1517]/5 flex justify-between items-center">
+                              <div>
+                                <p className="font-medium text-[#5F1517] text-xs">Total Amount</p>
+                                <p className="font-bold text-lg text-[#801416]">₹{order.total_amount.toLocaleString('en-IN')}</p>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  const payment = payments.find(p => p.order_id === order.id) || { razorpay_payment_id: order.razorpay_payment_id || 'N/A', status: order.status, amount: order.total_amount, created_at: order.created_at };
+                                  generateInvoicePDF(order, payment, user);
+                                }}
+                                className="px-4 py-2 bg-[#FFF7F2] text-[#801416] font-bold text-xs rounded-xl flex items-center gap-2 border border-[#D4AF37]/40 hover:bg-[#801416] hover:text-white transition shadow-sm"
+                              >
+                                <Download size={14} /> Download Invoice
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
+
                     </div>
                   ) : (
                     <div className="text-center py-16 bg-white border border-[#5F1517]/10 rounded-xl">

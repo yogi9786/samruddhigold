@@ -79,12 +79,16 @@ async def init_db():
             await conn.execute(text("ALTER TABLE categories ADD COLUMN IF NOT EXISTS slug VARCHAR;"))
             await conn.execute(text("ALTER TABLE categories ADD COLUMN IF NOT EXISTS display_type VARCHAR DEFAULT 'default';"))
             
-            # Ensure Order columns exist for Razorpay integration
+            # Ensure Order columns exist for Razorpay integration & Shipping details
             await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS email VARCHAR;"))
             await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS full_name VARCHAR;"))
             await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS razorpay_order_id VARCHAR;"))
             await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS razorpay_payment_id VARCHAR;"))
             await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS razorpay_signature VARCHAR;"))
+            await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipping_status VARCHAR DEFAULT 'Not Shipped';"))
+            await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS courier_name VARCHAR;"))
+            await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number VARCHAR;"))
+            await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipped_at TIMESTAMP WITH TIME ZONE;"))
             await conn.execute(text("ALTER TABLE orders ALTER COLUMN user_username DROP NOT NULL;"))
             
             # Ensure Users columns exist for password reset, phone, addresses

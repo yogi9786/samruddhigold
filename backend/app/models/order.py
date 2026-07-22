@@ -21,6 +21,10 @@ class OrderBase(BaseModel):
     razorpay_payment_id: Optional[str] = None
     razorpay_signature: Optional[str] = None
     user_username: Optional[str] = None
+    shipping_status: Optional[str] = "Not Shipped"
+    courier_name: Optional[str] = None
+    tracking_number: Optional[str] = None
+    shipped_at: Optional[datetime] = None
 
 class OrderCreate(OrderBase):
     pass
@@ -31,6 +35,10 @@ class OrderUpdate(BaseModel):
     contact_phone: Optional[str] = None
     razorpay_payment_id: Optional[str] = None
     razorpay_signature: Optional[str] = None
+    shipping_status: Optional[str] = None
+    courier_name: Optional[str] = None
+    tracking_number: Optional[str] = None
+    shipped_at: Optional[datetime] = None
 
 class OrderResponse(OrderBase):
     id: str
@@ -39,3 +47,4 @@ class OrderResponse(OrderBase):
 
     class Config:
         populate_by_name = True
+

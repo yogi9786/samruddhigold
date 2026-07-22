@@ -539,7 +539,6 @@ const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* ── NAVIGATION BAR (Desktop) ── */}
         <nav className="hidden lg:flex w-full bg-[#FFF7F2] border-b border-[#5F1517]/10">
           <div className="max-w-[1400px] mx-auto w-full px-4 lg:px-10 xl:px-14">
             <ul className="flex items-center justify-center gap-5 xl:gap-6 py-2.5 text-[13.5px] lg:text-[12.5px] font-medium text-[#801416] font-sans w-full">
@@ -574,6 +573,23 @@ const Header: React.FC = () => {
                 }
               })}
 
+              {/* Coins & Bars Dropdown */}
+              <li className="whitespace-nowrap group relative z-50">
+                <Link to="/shop?search=Coin" className="text-[#801416] no-underline flex items-center gap-1 hover:opacity-80 transition font-bold">
+                  Coins & Bars <ChevronDown size={14} className="group-hover:rotate-180 transition-transform duration-300" />
+                </Link>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                  <div className="bg-white border border-[#5F1517]/10 shadow-xl rounded-xl w-48 py-2 relative before:absolute before:-top-3 before:left-0 before:w-full before:h-3">
+                    <Link to="/shop?search=Gold+Coin" className="block px-5 py-2.5 text-[13px] text-[#801416] hover:bg-[#FFF7F2] font-semibold transition-colors border-b border-gray-50">
+                      Gold Coins
+                    </Link>
+                    <Link to="/shop?search=Silver+Coin" className="block px-5 py-2.5 text-[13px] text-[#801416] hover:bg-[#FFF7F2] font-semibold transition-colors border-b border-gray-50 last:border-0">
+                      Silver Coins
+                    </Link>
+                  </div>
+                </div>
+              </li>
+
               <li className="whitespace-nowrap"><Link to="/gold-rates" className="text-[#801416] no-underline hover:opacity-80 transition font-bold">Today's Gold Rate</Link></li>
               <li className="ml-2">
                 <Link
@@ -587,8 +603,6 @@ const Header: React.FC = () => {
             </ul>
           </div>
         </nav>
-
-
 
         {/* ── MOBILE DRAWER ── */}
         {isMobileMenuOpen && (
@@ -614,52 +628,75 @@ const Header: React.FC = () => {
               </li>
               
               {/* Divider for Categories */}
-              {topLevelCategories.length > 0 && (
-                <li className="px-6 py-4 bg-[#FFF7F2] flex items-center gap-3">
-                  <div className="flex-grow h-px bg-[#5F1517]/10"></div>
-                  <span className="text-[10px] uppercase tracking-widest text-[#801416]/60 font-bold whitespace-nowrap">Collections</span>
-                  <div className="flex-grow h-px bg-[#5F1517]/10"></div>
-                </li>
-              )}
-              {topLevelCategories.length > 0 && (
-                <li className="px-4 py-4 border-b border-gray-50">
-                  <div className="grid grid-cols-2 gap-3">
-                    {topLevelCategories.map(cat => {
-                      const subCats = getSubcategories(cat.id);
-                      const isExpanded = expandedMobileCategory === cat.id;
-                      
-                      return (
-                        <div key={cat.id} className="bg-white border border-[#5F1517]/10 rounded-xl overflow-hidden shadow-sm flex flex-col">
-                          <div className="flex items-stretch justify-between">
-                            <Link to={`/shop?category=${cat.id}`} onClick={() => setIsMobileMenuOpen(false)} className="flex-grow p-3 text-[#801416] font-bold text-[13px] flex items-center justify-center text-center leading-tight no-underline">
-                              {cat.name}
-                            </Link>
-                            {subCats.length > 0 && (
-                              <button onClick={() => setExpandedMobileCategory(isExpanded ? null : cat.id)} className="px-2 text-[#801416] border-l border-[#5F1517]/10 bg-[#FFF7F2]/30 hover:bg-[#FFF7F2] flex items-center justify-center">
-                                <ChevronDown size={16} className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
-                              </button>
-                            )}
-                          </div>
-                          
-                          {/* Subcategories Accordion */}
-                          {isExpanded && subCats.length > 0 && (
-                            <div className="bg-[#FFF7F2]/50 border-t border-[#5F1517]/10 flex flex-col">
-                              {subCats.map(sub => (
-                                <Link key={sub.id} to={`/shop?category=${sub.id}`} onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-[#801416]/80 font-medium text-[11px] no-underline hover:bg-white/50 border-b border-white last:border-0">
-                                  {sub.name}
-                                </Link>
-                              ))}
-                            </div>
+              <li className="px-6 py-4 bg-[#FFF7F2] flex items-center gap-3">
+                <div className="flex-grow h-px bg-[#5F1517]/10"></div>
+                <span className="text-[10px] uppercase tracking-widest text-[#801416]/60 font-bold whitespace-nowrap">Collections</span>
+                <div className="flex-grow h-px bg-[#5F1517]/10"></div>
+              </li>
+
+              <li className="px-4 py-4 border-b border-gray-50">
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Coins & Bars Special Item */}
+                  <div className="bg-white border border-[#5F1517]/10 rounded-xl overflow-hidden shadow-sm flex flex-col">
+                    <div className="flex items-stretch justify-between">
+                      <Link to="/shop?search=Coin" onClick={() => setIsMobileMenuOpen(false)} className="flex-grow p-3 text-[#801416] font-bold text-[13px] flex items-center justify-center text-center leading-tight no-underline">
+                        Coins & Bars
+                      </Link>
+                      <button onClick={() => setExpandedMobileCategory(expandedMobileCategory === 'coins_bars' ? null : 'coins_bars')} className="px-2 text-[#801416] border-l border-[#5F1517]/10 bg-[#FFF7F2]/30 hover:bg-[#FFF7F2] flex items-center justify-center">
+                        <ChevronDown size={16} className={`transition-transform duration-300 ${expandedMobileCategory === 'coins_bars' ? 'rotate-180' : ''}`} />
+                      </button>
+                    </div>
+                    
+                    {/* Subcategories Accordion */}
+                    {expandedMobileCategory === 'coins_bars' && (
+                      <div className="bg-[#FFF7F2]/50 border-t border-[#5F1517]/10 flex flex-col">
+                        <Link to="/shop?search=Gold+Coin" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-[#801416]/80 font-medium text-[11px] no-underline hover:bg-white/50 border-b border-white">
+                          Gold Coins
+                        </Link>
+                        <Link to="/shop?search=Silver+Coin" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-[#801416]/80 font-medium text-[11px] no-underline hover:bg-white/50 border-b border-white last:border-0">
+                          Silver Coins
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+
+                  {topLevelCategories.map(cat => {
+                    const subCats = getSubcategories(cat.id);
+                    const isExpanded = expandedMobileCategory === cat.id;
+                    
+                    return (
+                      <div key={cat.id} className="bg-white border border-[#5F1517]/10 rounded-xl overflow-hidden shadow-sm flex flex-col">
+                        <div className="flex items-stretch justify-between">
+                          <Link to={`/shop?category=${cat.id}`} onClick={() => setIsMobileMenuOpen(false)} className="flex-grow p-3 text-[#801416] font-bold text-[13px] flex items-center justify-center text-center leading-tight no-underline">
+                            {cat.name}
+                          </Link>
+                          {subCats.length > 0 && (
+                            <button onClick={() => setExpandedMobileCategory(isExpanded ? null : cat.id)} className="px-2 text-[#801416] border-l border-[#5F1517]/10 bg-[#FFF7F2]/30 hover:bg-[#FFF7F2] flex items-center justify-center">
+                              <ChevronDown size={16} className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                            </button>
                           )}
                         </div>
-                      );
-                    })}
-                  </div>
-                </li>
-              )}
+                        
+                        {/* Subcategories Accordion */}
+                        {isExpanded && subCats.length > 0 && (
+                          <div className="bg-[#FFF7F2]/50 border-t border-[#5F1517]/10 flex flex-col">
+                            {subCats.map(sub => (
+                              <Link key={sub.id} to={`/shop?category=${sub.id}`} onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-[#801416]/80 font-medium text-[11px] no-underline hover:bg-white/50 border-b border-white last:border-0">
+                                {sub.name}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </li>
               <li className="border-b border-gray-50 hover:bg-[#FFF7F2]">
+
                 <Link to="/gold-rates" onClick={() => setIsMobileMenuOpen(false)} className="block px-6 py-3 text-[#801416] font-medium text-sm no-underline">Today's Gold Rate</Link>
               </li>
+
             </ul>
           </div>
         )}
