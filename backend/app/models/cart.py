@@ -9,6 +9,8 @@ class CartItemBase(BaseModel):
 
 class CartItemCreate(CartItemBase):
     user_id: str
+    phone: Optional[str] = None
+
 
 class CartItemUpdate(BaseModel):
     quantity: int

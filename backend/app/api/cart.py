@@ -1,12 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List
+import json
+
 from app.core.database import get_db
-from app.db.models import CartItem as DBCartItem, Product as DBProduct
+from app.core.config import settings
+from app.db.models import CartItem as DBCartItem, Product as DBProduct, User as DBUser
 from app.models.cart import CartItemCreate, CartItemUpdate, CartItemResponse
 from app.models.product import ProductResponse
 from app.core.pricing import calculate_dynamic_price, get_live_rates
+from app.services.aisensy import send_add_to_cart_whatsapp
 
 router = APIRouter(prefix="/cart", tags=["Cart"])
 
@@ -46,9 +50,14 @@ async def get_cart(user_id: str, db: AsyncSession = Depends(get_db)):
 
 @router.post("", response_model=CartItemResponse)
 @router.post("/", response_model=CartItemResponse)
-async def add_to_cart(item: CartItemCreate, db: AsyncSession = Depends(get_db)):
+async def add_to_cart(
+    item: CartItemCreate,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db)
+):
     """
     Add a product to the user's cart (or increment quantity if already exists).
+    Schedules a WhatsApp reminder message to the user via AiSensy.
     """
     # Check if product exists
     prod_check = await db.execute(select(DBProduct).where(DBProduct.id == item.product_id))
@@ -80,10 +89,55 @@ async def add_to_cart(item: CartItemCreate, db: AsyncSession = Depends(get_db)):
         await db.refresh(new_item)
         target_item = new_item
 
-    # Fetch product details for response
+    # Fetch product details for response & calculate price
     rates = await get_live_rates(db)
     product.price = calculate_dynamic_price(product, rates)
     prod_res = ProductResponse.model_validate(product)
+
+    # ─── Trigger AiSensy WhatsApp Notification ────────────────────────────────
+    recipient_phone = item.phone
+    user_name = None
+
+    # If phone was not explicitly passed in payload, look up user profile by user_id
+    if not recipient_phone and item.user_id and not item.user_id.startswith("guest_"):
+        user_check = await db.execute(
+            select(DBUser).where((DBUser.id == item.user_id) | (DBUser.username == item.user_id))
+        )
+        user_rec = user_check.scalars().first()
+        if user_rec:
+            recipient_phone = user_rec.phone
+            user_name = user_rec.full_name or user_rec.username
+
+    if recipient_phone:
+        # Build full absolute image URL for WhatsApp media
+        raw_img = product.image_url
+        if raw_img and raw_img.startswith('[') and raw_img.endswith(']'):
+            try:
+                arr = json.loads(raw_img)
+                if isinstance(arr, list) and len(arr) > 0:
+                    raw_img = arr[0]
+            except Exception:
+                pass
+
+        full_image_url = None
+        if raw_img:
+            if raw_img.startswith("http://") or raw_img.startswith("https://"):
+                full_image_url = raw_img
+            elif raw_img.startswith("/"):
+                full_image_url = f"{settings.FRONTEND_URL.rstrip('/')}{raw_img}"
+            else:
+                full_image_url = f"{settings.FRONTEND_URL.rstrip('/')}/api/uploads/{raw_img}"
+
+        background_tasks.add_task(
+            send_add_to_cart_whatsapp,
+            phone=recipient_phone,
+            user_name=user_name,
+            product_name=product.name,
+            price=product.price,
+            image_url=full_image_url,
+            cart_url=f"{settings.FRONTEND_URL.rstrip('/')}/cart"
+        )
+
     return CartItemResponse(
         id=target_item.id,
         user_id=target_item.user_id,
@@ -92,6 +146,7 @@ async def add_to_cart(item: CartItemCreate, db: AsyncSession = Depends(get_db)):
         created_at=target_item.created_at,
         product=prod_res
     )
+
 
 @router.put("/{item_id}", response_model=CartItemResponse)
 async def update_cart_item(item_id: str, update_data: CartItemUpdate, db: AsyncSession = Depends(get_db)):

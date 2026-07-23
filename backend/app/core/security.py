@@ -30,18 +30,36 @@ async def get_password_hash(password: str) -> str:
     return await asyncio.to_thread(pwd_context.hash, password)
 
 
-async def authenticate_user(db: AsyncSession, username: str, password: str):
+from sqlalchemy import or_
+
+async def authenticate_user(db: AsyncSession, username_or_email_or_phone: str, password: str):
+    identifier = username_or_email_or_phone.strip()
+    
     # Check if this is the admin user
-    if username == settings.ADMIN_USERNAME and password == settings.ADMIN_PASSWORD:
+    if identifier == settings.ADMIN_USERNAME and password == settings.ADMIN_PASSWORD:
         return {"username": settings.ADMIN_USERNAME, "is_admin": True}
 
-    result = await db.execute(select(DBUser).where(DBUser.username == username))
+    # Extract digits for flexible phone number matching
+    digits = "".join(filter(str.isdigit, identifier))
+
+    conditions = [
+        DBUser.username == identifier,
+        DBUser.email == identifier,
+        DBUser.phone == identifier
+    ]
+    
+    if len(digits) >= 10:
+        # Match phone with or without country code prefix (e.g. last 10 digits)
+        conditions.append(DBUser.phone.endswith(digits[-10:]))
+
+    result = await db.execute(select(DBUser).where(or_(*conditions)))
     user = result.scalars().first()
     if not user:
         return None
     if not await verify_password(password, user.hashed_password):
         return None
     return user
+
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
@@ -67,15 +85,35 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     except JWTError:
         raise credentials_exception
 
-    # If the user is the admin, return the mock admin profile
-    if username == settings.ADMIN_USERNAME:
-        return {"username": settings.ADMIN_USERNAME, "is_admin": True, "id": "admin"}
-        
-    result = await db.execute(select(DBUser).where(DBUser.username == username))
+    # First search database for this user (by username, email, or id)
+    result = await db.execute(
+        select(DBUser).where(
+            or_(
+                DBUser.username == username,
+                DBUser.email == username,
+                DBUser.id == username
+            )
+        )
+    )
     user = result.scalars().first()
-    if user is None:
-        raise credentials_exception
-    return user
+    if user:
+        return user
+
+    # If no DB record exists yet and this is the admin username, create admin DB user record
+    if username == settings.ADMIN_USERNAME:
+        admin_user = DBUser(
+            username=settings.ADMIN_USERNAME,
+            email="admin@sirisamruddhigold.com",
+            full_name="Admin",
+            hashed_password=await get_password_hash(settings.ADMIN_PASSWORD),
+            disabled=False
+        )
+        db.add(admin_user)
+        await db.commit()
+        await db.refresh(admin_user)
+        return admin_user
+        
+    raise credentials_exception
 
 
 async def get_current_user_optional(token: Optional[str] = Depends(oauth2_scheme_optional), db: AsyncSession = Depends(get_db)):
@@ -89,11 +127,16 @@ async def get_current_user_optional(token: Optional[str] = Depends(oauth2_scheme
 
 async def verify_admin(current_user = Depends(get_current_user)):
     """Dependency to check if the current user is an admin."""
-    # current_user might be a dict (admin) or a DBUser model
-    is_admin = current_user.get("is_admin") if isinstance(current_user, dict) else False
+    is_admin = False
+    if isinstance(current_user, dict):
+        is_admin = current_user.get("is_admin", False)
+    elif hasattr(current_user, "username"):
+        is_admin = (current_user.username == settings.ADMIN_USERNAME)
+        
     if not is_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only admin can perform this action"
         )
     return current_user
+

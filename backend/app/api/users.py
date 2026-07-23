@@ -53,6 +53,72 @@ async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     return db_user
 
 
+@public_router.put(
+    "/me/profile",
+    response_model=UserResponse,
+    summary="Update current user's profile"
+)
+async def update_my_profile(
+    user_update: UserUpdate,
+    current_user = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    **Requires Bearer token.**
+    Allows the logged-in user to update their own full_name, email, phone, and username.
+    """
+    if isinstance(current_user, dict):
+        username = current_user.get("username")
+        result = await db.execute(select(DBUser).where(DBUser.username == username))
+        user = result.scalars().first()
+        if not user:
+            user = DBUser(
+                username=username or "admin",
+                email="admin@sirisamruddhigold.com",
+                full_name="Admin User",
+                hashed_password=await get_password_hash("adminpassword")
+            )
+            db.add(user)
+            await db.commit()
+            await db.refresh(user)
+    else:
+        user = current_user
+
+    user_id = user.id
+
+
+    update_data = user_update.model_dump(exclude_unset=True)
+
+    # Check for username conflict if changed
+    if "username" in update_data and update_data["username"] and update_data["username"] != user.username:
+        unq_check = await db.execute(
+            select(DBUser).where(DBUser.username == update_data["username"], DBUser.id != user_id)
+        )
+        if unq_check.scalars().first():
+            raise HTTPException(status_code=400, detail="Username is already taken by another user")
+
+    # Check for email conflict if changed
+    if "email" in update_data and update_data["email"] and update_data["email"] != user.email:
+        unq_check = await db.execute(
+            select(DBUser).where(DBUser.email == update_data["email"], DBUser.id != user_id)
+        )
+        if unq_check.scalars().first():
+            raise HTTPException(status_code=400, detail="Email is already registered by another user")
+
+    if "password" in update_data:
+        hashed_password = await get_password_hash(update_data["password"])
+        update_data["hashed_password"] = hashed_password
+        del update_data["password"]
+
+    for key, value in update_data.items():
+        setattr(user, key, value)
+
+    await db.commit()
+    await db.refresh(user)
+    return user
+
+
+
 @admin_router.get(
     "",
     response_model=List[UserResponse],

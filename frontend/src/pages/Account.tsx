@@ -29,6 +29,15 @@ const Account: React.FC = () => {
   
   const [loadingData, setLoadingData] = useState(false);
   
+  const [profileForm, setProfileForm] = useState({
+    full_name: '',
+    username: '',
+    email: '',
+    phone: ''
+  });
+  const [profileMessage, setProfileMessage] = useState({ type: '', text: '' });
+  const [updatingProfile, setUpdatingProfile] = useState(false);
+
   const [newPassword, setNewPassword] = useState('');
   const [passwordMessage, setPasswordMessage] = useState({ type: '', text: '' });
 
@@ -56,6 +65,12 @@ const Account: React.FC = () => {
         const data = await response.json();
         setUser(data);
         setAddresses(data.addresses || []);
+        setProfileForm({
+          full_name: data.full_name || '',
+          username: data.username || '',
+          email: data.email || '',
+          phone: data.phone || ''
+        });
       } else {
         localStorage.removeItem('access_token');
         navigate('/');
@@ -64,6 +79,45 @@ const Account: React.FC = () => {
       console.error('Failed to fetch user', err);
     }
   };
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+
+    setUpdatingProfile(true);
+    setProfileMessage({ type: '', text: '' });
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/me/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          full_name: profileForm.full_name,
+          username: profileForm.username,
+          email: profileForm.email,
+          phone: profileForm.phone
+        })
+      });
+
+      if (res.ok) {
+        const updatedUser = await res.json();
+        setUser(updatedUser);
+        setProfileMessage({ type: 'success', text: 'Profile updated successfully!' });
+      } else {
+        const errorData = await res.json();
+        setProfileMessage({ type: 'error', text: errorData.detail || 'Failed to update profile' });
+      }
+    } catch (err) {
+      setProfileMessage({ type: 'error', text: 'Network error occurred' });
+    } finally {
+      setUpdatingProfile(false);
+    }
+  };
+
 
   useEffect(() => {
     fetchUserProfile();
@@ -270,27 +324,80 @@ const Account: React.FC = () => {
               
               {activeTab === 'profile' && (
                 <div className="animate-in fade-in duration-300">
-                  <h3 className="text-xl font-bold text-[#5F1517] mb-6">Profile Information</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  <h3 className="text-xl font-bold text-[#5F1517] mb-2">Profile Information</h3>
+                  <p className="text-sm text-[#5F1517]/70 mb-6">
+                    Update your account information. Make sure your WhatsApp phone number is up to date to receive cart reminders & order updates!
+                  </p>
+
+                  <form onSubmit={handleUpdateProfile} className="space-y-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-semibold text-[#5F1517] mb-1">Full Name</label>
+                        <input 
+                          type="text" 
+                          value={profileForm.full_name}
+                          onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })}
+                          placeholder="Your full name"
+                          className="w-full px-4 py-3 rounded-xl border border-[#5F1517]/20 bg-white text-[#5F1517] focus:outline-none focus:border-[#801416] font-medium"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-[#5F1517] mb-1">Username</label>
+                        <input 
+                          type="text" 
+                          value={profileForm.username}
+                          onChange={(e) => setProfileForm({ ...profileForm, username: e.target.value })}
+                          placeholder="Username"
+                          required
+                          className="w-full px-4 py-3 rounded-xl border border-[#5F1517]/20 bg-white text-[#5F1517] focus:outline-none focus:border-[#801416] font-medium"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-[#5F1517] mb-1">Email Address</label>
+                        <input 
+                          type="email" 
+                          value={profileForm.email}
+                          onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                          placeholder="your.email@example.com"
+                          className="w-full px-4 py-3 rounded-xl border border-[#5F1517]/20 bg-white text-[#5F1517] focus:outline-none focus:border-[#801416] font-medium"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-[#5F1517] mb-1 flex items-center justify-between">
+                          <span>Phone Number (WhatsApp)</span>
+                          <span className="text-[11px] text-green-700 font-bold bg-green-50 px-2 py-0.5 rounded border border-green-200">WhatsApp Enabled</span>
+                        </label>
+                        <input 
+                          type="tel" 
+                          value={profileForm.phone}
+                          onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                          placeholder="+91 9876543210"
+                          className="w-full px-4 py-3 rounded-xl border border-[#5F1517]/20 bg-white text-[#5F1517] focus:outline-none focus:border-[#801416] font-medium"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Add your 10-digit mobile number to receive product cart notifications on WhatsApp.</p>
+                      </div>
+                    </div>
+
+                    {profileMessage.text && (
+                      <div className={`p-3.5 rounded-xl text-sm font-semibold ${profileMessage.type === 'error' ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
+                        {profileMessage.text}
+                      </div>
+                    )}
+
                     <div>
-                      <label className="block text-sm font-medium text-[#5F1517]/70 mb-1">Full Name</label>
-                      <div className="w-full px-4 py-3 rounded-xl border border-[#5F1517]/20 bg-gray-50 text-[#5F1517] focus:outline-none">
-                        {user.full_name || '-'}
-                      </div>
+                      <button 
+                        type="submit" 
+                        disabled={updatingProfile}
+                        className="px-6 py-3 bg-[#801416] text-white rounded-xl font-semibold hover:bg-[#5F1517] transition-all shadow-md disabled:opacity-50"
+                      >
+                        {updatingProfile ? 'Saving Changes...' : 'Save Profile Changes'}
+                      </button>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-[#5F1517]/70 mb-1">Username</label>
-                      <div className="w-full px-4 py-3 rounded-xl border border-[#5F1517]/20 bg-gray-50 text-[#5F1517] focus:outline-none">
-                        {user.username}
-                      </div>
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-[#5F1517]/70 mb-1">Email Address</label>
-                      <div className="w-full px-4 py-3 rounded-xl border border-[#5F1517]/20 bg-gray-50 text-[#5F1517] focus:outline-none break-all">
-                        {user.email}
-                      </div>
-                    </div>
-                  </div>
+                  </form>
+
 
                   {user.auth_provider === 'google' && (
                     <div className="mb-8 inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold border border-blue-100">

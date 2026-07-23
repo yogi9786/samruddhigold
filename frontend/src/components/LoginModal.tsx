@@ -206,7 +206,9 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
               ) : (
                 <>
                   <div className="space-y-1.5">
-                    <label className="text-sm font-semibold text-[#5F1517]">Username <span className="text-red-500">*</span></label>
+                    <label className="text-sm font-semibold text-[#5F1517]">
+                      {isLoginMode ? "Email, Phone or Username" : "Username"} <span className="text-red-500">*</span>
+                    </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#5F1517]/40">
                         <User size={18} />
@@ -217,10 +219,11 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         className={`w-full pl-10 pr-4 py-3 bg-white border ${error && !isForgotMode ? 'border-red-400 focus:ring-red-400' : 'border-[#E5D3B3] focus:ring-[#5F1517]/20 focus:border-[#5F1517]'} rounded-xl focus:bg-white focus:ring-2 outline-none transition text-[#5F1517] shadow-sm font-medium placeholder:text-gray-400 placeholder:font-normal`}
-                        placeholder="johndoe"
+                        placeholder={isLoginMode ? "Email, Phone or Username" : "johndoe"}
                       />
                     </div>
                   </div>
+
 
                   {!isLoginMode && (
                     <>

@@ -35,6 +35,13 @@ class Settings(BaseSettings):
     BREVO_SENDER_NAME: str = "Samruddhi Gold Palace Support"
     FRONTEND_URL: str = "http://localhost:5173"
 
+    # AiSensy WhatsApp Settings
+    AISENSY_API_KEY: str | None = None
+    AISENSY_CAMPAIGN_NAME: str = "add_to_cart_reminder"
+    AISENSY_API_URL: str = "https://backend.aisensy.com/campaign/t1/api/v2"
+    AISENSY_ENABLED: bool = True
+
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
