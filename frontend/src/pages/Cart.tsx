@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getCart, updateCartItem, removeFromCart, getImageUrl } from '../api';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, ShieldCheck, Package } from 'lucide-react';
 import api from '../api';
 import LogoSpinner from '../components/LogoSpinner';
 
@@ -103,39 +103,37 @@ const Cart: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Cart Items List */}
-            <div className="lg:col-span-2 space-y-4">
+            <div className="lg:col-span-2 space-y-3.5">
               {cartItems.map((item) => {
                 const product = item.product;
                 if (!product) return null;
                 return (
-                  <div key={item.id} className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 flex flex-col sm:flex-row gap-4 sm:gap-6 relative">
-                    <button 
-                      onClick={() => handleRemoveItem(item.id)}
-                      className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors p-1"
-                      aria-label="Remove item"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-
-                    {/* Image */}
-                    <Link to={`/shop/${product.id}`} className="w-24 h-24 sm:w-32 sm:h-32 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 mx-auto sm:mx-0">
-                      <img 
-                        src={getImageUrl(product.image_url)} 
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                      />
+                  <div key={item.id} className="bg-white rounded-2xl p-3.5 sm:p-5 shadow-sm border border-gray-100 flex items-start gap-3 sm:gap-5 relative group transition hover:border-gray-200">
+                    {/* Left: Small Product Image Thumbnail */}
+                    <Link to={`/shop/${product.id}`} className="w-16 h-16 sm:w-28 sm:h-28 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 border border-gray-200 flex items-center justify-center">
+                      {product.image_url ? (
+                        <img 
+                          src={getImageUrl(product.image_url)} 
+                          alt={product.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Package className="w-6 h-6 text-gray-300" />
+                      )}
                     </Link>
 
-                    {/* Details */}
-                    <div className="flex-grow flex flex-col justify-between text-center sm:text-left pt-2 sm:pt-0">
+                    {/* Right: Content Details */}
+                    <div className="flex-grow min-w-0 flex flex-col justify-between self-stretch pr-6 sm:pr-8">
                       <div>
                         <Link to={`/shop/${product.id}`}>
-                          <h3 className="font-semibold text-gray-900 text-lg hover:text-[var(--color-royal)] transition-colors pr-6">{product.name}</h3>
+                          <h3 className="font-semibold text-gray-900 text-sm sm:text-base hover:text-[var(--color-royal)] transition-colors truncate" title={product.name}>
+                            {product.name}
+                          </h3>
                         </Link>
-                        <p className="text-xs text-gray-400 mt-1 uppercase tracking-wider">SKU: {product.id.substring(0, 8).toUpperCase()}</p>
+                        <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 uppercase tracking-wider">SKU: {product.id.substring(0, 8).toUpperCase()}</p>
                         
                         {product.basic_info && (
-                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 mt-2 justify-center sm:justify-start">
+                          <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] sm:text-xs text-gray-500 mt-1">
                             {product.basic_info.metal_purity && (
                               <span>Purity: <strong className="text-gray-700">{product.basic_info.metal_purity}</strong></span>
                             )}
@@ -146,36 +144,49 @@ const Cart: React.FC = () => {
                         )}
                       </div>
 
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-4">
+                      {/* Bottom Row: Quantity Selector + Price */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 mt-3 pt-2 border-t border-gray-100 sm:border-0 sm:pt-0">
                         {/* Quantity Selector */}
-                        <div className="flex items-center justify-center sm:justify-start border border-gray-200 rounded-full w-28 h-9 overflow-hidden mx-auto sm:mx-0 bg-gray-50">
+                        <div className="flex items-center border border-gray-200 rounded-full h-7 sm:h-8 overflow-hidden bg-gray-50">
                           <button 
                             onClick={() => handleUpdateQuantity(item.id, item.quantity, -1)}
-                            className="w-8 h-full flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
+                            className="w-6 sm:w-7 h-full flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors"
                             disabled={item.quantity <= 1}
                           >
-                            <Minus className="w-3.5 h-3.5" />
+                            <Minus className="w-3 h-3" />
                           </button>
-                          <span className="flex-grow text-center text-sm font-semibold text-gray-700">{item.quantity}</span>
+                          <span className="px-2 text-xs sm:text-sm font-semibold text-gray-800 min-w-[20px] text-center">{item.quantity}</span>
                           <button 
                             onClick={() => handleUpdateQuantity(item.id, item.quantity, 1)}
-                            className="w-8 h-full flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
+                            className="w-6 sm:w-7 h-full flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors"
                           >
-                            <Plus className="w-3.5 h-3.5" />
+                            <Plus className="w-3 h-3" />
                           </button>
                         </div>
 
                         {/* Price */}
-                        <div className="flex items-center justify-center sm:justify-start gap-2.5">
-                          <span className="font-bold text-gray-900 text-lg">₹{(product.price * item.quantity).toLocaleString('en-IN')}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-[#801416] sm:text-gray-900 text-sm sm:text-base">
+                            ₹{(product.price * item.quantity).toLocaleString('en-IN')}
+                          </span>
                           {product.original_price && (
-                            <span className="text-xs text-gray-400 line-through">
+                            <span className="text-[11px] sm:text-xs text-gray-400 line-through">
                               ₹{(product.original_price * item.quantity).toLocaleString('en-IN')}
                             </span>
                           )}
                         </div>
                       </div>
                     </div>
+
+                    {/* Trash Delete Button */}
+                    <button 
+                      onClick={() => handleRemoveItem(item.id)}
+                      className="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors p-1"
+                      aria-label="Remove item"
+                      title="Remove item"
+                    >
+                      <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </button>
                   </div>
                 );
               })}

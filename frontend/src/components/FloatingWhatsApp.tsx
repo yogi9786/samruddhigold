@@ -1,12 +1,39 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const FloatingWhatsApp: React.FC = () => {
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (isHomePage) {
+        if (window.scrollY > 60) {
+          setIsVisible(true);
+        } else {
+          setIsVisible(false);
+        }
+      } else {
+        setIsVisible(true);
+      }
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isHomePage]);
+
   return (
     <a 
       href="https://wa.me/919035085397?text=Hi%20Samruddhi%20Gold%20Palace,%20I%20have%20an%20enquiry."
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-20 lg:bottom-8 right-4 lg:right-8 z-50 bg-[#25D366] text-white p-3 lg:p-4 rounded-full shadow-lg hover:scale-110 transition-transform"
+      className={`fixed bottom-20 lg:bottom-8 right-4 lg:right-8 z-50 bg-[#25D366] text-white p-3 lg:p-4 rounded-full shadow-lg hover:scale-110 transition-all duration-300 ease-in-out ${
+        isVisible
+          ? 'translate-y-0 opacity-100 scale-100 pointer-events-auto'
+          : 'translate-y-12 opacity-0 scale-95 pointer-events-none'
+      }`}
       aria-label="Chat on WhatsApp"
     >
       <svg viewBox="0 0 24 24" className="w-7 h-7 lg:w-8 lg:h-8" fill="currentColor">

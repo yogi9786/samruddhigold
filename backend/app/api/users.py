@@ -23,6 +23,8 @@ admin_router = APIRouter(prefix="/users", tags=["🔐 Admin — User Management"
 router = APIRouter()
 
 
+import secrets
+
 @public_router.post(
     "",
     response_model=UserResponse,
@@ -32,25 +34,52 @@ router = APIRouter()
 async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     """
     **Public endpoint** — No authentication required.
-    Register a new user account with username and password.
+    Register a new user account with Email, Phone, Full Name, and Password.
     """
-    result = await db.execute(select(DBUser).where(DBUser.username == user.username))
-    existing_user = result.scalars().first()
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username already registered"
-        )
+    # Check email duplicate
+    if user.email:
+        res_email = await db.execute(select(DBUser).where(DBUser.email == user.email))
+        if res_email.scalars().first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="An account with this Email is already registered. Please Sign In."
+            )
 
-    hashed_password = await get_password_hash(user.password)
+    # Check phone duplicate
+    if user.phone:
+        cleaned_p = "".join(filter(str.isdigit, user.phone))
+        if len(cleaned_p) >= 10:
+            res_phone = await db.execute(select(DBUser).where(DBUser.phone.endswith(cleaned_p[-10:])))
+            if res_phone.scalars().first():
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="An account with this Phone Number is already registered. Please Sign In."
+                )
+
     user_dict = user.model_dump(exclude={"password"})
 
+    # Auto-generate unique username if not provided
+    if not user_dict.get("username"):
+        if user.email:
+            base_un = user.email.split('@')[0]
+        elif user.phone:
+            base_un = f"user_{user.phone[-10:] if len(user.phone) >= 10 else user.phone}"
+        else:
+            base_un = f"user_{secrets.token_hex(4)}"
+
+        check_unq = await db.execute(select(DBUser).where(DBUser.username == base_un))
+        if check_unq.scalars().first():
+            base_un = f"{base_un}_{secrets.token_hex(3)}"
+        user_dict["username"] = base_un
+
+    hashed_password = await get_password_hash(user.password)
     db_user = DBUser(**user_dict, hashed_password=hashed_password)
     db.add(db_user)
     await db.commit()
     await db.refresh(db_user)
 
     return db_user
+
 
 
 @public_router.put(

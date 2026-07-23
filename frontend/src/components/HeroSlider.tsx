@@ -3,18 +3,18 @@ import React, { useState, useEffect } from 'react';
 const slides = [
   {
     id: 1,
-    desktop: "/images/slider/south_indian_jewelry_1.png",
-    mobile: "/images/slider/south_indian_jewelry_1.png"
+    desktop: "/images/slider/hero_slider_1.png",
+    mobile: "/images/slider/hero_slider_1.png"
   },
   {
     id: 2,
-    desktop: "/images/slider/south_indian_jewelry_2.png",
-    mobile: "/images/slider/south_indian_jewelry_2.png"
+    desktop: "/images/slider/hero_slider_2.png",
+    mobile: "/images/slider/hero_slider_2.png"
   },
   {
     id: 3,
-    desktop: "/images/slider/south_indian_jewelry_3.png",
-    mobile: "/images/slider/south_indian_jewelry_3.png"
+    desktop: "/images/slider/hero_slider_3.png",
+    mobile: "/images/slider/hero_slider_3.png"
   }
 ];
 
@@ -24,13 +24,13 @@ const HeroSlider: React.FC = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
-    }, 4000);
+    }, 4500);
     return () => clearInterval(timer);
   }, []);
 
   return (
     <div className="w-full relative">
-      <div className="relative w-full h-[250px] sm:h-[350px] md:h-[450px] lg:h-[450px] xl:h-[500px] 2xl:h-[650px] min-[2560px]:h-[800px] min-[3840px]:h-[1000px] overflow-hidden bg-luxury">
+      <div className="relative w-full h-screen h-[100vh] overflow-hidden bg-luxury">
         {slides.map((slide, index) => (
           <div
             key={slide.id}
@@ -38,18 +38,21 @@ const HeroSlider: React.FC = () => {
               index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
             }`}
           >
-            <img
-              src={slide.desktop}
-              alt={`Premium Gold Jewellery Slide ${index + 1}`}
-              className="w-full h-full object-cover lg:object-center"
-            />
+            <picture className="w-full h-full block">
+              <source media="(max-width: 768px)" srcSet={slide.mobile} />
+              <img
+                src={slide.desktop}
+                alt={`Premium Gold Jewellery Slide ${index + 1}`}
+                className="w-full h-full object-cover object-center"
+              />
+            </picture>
           </div>
         ))}
-        {/* Subtle gradient overlay to enhance text/pagination if needed */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent z-10 pointer-events-none"></div>
+        {/* Dark top/bottom vignette overlay for transparent header readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/20 to-black/60 z-10 pointer-events-none"></div>
         
         {/* Pagination Dots */}
-        <div className="absolute bottom-4 md:bottom-6 left-0 right-0 z-20 flex justify-center gap-2">
+        <div className="absolute bottom-8 md:bottom-12 left-0 right-0 z-20 flex justify-center gap-2">
           {slides.map((_, index) => (
             <button
               key={index}

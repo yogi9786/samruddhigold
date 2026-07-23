@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import api, { getCart, checkoutOrder, verifyPayment, getCartUserId } from '../api';
+import api, { getCart, checkoutOrder, verifyPayment, getCartUserId, getImageUrl } from '../api';
 import logo from '../assets/samruddhi-logo.png';
 import { generateInvoicePDF } from '../utils/pdfGenerator';
-import { ShieldCheck, CreditCard, Lock, CheckCircle, Download, ShoppingBag } from 'lucide-react';
+import { ShieldCheck, CreditCard, Lock, CheckCircle, Download, ShoppingBag, ChevronDown, ChevronUp, Package } from 'lucide-react';
 
 interface CartItem {
   id: string;
@@ -24,6 +24,7 @@ const Checkout: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [showMobileSummary, setShowMobileSummary] = useState(false);
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<any>(null);
@@ -109,6 +110,10 @@ const Checkout: React.FC = () => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
+
+
+
+
 
   const subtotal = cartItems.reduce((acc, item) => {
     const price = item.product?.price || 0;
@@ -268,119 +273,195 @@ const Checkout: React.FC = () => {
     <div className="min-h-screen bg-[#faf9f8] flex flex-col font-outfit">
       <Header />
       
-      <main className="flex-grow container mx-auto px-4 py-8 max-w-7xl">
-        <h1 className="text-3xl font-serif text-[var(--color-royal)] mb-8 flex items-center gap-3">
-          <Lock className="w-8 h-8" /> Secure Checkout
+      <main className="flex-grow container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl">
+        <h1 className="text-2xl sm:text-3xl font-serif text-[var(--color-royal)] mb-4 sm:mb-8 flex items-center gap-2.5">
+          <Lock className="w-6 h-6 sm:w-8 sm:h-8" /> Secure Checkout
         </h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* ── MOBILE COMPACT ORDER SUMMARY TAB ── */}
+        <div className="block lg:hidden mb-5 bg-white rounded-xl p-3.5 sm:p-4 shadow-sm border border-gray-200">
+          <button 
+            type="button"
+            onClick={() => setShowMobileSummary(!showMobileSummary)}
+            className="w-full flex items-center justify-between text-left focus:outline-none"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <ShoppingBag className="w-5 h-5 text-[var(--color-royal)] flex-shrink-0" />
+              <span className="font-bold text-gray-900 text-xs sm:text-sm truncate">
+                Order Summary ({cartItems.reduce((acc, item) => acc + item.quantity, 0)} items)
+              </span>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="font-extrabold text-[var(--color-royal)] text-sm sm:text-base">
+                ₹{total.toLocaleString('en-IN')}
+              </span>
+              {showMobileSummary ? (
+                <ChevronUp className="w-4 h-4 text-gray-600" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-gray-600" />
+              )}
+            </div>
+          </button>
+
+          {showMobileSummary && (
+            <div className="mt-3 pt-3 border-t border-gray-100 space-y-3 animate-in fade-in duration-200">
+              <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
+                {cartItems.map(item => (
+                  <div key={item.id} className="flex items-center gap-3 p-2 rounded-xl bg-gray-50/80 border border-gray-100">
+                    <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-white border border-gray-200 flex items-center justify-center">
+                      {item.product?.image_url ? (
+                        <img 
+                          src={getImageUrl(item.product.image_url)} 
+                          alt={item.product.name} 
+                          className="w-full h-full object-cover" 
+                        />
+                      ) : (
+                        <Package className="w-6 h-6 text-gray-300" />
+                      )}
+                    </div>
+                    <div className="flex-grow min-w-0 flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <h4 className="text-xs font-semibold text-gray-900 truncate" title={item.product?.name}>
+                          {item.product?.name || 'Product'}
+                        </h4>
+                        <p className="text-[11px] text-gray-500 font-medium mt-0.5">
+                          Qty: <span className="font-bold text-gray-800">{item.quantity}</span>
+                        </p>
+                      </div>
+                      <span className="text-xs font-bold text-[var(--color-royal)] whitespace-nowrap flex-shrink-0">
+                        ₹{((item.product?.price || 0) * item.quantity).toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-1.5 text-xs text-gray-600 pt-2 border-t border-gray-100">
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span className="font-medium text-gray-900">₹{subtotal.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>GST (3%)</span>
+                  <span className="font-medium text-gray-900">₹{gst.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Delivery</span>
+                  <span className="text-green-600 font-bold">FREE</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Checkout Form */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-              <h2 className="text-xl font-medium text-gray-900 mb-6">Delivery Details</h2>
-              <form id="checkout-form" onSubmit={handleCheckout} className="space-y-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Delivery Details</h2>
+              <form id="checkout-form" onSubmit={handleCheckout} className="space-y-4 sm:space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Full Name</label>
                     <input 
                       type="text" 
                       name="fullName"
                       required
                       value={formData.fullName}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-transparent outline-none transition-all"
+                      className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 text-sm rounded-lg border border-gray-200 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-transparent outline-none transition-all"
                       placeholder="John Doe"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Email Address</label>
                     <input 
                       type="email" 
                       name="email"
                       required
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-transparent outline-none transition-all"
+                      className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 text-sm rounded-lg border border-gray-200 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-transparent outline-none transition-all"
                       placeholder="john@example.com"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Phone Number (WhatsApp Notifications)</label>
                   <input 
                     type="tel" 
                     name="phone"
                     required
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-transparent outline-none transition-all"
+                    className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 text-sm rounded-lg border border-gray-200 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-transparent outline-none transition-all"
                     placeholder="+91 9876543210"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Street Address</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Street Address</label>
                   <input 
                     type="text"
                     name="street"
                     required
                     value={formData.street}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-transparent outline-none transition-all"
+                    className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 text-sm rounded-lg border border-gray-200 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-transparent outline-none transition-all"
                     placeholder="House No, Building, Street Name"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-2 gap-3 sm:gap-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">City</label>
                     <input 
                       type="text" 
                       name="city"
                       required
                       value={formData.city}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-transparent outline-none transition-all"
+                      className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 text-sm rounded-lg border border-gray-200 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-transparent outline-none transition-all"
                       placeholder="City"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">State</label>
                     <input 
                       type="text" 
                       name="state"
                       required
                       value={formData.state}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-transparent outline-none transition-all"
+                      className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 text-sm rounded-lg border border-gray-200 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-transparent outline-none transition-all"
                       placeholder="State"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-2 gap-3 sm:gap-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">ZIP / Postal Code</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">ZIP / Postal Code</label>
                     <input 
                       type="text" 
                       name="zip"
                       required
                       value={formData.zip}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-transparent outline-none transition-all"
+                      className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 text-sm rounded-lg border border-gray-200 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-transparent outline-none transition-all"
                       placeholder="ZIP Code"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Country</label>
                     <input 
                       type="text" 
                       name="country"
                       required
                       value={formData.country}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-transparent outline-none transition-all"
+                      className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 text-sm rounded-lg border border-gray-200 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-transparent outline-none transition-all"
                       placeholder="Country"
                     />
                   </div>
@@ -389,24 +470,42 @@ const Checkout: React.FC = () => {
             </div>
           </div>
 
-          {/* Order Summary */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 h-fit space-y-6">
-            <h2 className="text-xl font-serif text-[var(--color-royal)] pb-4 border-b border-gray-100">Order Summary</h2>
+          {/* Desktop Order Summary Panel */}
+          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 h-fit space-y-5">
+            <h2 className="text-lg sm:text-xl font-serif text-[var(--color-royal)] pb-3 border-b border-gray-100 font-bold">Order Summary</h2>
             
-            <div className="space-y-4 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-3 max-h-56 sm:max-h-64 overflow-y-auto pr-1.5 custom-scrollbar">
               {cartItems.map(item => (
-                <div key={item.id} className="flex justify-between items-center text-sm">
-                  <span className="text-gray-600 flex-grow pr-4 truncate" title={item.product?.name}>
-                    {item.quantity} x {item.product?.name || 'Product'}
-                  </span>
-                  <span className="font-medium text-gray-900 whitespace-nowrap">
-                    ₹{((item.product?.price || 0) * item.quantity).toLocaleString('en-IN')}
-                  </span>
+                <div key={item.id} className="flex items-center gap-3 p-2 rounded-xl bg-gray-50/70 border border-gray-100">
+                  <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-white border border-gray-200 flex items-center justify-center">
+                    {item.product?.image_url ? (
+                      <img 
+                        src={getImageUrl(item.product.image_url)} 
+                        alt={item.product.name} 
+                        className="w-full h-full object-cover" 
+                      />
+                    ) : (
+                      <Package className="w-5 h-5 text-gray-300" />
+                    )}
+                  </div>
+                  <div className="flex-grow min-w-0 flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <h4 className="text-xs sm:text-sm font-semibold text-gray-900 truncate" title={item.product?.name}>
+                        {item.product?.name || 'Product'}
+                      </h4>
+                      <p className="text-[11px] text-gray-500 font-medium mt-0.5">
+                        Qty: <span className="font-bold text-gray-800">{item.quantity}</span>
+                      </p>
+                    </div>
+                    <span className="text-xs sm:text-sm font-bold text-[var(--color-royal)] whitespace-nowrap flex-shrink-0">
+                      ₹{((item.product?.price || 0) * item.quantity).toLocaleString('en-IN')}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
 
-            <div className="space-y-3.5 text-sm text-gray-600 pt-4 border-t border-gray-100">
+            <div className="space-y-2.5 text-xs sm:text-sm text-gray-600 pt-3 border-t border-gray-100">
               <div className="flex justify-between">
                 <span>Subtotal</span>
                 <span className="font-medium text-gray-950">₹{subtotal.toLocaleString('en-IN')}</span>
@@ -417,11 +516,11 @@ const Checkout: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span>Delivery</span>
-                <span className="text-green-600 font-medium">FREE</span>
+                <span className="text-green-600 font-bold">FREE</span>
               </div>
-              <div className="pt-4 border-t border-gray-100 flex justify-between text-base font-semibold text-gray-900">
+              <div className="pt-3 border-t border-gray-100 flex justify-between text-sm sm:text-base font-bold text-gray-900">
                 <span>Total Amount</span>
-                <span className="text-xl font-bold text-[var(--color-royal)]">₹{total.toLocaleString('en-IN')}</span>
+                <span className="text-lg sm:text-xl font-bold text-[var(--color-royal)]">₹{total.toLocaleString('en-IN')}</span>
               </div>
             </div>
 
@@ -429,17 +528,17 @@ const Checkout: React.FC = () => {
               type="submit"
               form="checkout-form"
               disabled={submitting}
-              className="w-full bg-[var(--color-royal)] hover:bg-blue-900 disabled:bg-gray-400 text-white py-3.5 rounded-full font-semibold transition-colors flex items-center justify-center gap-2 shadow-md"
+              className="w-full bg-[var(--color-royal)] hover:bg-blue-900 disabled:bg-gray-400 text-white py-3 sm:py-3.5 rounded-full font-semibold text-sm sm:text-base transition-colors flex items-center justify-center gap-2 shadow-md"
             >
               {submitting ? 'Processing...' : (
                 <>
-                  <CreditCard className="w-5 h-5" /> Pay ₹{total.toLocaleString('en-IN')}
+                  <CreditCard className="w-4 h-4 sm:w-5 sm:h-5" /> Pay ₹{total.toLocaleString('en-IN')}
                 </>
               )}
             </button>
 
-            <div className="pt-4 border-t border-gray-100 flex items-center gap-3 text-xs text-gray-500 justify-center">
-              <ShieldCheck className="w-5 h-5 text-[var(--color-gold)] flex-shrink-0" />
+            <div className="pt-3 border-t border-gray-100 flex items-center gap-2 text-[11px] sm:text-xs text-gray-500 justify-center">
+              <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--color-gold)] flex-shrink-0" />
               <span>Payments secured by Razorpay</span>
             </div>
           </div>

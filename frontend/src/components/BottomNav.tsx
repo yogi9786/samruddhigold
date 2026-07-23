@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { User, ShoppingBag, Video, Phone } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const BottomNav: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+
+  const isHomePage = location.pathname === '/';
 
   useEffect(() => {
     const checkLogin = () => {
@@ -19,6 +23,24 @@ const BottomNav: React.FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (isHomePage) {
+        if (window.scrollY > 60) {
+          setIsVisible(true);
+        } else {
+          setIsVisible(false);
+        }
+      } else {
+        setIsVisible(true);
+      }
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isHomePage]);
+
   const handleAccountClick = () => {
     if (isLoggedIn) {
       navigate('/account');
@@ -28,7 +50,13 @@ const BottomNav: React.FC = () => {
   };
 
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 w-full bg-[#FFF7F2] border-t border-[#5F1517]/10 z-50 px-2 py-2.5 flex justify-around items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-safe">
+    <div
+      className={`lg:hidden fixed bottom-0 left-0 w-full bg-[#FFF7F2] border-t border-[#5F1517]/10 z-50 px-2 py-2.5 flex justify-around items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-safe transition-all duration-300 ease-in-out ${
+        isVisible
+          ? 'translate-y-0 opacity-100 pointer-events-auto'
+          : 'translate-y-full opacity-0 pointer-events-none'
+      }`}
+    >
       <button onClick={handleAccountClick} className="flex flex-col items-center gap-1 text-[#5F1517] bg-transparent border-0 cursor-pointer">
         <User size={22} strokeWidth={1.5} />
         <span className="text-[10px] font-medium">Account</span>

@@ -23,11 +23,12 @@ class GoogleLoginRequest(BaseModel):
 # ── User Models ───────────────────────────────────────────────────────────────
 
 class UserBase(BaseModel):
-    username: str
+    username: Optional[str] = None
     email: Optional[str] = None
     full_name: Optional[str] = None
     phone: Optional[str] = None
     disabled: Optional[bool] = False
+
 
 
 class UserInDB(UserBase):
