@@ -45,6 +45,7 @@ const BottomNav: React.FC = () => {
     if (isLoggedIn) {
       navigate('/account');
     } else {
+      sessionStorage.setItem('redirect_after_login', '/account');
       window.dispatchEvent(new Event('openLoginModal'));
     }
   };

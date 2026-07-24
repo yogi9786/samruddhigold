@@ -29,8 +29,8 @@ const HeroSlider: React.FC = () => {
   }, []);
 
   return (
-    <div className="w-full relative">
-      <div className="relative w-full h-screen h-[100vh] overflow-hidden bg-luxury">
+    <div className="w-full relative flex justify-center bg-[#FFF7F2]">
+      <div className="relative w-full h-[250px] md:h-[280px] lg:h-[300px] 2xl:h-[450px] min-[2560px]:h-[550px] min-[3840px]:h-[700px] overflow-hidden">
         {slides.map((slide, index) => (
           <div
             key={slide.id}
@@ -48,11 +48,9 @@ const HeroSlider: React.FC = () => {
             </picture>
           </div>
         ))}
-        {/* Dark top/bottom vignette overlay for transparent header readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/20 to-black/60 z-10 pointer-events-none"></div>
         
         {/* Pagination Dots */}
-        <div className="absolute bottom-8 md:bottom-12 left-0 right-0 z-20 flex justify-center gap-2">
+        <div className="absolute bottom-4 md:bottom-8 left-0 right-0 z-20 flex justify-center gap-2">
           {slides.map((_, index) => (
             <button
               key={index}

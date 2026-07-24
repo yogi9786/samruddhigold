@@ -11,6 +11,8 @@ import MetalPrices from './views/MetalPrices';
 import VirtualBookings from './views/VirtualBookings';
 import Subscriptions from './views/Subscriptions';
 import Settings from './views/Settings';
+import ContactList from './views/ContactList';
+import WeddingLeads from './views/WeddingLeads';
 import { Toast } from './components/UIComponents';
 import api, { adminApi } from '../../api';
 import logo from '../../assets/samruddhi-logo.png';
@@ -39,7 +41,7 @@ interface Product {
   purchase_note?: string; menu_order?: number; enable_reviews?: boolean;
 }
 
-type Section = 'dashboard' | 'all-products' | 'add-product' | 'all-categories' | 'add-category' | 'orders' | 'customers' | 'users' | 'change-password' | 'settings' | 'metal-prices' | 'virtual-bookings' | 'subscriptions';
+type Section = 'dashboard' | 'all-products' | 'add-product' | 'all-categories' | 'add-category' | 'orders' | 'customers' | 'users' | 'change-password' | 'settings' | 'metal-prices' | 'virtual-bookings' | 'subscriptions' | 'contacts' | 'wedding-leads';
 
 const emptyProduct = {
   name: '', sku: '', price: 0, original_price: 0, discount_text: '',
@@ -913,6 +915,20 @@ const AdminPanel: React.FC = () => {
             </svg>
           } />
 
+          <NavLabel label="Leads & Contacts" />
+
+          <NavItem id="wedding-leads" label="Wedding Leads" icon={
+            <svg className="w-4 h-4 text-[#FFD700]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          } />
+
+          <NavItem id="contacts" label="General Contacts" icon={
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          } />
+
           <NavItem id="customers" label="Customers" count={stats.customers} icon={
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M16 11c1.657 0 3-1.343 3-3S17.657 5 16 5c-1.657 0-3 1.343-3 3s1.343 3 3 3zM8 11c1.657 0 3-1.343 3-3S9.657 5 8 5C6.343 5 5 6.343 5 8s1.343 3 3 3zm8 2c2.209 0 4 1.791 4 4H4c0-2.209 1.791-4 4-4h8z" />
@@ -963,7 +979,7 @@ const AdminPanel: React.FC = () => {
             </button>
             <div>
               <h1 className="text-base sm:text-lg font-bold text-[#5F1517] capitalize tracking-tight" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>
-                {section === 'all-products' ? 'Products' : section === 'add-product' ? (editPId ? 'Edit Product' : 'Add Product') : section === 'all-categories' ? 'Categories' : section === 'add-category' ? (editCId ? 'Edit Category' : 'Add Category') : section === 'change-password' ? 'Security Settings' : section === 'customers' ? 'Customers' : section === 'users' ? 'All Users' : section === 'metal-prices' ? 'Metal Rates' : section === 'virtual-bookings' ? 'Video Shopping' : section === 'subscriptions' ? 'Subscriptions' : section.charAt(0).toUpperCase() + section.slice(1)}
+                {section === 'all-products' ? 'Products' : section === 'add-product' ? (editPId ? 'Edit Product' : 'Add Product') : section === 'all-categories' ? 'Categories' : section === 'add-category' ? (editCId ? 'Edit Category' : 'Add Category') : section === 'change-password' ? 'Security Settings' : section === 'customers' ? 'Customers' : section === 'users' ? 'All Users' : section === 'metal-prices' ? 'Metal Rates' : section === 'virtual-bookings' ? 'Video Shopping' : section === 'subscriptions' ? 'Subscriptions' : section === 'contacts' ? 'General Contacts' : section === 'wedding-leads' ? 'Wedding Collection Leads' : section.charAt(0).toUpperCase() + section.slice(1)}
               </h1>
               <p className="text-[9px] sm:text-[10px] font-bold text-[#5F1517]/40 uppercase tracking-[0.2em] mt-0.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Siri Samruddhi Gold Palace</p>
             </div>
@@ -991,6 +1007,8 @@ const AdminPanel: React.FC = () => {
 
           {section === 'virtual-bookings' && <VirtualBookings virtualBookings={virtualBookings} vSearch={vSearch} setVSearch={setVSearch} vStatusFilter={vStatusFilter} setVStatusFilter={setVStatusFilter} exportToCSV={exportToCSV} fetchVirtualBookings={fetchVirtualBookings} loadingBookings={loadingBookings} updateBookingStatus={updateBookingStatus} viewBookingDetails={viewBookingDetails} deleteBooking={deleteBooking} />}
           {section === 'subscriptions' && <Subscriptions subscriptions={subscriptions} subSearch={subSearch} setSubSearch={setSubSearch} exportToCSV={exportToCSV} fetchSubscriptions={fetchSubscriptions} loadingSubscriptions={loadingSubscriptions} />}
+          {section === 'contacts' && <ContactList showToast={showToast} exportToCSV={exportToCSV} />}
+          {section === 'wedding-leads' && <WeddingLeads showToast={showToast} exportToCSV={exportToCSV} />}
           {section === 'customers' && <CustomerList customers={customers} orders={orders} exportToCSV={exportToCSV} fetchUsers={fetchUsers} />}
           {section === 'users' && <UserList users={users} exportToCSV={exportToCSV} fetchUsers={fetchUsers} />}
           {section === 'change-password' && <Settings pwMsg={pwMsg} pw={pw} setPw={setPw} handleChangePw={handleChangePw} />}

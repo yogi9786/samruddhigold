@@ -98,12 +98,41 @@ adminApi.interceptors.response.use(
 
 // Cart User ID helper
 export const getCartUserId = () => {
-  let userId = localStorage.getItem('user_id');
-  if (!userId) {
-    userId = 'guest_' + Math.random().toString(36).substring(2, 15);
-    localStorage.setItem('user_id', userId);
+  const token = localStorage.getItem('access_token');
+  const loggedUserId = localStorage.getItem('user_id');
+  
+  // If user is logged in and user_id is set, use loggedUserId
+  if (token && loggedUserId && !loggedUserId.startsWith('guest_')) {
+    return loggedUserId;
   }
-  return userId;
+
+  // Otherwise, use/create a persistent guest_user_id
+  let guestId = localStorage.getItem('guest_user_id');
+  if (!guestId) {
+    if (loggedUserId && loggedUserId.startsWith('guest_')) {
+      guestId = loggedUserId;
+    } else {
+      guestId = 'guest_' + Math.random().toString(36).substring(2, 15);
+    }
+    localStorage.setItem('guest_user_id', guestId);
+  }
+  return guestId;
+};
+
+export const syncCartAfterLogin = async (targetUserId: string) => {
+  const guestId = localStorage.getItem('guest_user_id');
+  if (guestId && guestId !== targetUserId) {
+    try {
+      await api.post('/cart/merge', {
+        guest_user_id: guestId,
+        target_user_id: targetUserId,
+      });
+      localStorage.removeItem('guest_user_id');
+      window.dispatchEvent(new Event('cartUpdated'));
+    } catch (e) {
+      console.error('Failed to merge guest cart:', e);
+    }
+  }
 };
 
 // Cart API

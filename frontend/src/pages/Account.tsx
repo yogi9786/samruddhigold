@@ -5,7 +5,7 @@ import BottomNav from '../components/BottomNav';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Package, MapPin, Heart, CreditCard, Plus, Trash2, Download, Truck, ChevronDown, Pencil } from 'lucide-react';
 
-import { getImageUrl } from '../api';
+import { getImageUrl, syncCartAfterLogin } from '../api';
 import { generateInvoicePDF } from '../utils/pdfGenerator';
 
 const Account: React.FC = () => {
@@ -65,6 +65,10 @@ const Account: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         setUser(data);
+        if (data && data.id) {
+          await syncCartAfterLogin(data.id);
+          localStorage.setItem('user_id', data.id);
+        }
         setAddresses(data.addresses || []);
         setProfileForm({
           full_name: data.full_name || '',

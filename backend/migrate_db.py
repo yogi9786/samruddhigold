@@ -68,6 +68,11 @@ async def migrate():
         print("Checking phone column in users...")
         await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(50);"))
 
+        # Add source and status to contacts
+        print("Checking source and status columns in contacts...")
+        await conn.execute(text("ALTER TABLE contacts ADD COLUMN IF NOT EXISTS source VARCHAR(50) DEFAULT 'general';"))
+        await conn.execute(text("ALTER TABLE contacts ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Pending';"))
+
         print("Migration completed successfully!")
 
 if __name__ == "__main__":

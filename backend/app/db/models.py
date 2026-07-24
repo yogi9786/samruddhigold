@@ -34,10 +34,12 @@ class Contact(Base):
     __tablename__ = "contacts"
     id = Column(String, primary_key=True, default=generate_uuid)
     name = Column(String, nullable=False)
-    email = Column(String, nullable=False)
+    email = Column(String, nullable=True)
     phone = Column(String, nullable=True)
     subject = Column(String, nullable=False)
     message = Column(Text, nullable=False)
+    source = Column(String, default="general", index=True)
+    status = Column(String, default="Pending", index=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 class Product(Base):

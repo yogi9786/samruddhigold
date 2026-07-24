@@ -1,29 +1,14 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { Truck, Store, Search, User, Heart, ShoppingBag, Menu, X, ChevronDown, Calendar, MapPin, Bell, Coins } from 'lucide-react';
+import { Truck, Store, Search, User, Heart, ShoppingBag, Menu, X, ChevronDown, Calendar, MapPin, Bell, Coins, Sparkles } from 'lucide-react';
 import logo from '../assets/samruddhi-logo.png';
 import LoginModal from './LoginModal';
 import SubscribeModal from './SubscribeModal';
 
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import api, { getCart, getWishlist, getImageUrl } from '../api';
+import { Link, useNavigate } from 'react-router-dom';
+import api, { getCart, getWishlist, getImageUrl, syncCartAfterLogin } from '../api';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const isHomePage = location.pathname === '/';
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 40) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedMobileCategory, setExpandedMobileCategory] = useState<string | null>(null);
@@ -127,6 +112,7 @@ const Header: React.FC = () => {
       const response = await api.get('/auth/me');
       setUser(response.data);
       if (response.data && response.data.id) {
+        await syncCartAfterLogin(response.data.id);
         localStorage.setItem('user_id', response.data.id);
       }
       fetchCounts();
@@ -158,7 +144,7 @@ const Header: React.FC = () => {
   };
 
   const topLevelCategories = useMemo(() => {
-    return allCategories.filter(c => !c.parent_id);
+    return allCategories.filter(c => !c.parent_id && c.name.toLowerCase() !== 'wedding collection');
   }, [allCategories]);
 
   const getSubcategories = useCallback((parentId: string) => {
@@ -210,14 +196,15 @@ const Header: React.FC = () => {
     setWishlistCount(0);
   };
 
-  const isTransparentAtTop = isHomePage && !isScrolled;
+  // Header should be visible on top, no transparent effect on home page
+  const isTransparentAtTop = false;
 
   return (
     <>
-      <header className={`w-full flex flex-col font-sans transition-all duration-300 ${isHomePage ? 'fixed top-0 left-0 w-full z-50' : 'sticky top-0 z-50'} ${isTransparentAtTop ? 'bg-transparent shadow-none' : 'bg-[#FFF7F2] shadow-sm'}`}>
+      <header className={`w-full flex flex-col font-sans transition-all duration-300 sticky top-0 z-50 bg-[#FFF7F2] shadow-sm`}>
 
         {/* ── STICKY TOP MARQUEE BANNER ── */}
-        <div className={`w-full bg-[#5F1517] text-white text-[11px] md:text-[12px] py-1.5 overflow-hidden font-medium font-sans relative ${isTransparentAtTop ? 'hidden' : 'flex'} items-center`}>
+        <div className={`w-full bg-[#5F1517] text-white text-[11px] md:text-[12px] py-1.5 overflow-hidden font-medium font-sans relative flex items-center`}>
           <style>{`
             @keyframes topMarquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
             .top-marquee { animation: topMarquee 30s linear infinite; display: flex; width: max-content; white-space: nowrap; }
@@ -225,43 +212,49 @@ const Header: React.FC = () => {
           `}</style>
           <div className="top-marquee cursor-default">
             {[
-              "🎉 Up to 100% Free Making Charges*",
-              "🎉 Free Gold Coin on Purchase of Every ₹2.5 Lakh",
-              "🎉 Samruddhi Golden Flexi Offer – Rate Protection for 90 Days",
-              "🎉 Up to 100% Free Making Charges*",
-              "🎉 Free Gold Coin on Purchase of Every ₹2.5 Lakh",
-              "🎉 Samruddhi Golden Flexi Offer – Rate Protection for 90 Days",
+              "Up to 100% Free Making Charges*",
+              "Free Gold Coin on Purchase of Every ₹2.5 Lakh",
+              "Samruddhi Golden Flexi Offer – Rate Protection for 90 Days",
+              "Up to 100% Free Making Charges*",
+              "Free Gold Coin on Purchase of Every ₹2.5 Lakh",
+              "Samruddhi Golden Flexi Offer – Rate Protection for 90 Days",
             ].map((offer, i) => (
-              <span key={i} className="px-8 tracking-wide">{offer}</span>
+              <span key={i} className="px-8 tracking-wide flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#FFD700] inline-block"></span>
+                <span>{offer}</span>
+              </span>
             ))}
           </div>
         </div>
 
         {/* ── MAIN HEADER BAR ── */}
-        <div className={`w-full transition-all duration-300 ${isTransparentAtTop ? 'bg-transparent border-none' : 'bg-[#FFF7F2] border-b border-[#5F1517]/10'}`}>
-              <div className="max-w-[1400px] mx-auto px-3 sm:px-4 lg:px-8 flex items-center justify-between py-1 lg:py-1.5">
+        <div className={`w-full transition-all duration-300 bg-[#FFF7F2] border-b border-[#5F1517]/10`}>
+              <div className="max-w-[1240px] mx-auto px-3 sm:px-4 lg:px-6 flex items-center justify-between py-1.5 lg:py-2 gap-4">
 
-                {/* Logo */}
-                <Link to="/" className="flex-shrink-0 flex items-center cursor-pointer mr-3 sm:mr-6">
-                  <img
-                    src={logo}
-                    alt="Samruddhi Gold Palace"
-                    className={`h-10 sm:h-12 md:h-14 lg:h-14 object-contain transition-all duration-300 ${isTransparentAtTop ? 'drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]' : ''}`}
-                  />
-                </Link>
+                {/* Left Side: Logo & Quick Links Group */}
+                <div className="flex items-center gap-5 xl:gap-7 flex-shrink-0">
+                  {/* Logo */}
+                  <Link to="/" className="flex-shrink-0 flex items-center cursor-pointer">
+                    <img
+                      src={logo}
+                      alt="Samruddhi Gold Palace"
+                      className="h-10 sm:h-12 md:h-14 object-contain transition-all duration-300"
+                    />
+                  </Link>
 
-                {/* Quick Delivery & Virtual Shopping */}
-                <div className={`hidden ${isTransparentAtTop ? 'hidden' : 'lg:flex'} items-center gap-4 text-[11px] font-bold text-[#801416] mr-5 tracking-wide`}>
-                  <Link to="/shipping" className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 no-underline text-[#801416]">
-                    <Truck size={16} strokeWidth={1.5} className="text-[#A56B25]" /> QUICK DELIVERY
-                  </Link>
-                  <Link to="/virtual-shopping" className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 no-underline text-[#801416]">
-                    <Store size={16} strokeWidth={1.5} /> VIRTUAL SHOPPING
-                  </Link>
+                  {/* Quick Delivery & Virtual Shopping */}
+                  <div className={`hidden ${isTransparentAtTop ? 'hidden' : 'lg:flex'} items-center gap-4 text-[11px] font-bold text-[#801416] tracking-wide border-l border-[#5F1517]/15 pl-4 xl:pl-6`}>
+                    <Link to="/shipping" className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 no-underline text-[#801416] whitespace-nowrap">
+                      <Truck size={15} strokeWidth={1.5} className="text-[#A56B25]" /> QUICK DELIVERY
+                    </Link>
+                    <Link to="/virtual-shopping" className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 no-underline text-[#801416] whitespace-nowrap">
+                      <Store size={15} strokeWidth={1.5} /> VIRTUAL SHOPPING
+                    </Link>
+                  </div>
                 </div>
 
                 {/* Search Bar */}
-                <div className={`hidden ${isTransparentAtTop ? 'hidden' : 'lg:flex'} flex-1 max-w-[520px] mr-5 relative`} ref={searchRef}>
+                <div className={`hidden ${isTransparentAtTop ? 'hidden' : 'lg:flex'} flex-1 max-w-[420px] relative`} ref={searchRef}>
                   <div className="flex w-full items-center bg-white rounded-full overflow-hidden border border-[#5F1517]/20 shadow-sm focus-within:border-[#801416] focus-within:ring-1 focus-within:ring-[#801416]/30 transition-all duration-300">
                     <select
                       value={selectedCategory}
@@ -354,7 +347,7 @@ const Header: React.FC = () => {
                 </div>
 
                 {/* Right Icons */}
-                <div className="hidden lg:flex items-center gap-4 font-medium text-xs">
+                <div className="hidden lg:flex items-center gap-3.5 font-medium text-xs flex-shrink-0">
                   {/* Subscription Bell */}
                   <button
                     onClick={() => setIsSubscribeOpen(true)}
@@ -408,7 +401,10 @@ const Header: React.FC = () => {
                       <User size={22} strokeWidth={1.5} />
                     </Link>
                   ) : (
-                    <button className="hover:opacity-80 transition text-current" onClick={() => setIsLoginModalOpen(true)}>
+                    <button className="hover:opacity-80 transition text-current" onClick={() => {
+                      sessionStorage.setItem('redirect_after_login', '/account');
+                      setIsLoginModalOpen(true);
+                    }}>
                       <User size={22} strokeWidth={1.5} />
                     </button>
                   )}
@@ -438,13 +434,18 @@ const Header: React.FC = () => {
 
             {/* ── CATEGORIES NAVIGATION BAR (MAROON BG WITH WHITE TEXT) ── */}
             <nav className={`hidden ${isTransparentAtTop ? 'hidden' : 'lg:flex'} w-full bg-[#5F1517] border-b border-[#5F1517]/20 shadow-sm transition-all duration-300`}>
-              <div className="max-w-[1400px] mx-auto w-full px-4 lg:px-8">
-                <ul className="flex items-center justify-center gap-4 xl:gap-6 py-1.5 text-xs lg:text-[12px] font-medium text-white font-sans w-full">
+              <div className="max-w-[1240px] mx-auto w-full px-4 lg:px-6">
+                <ul className="flex items-center justify-center gap-4 xl:gap-6 py-1.5 text-[10px] lg:text-[11px] font-bold text-white font-sans w-full uppercase">
                   <li className="whitespace-nowrap">
-                    <Link to="/shop" className="text-white no-underline hover:text-[#FFD700] transition font-bold">Shop All</Link>
+                    <Link to="/shop" className="text-white no-underline hover:text-[#FFD700] transition font-bold uppercase">SHOP ALL</Link>
                   </li>
                   <li className="whitespace-nowrap">
-                    <Link to="/new-arrivals" className="text-white no-underline hover:text-[#FFD700] transition font-bold">New Arrivals</Link>
+                    <Link to="/new-arrivals" className="text-white no-underline hover:text-[#FFD700] transition font-bold uppercase">NEW ARRIVALS</Link>
+                  </li>
+                  <li className="whitespace-nowrap">
+                    <Link to="/wedding-collection" className="text-white no-underline hover:text-[#FFD700] transition font-bold uppercase flex items-center gap-1">
+                      WEDDING COLLECTION
+                    </Link>
                   </li>
 
                   {topLevelCategories.map(cat => {
@@ -452,14 +453,14 @@ const Header: React.FC = () => {
                     if (subCats.length > 0) {
                       return (
                         <li key={cat.id} className="whitespace-nowrap group relative z-50">
-                          <Link to={`/shop?category=${cat.id}`} className="text-white no-underline flex items-center gap-1 hover:text-[#FFD700] transition font-bold">
-                            {cat.name} <ChevronDown size={13} className="group-hover:rotate-180 transition-transform duration-300 text-white/80" />
+                          <Link to={`/shop?category=${cat.id}`} className="text-white no-underline flex items-center gap-1 hover:text-[#FFD700] transition font-bold uppercase">
+                            {cat.name.toUpperCase()} <ChevronDown size={13} className="group-hover:rotate-180 transition-transform duration-300 text-white/80" />
                           </Link>
                           <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
                             <div className="bg-white border border-[#5F1517]/10 shadow-xl rounded-xl w-48 py-2 relative before:absolute before:-top-3 before:left-0 before:w-full before:h-3">
                               {subCats.map(sub => (
-                                <Link key={sub.id} to={`/shop?category=${sub.id}`} className="block px-4 py-2 text-xs text-[#801416] hover:bg-[#FFF7F2] font-semibold transition-colors border-b border-gray-50 last:border-0">
-                                  {sub.name}
+                                <Link key={sub.id} to={`/shop?category=${sub.id}`} className="block px-4 py-2 text-xs text-[#801416] hover:bg-[#FFF7F2] font-semibold transition-colors border-b border-gray-50 last:border-0 uppercase">
+                                  {sub.name.toUpperCase()}
                                 </Link>
                               ))}
                             </div>
@@ -469,7 +470,7 @@ const Header: React.FC = () => {
                     } else {
                       return (
                         <li key={cat.id} className="whitespace-nowrap">
-                          <Link to={`/shop?category=${cat.id}`} className="text-white no-underline hover:text-[#FFD700] transition font-bold">{cat.name}</Link>
+                          <Link to={`/shop?category=${cat.id}`} className="text-white no-underline hover:text-[#FFD700] transition font-bold uppercase">{cat.name.toUpperCase()}</Link>
                         </li>
                       );
                     }
@@ -477,31 +478,31 @@ const Header: React.FC = () => {
 
                   {/* Coins & Bars Dropdown */}
                   <li className="whitespace-nowrap group relative z-50">
-                    <Link to="/shop?search=Coin" className="text-white no-underline flex items-center gap-1 hover:text-[#FFD700] transition font-bold">
-                      Coins & Bars <ChevronDown size={13} className="group-hover:rotate-180 transition-transform duration-300 text-white/80" />
+                    <Link to="/shop?search=Coin" className="text-white no-underline flex items-center gap-1 hover:text-[#FFD700] transition font-bold uppercase">
+                      COINS & BARS <ChevronDown size={13} className="group-hover:rotate-180 transition-transform duration-300 text-white/80" />
                     </Link>
                     <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
                       <div className="bg-white border border-[#5F1517]/10 shadow-xl rounded-xl w-48 py-2 relative before:absolute before:-top-3 before:left-0 before:w-full before:h-3">
-                        <Link to="/shop?search=Gold+Coin" className="block px-4 py-2 text-xs text-[#801416] hover:bg-[#FFF7F2] font-semibold transition-colors border-b border-gray-50">
-                          Gold Coins
+                        <Link to="/shop?search=Gold+Coin" className="block px-4 py-2 text-xs text-[#801416] hover:bg-[#FFF7F2] font-semibold transition-colors border-b border-gray-50 uppercase">
+                          GOLD COINS
                         </Link>
-                        <Link to="/shop?search=Silver+Coin" className="block px-4 py-2 text-xs text-[#801416] hover:bg-[#FFF7F2] font-semibold transition-colors border-b border-gray-50 last:border-0">
-                          Silver Coins
+                        <Link to="/shop?search=Silver+Coin" className="block px-4 py-2 text-xs text-[#801416] hover:bg-[#FFF7F2] font-semibold transition-colors border-b border-gray-50 last:border-0 uppercase">
+                          SILVER COINS
                         </Link>
                       </div>
                     </div>
                   </li>
 
                   <li className="whitespace-nowrap">
-                    <Link to="/gold-rates" className="text-white no-underline hover:text-[#FFD700] transition font-bold">Today's Gold Rate</Link>
+                    <Link to="/gold-rates" className="text-white no-underline hover:text-[#FFD700] transition font-bold uppercase">TODAY'S GOLD RATE</Link>
                   </li>
                   <li className="ml-2">
                     <Link
                       to="/virtual-shopping"
-                      className="inline-flex items-center gap-1.5 bg-[#25D366] text-white px-3 py-1 rounded-full text-[11px] font-bold tracking-wide shadow-sm hover:opacity-90 transition no-underline"
+                      className="inline-flex items-center gap-1.5 bg-[#25D366] text-white px-3 py-1 rounded-full text-[11px] font-bold tracking-wide shadow-sm hover:opacity-90 transition no-underline uppercase"
                     >
                       <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span></span>
-                      Live Video Call
+                      LIVE VIDEO CALL
                     </Link>
                   </li>
                 </ul>
@@ -594,11 +595,19 @@ const Header: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
+                      {/* Wedding Collection Special Item */}
+                      <div className={`col-span-2 rounded-xl overflow-hidden shadow-sm flex flex-col transition-colors border ${isTransparentAtTop ? 'bg-gradient-to-r from-[#D4AF37]/30 to-[#801416]/40 border-[#FFD700]/40' : 'bg-gradient-to-r from-[#5F1517] to-[#801416] text-white border-[#5F1517]'}`}>
+                        <Link to="/wedding-collection" onClick={() => setIsMobileMenuOpen(false)} className="p-2.5 font-bold text-xs flex items-center justify-center gap-2 text-center leading-tight no-underline text-white uppercase tracking-wider">
+                          <Sparkles size={14} className="text-[#FFD700]" />
+                          <span>WEDDING COLLECTION</span>
+                        </Link>
+                      </div>
+
                       {/* Coins & Bars Special Item */}
                       <div className={`rounded-xl overflow-hidden shadow-sm flex flex-col transition-colors border ${isTransparentAtTop ? 'bg-white/10 backdrop-blur-md border-white/20' : 'bg-white border-[#5F1517]/10'}`}>
                         <div className="flex items-stretch justify-between">
-                          <Link to="/shop?search=Coin" onClick={() => setIsMobileMenuOpen(false)} className={`flex-grow p-2.5 font-bold text-[12px] flex items-center justify-center text-center leading-tight no-underline ${isTransparentAtTop ? 'text-white hover:text-[#FFD700]' : 'text-[#801416]'}`}>
-                            Coins & Bars
+                          <Link to="/shop?search=Coin" onClick={() => setIsMobileMenuOpen(false)} className={`flex-grow p-2.5 font-bold text-[12px] flex items-center justify-center text-center leading-tight no-underline uppercase ${isTransparentAtTop ? 'text-white hover:text-[#FFD700]' : 'text-[#801416]'}`}>
+                            COINS & BARS
                           </Link>
                           <button onClick={() => setExpandedMobileCategory(expandedMobileCategory === 'coins_bars' ? null : 'coins_bars')} className={`px-2 flex items-center justify-center ${isTransparentAtTop ? 'text-white border-l border-white/20 bg-white/10 hover:bg-white/20' : 'text-[#801416] border-l border-[#5F1517]/10 bg-[#FFF7F2]/40 hover:bg-[#FFF7F2]'}`}>
                             <ChevronDown size={14} className={`transition-transform duration-300 ${expandedMobileCategory === 'coins_bars' ? 'rotate-180' : ''}`} />
@@ -608,11 +617,11 @@ const Header: React.FC = () => {
                         {/* Subcategories Accordion */}
                         {expandedMobileCategory === 'coins_bars' && (
                           <div className={`flex flex-col ${isTransparentAtTop ? 'bg-black/30 border-t border-white/15' : 'bg-[#FFF7F2]/60 border-t border-[#5F1517]/10'}`}>
-                            <Link to="/shop?search=Gold+Coin" onClick={() => setIsMobileMenuOpen(false)} className={`block px-3 py-1.5 font-medium text-[11px] no-underline ${isTransparentAtTop ? 'text-white/90 hover:bg-white/15 border-b border-white/10' : 'text-[#801416]/80 hover:bg-white/50 border-b border-white'}`}>
-                              Gold Coins
+                            <Link to="/shop?search=Gold+Coin" onClick={() => setIsMobileMenuOpen(false)} className={`block px-3 py-1.5 font-medium text-[11px] no-underline uppercase ${isTransparentAtTop ? 'text-white/90 hover:bg-white/15 border-b border-white/10' : 'text-[#801416]/80 hover:bg-white/50 border-b border-white'}`}>
+                              GOLD COINS
                             </Link>
-                            <Link to="/shop?search=Silver+Coin" onClick={() => setIsMobileMenuOpen(false)} className={`block px-3 py-1.5 font-medium text-[11px] no-underline ${isTransparentAtTop ? 'text-white/90 hover:bg-white/15 border-b border-white/10 last:border-0' : 'text-[#801416]/80 hover:bg-white/50 border-b border-white last:border-0'}`}>
-                              Silver Coins
+                            <Link to="/shop?search=Silver+Coin" onClick={() => setIsMobileMenuOpen(false)} className={`block px-3 py-1.5 font-medium text-[11px] no-underline uppercase ${isTransparentAtTop ? 'text-white/90 hover:bg-white/15 border-b border-white/10 last:border-0' : 'text-[#801416]/80 hover:bg-white/50 border-b border-white last:border-0'}`}>
+                              SILVER COINS
                             </Link>
                           </div>
                         )}
@@ -625,8 +634,8 @@ const Header: React.FC = () => {
                         return (
                           <div key={cat.id} className={`rounded-xl overflow-hidden shadow-sm flex flex-col transition-colors border ${isTransparentAtTop ? 'bg-white/10 backdrop-blur-md border-white/20' : 'bg-white border-[#5F1517]/10'}`}>
                             <div className="flex items-stretch justify-between">
-                              <Link to={`/shop?category=${cat.id}`} onClick={() => setIsMobileMenuOpen(false)} className={`flex-grow p-2.5 font-bold text-[12px] flex items-center justify-center text-center leading-tight no-underline ${isTransparentAtTop ? 'text-white hover:text-[#FFD700]' : 'text-[#801416]'}`}>
-                                {cat.name}
+                              <Link to={`/shop?category=${cat.id}`} onClick={() => setIsMobileMenuOpen(false)} className={`flex-grow p-2.5 font-bold text-[12px] flex items-center justify-center text-center leading-tight no-underline uppercase ${isTransparentAtTop ? 'text-white hover:text-[#FFD700]' : 'text-[#801416]'}`}>
+                                {cat.name.toUpperCase()}
                               </Link>
                               {subCats.length > 0 && (
                                 <button onClick={() => setExpandedMobileCategory(isExpanded ? null : cat.id)} className={`px-2 flex items-center justify-center ${isTransparentAtTop ? 'text-white border-l border-white/20 bg-white/10 hover:bg-white/20' : 'text-[#801416] border-l border-[#5F1517]/10 bg-[#FFF7F2]/40 hover:bg-[#FFF7F2]'}`}>
@@ -639,8 +648,8 @@ const Header: React.FC = () => {
                             {isExpanded && subCats.length > 0 && (
                               <div className={`flex flex-col ${isTransparentAtTop ? 'bg-black/30 border-t border-white/15' : 'bg-[#FFF7F2]/60 border-t border-[#5F1517]/10'}`}>
                                 {subCats.map(sub => (
-                                  <Link key={sub.id} to={`/shop?category=${sub.id}`} onClick={() => setIsMobileMenuOpen(false)} className={`block px-3 py-1.5 font-medium text-[11px] no-underline ${isTransparentAtTop ? 'text-white/90 hover:bg-white/15 border-b border-white/10 last:border-0' : 'text-[#801416]/80 hover:bg-white/50 border-b border-white last:border-0'}`}>
-                                    {sub.name}
+                                  <Link key={sub.id} to={`/shop?category=${sub.id}`} onClick={() => setIsMobileMenuOpen(false)} className={`block px-3 py-1.5 font-medium text-[11px] no-underline uppercase ${isTransparentAtTop ? 'text-white/90 hover:bg-white/15 border-b border-white/10 last:border-0' : 'text-[#801416]/80 hover:bg-white/50 border-b border-white last:border-0'}`}>
+                                    {sub.name.toUpperCase()}
                                   </Link>
                                 ))}
                               </div>
@@ -759,22 +768,15 @@ const Header: React.FC = () => {
             )}
           </header>
 
-          {/* Red Offer Banner — hidden initially on desktop at top, revealed when scrolled */}
-          <div className={`w-full bg-[#721013] text-center py-1 text-white text-[11px] md:text-[13px] font-medium tracking-wide ${isTransparentAtTop ? 'hidden lg:hidden' : 'block'} transition-all duration-300`}>
-            Flat 20% off on VA, for Online Gold Jewellery
-          </div>
-
           <LoginModal
             isOpen={isLoginModalOpen}
             onClose={() => setIsLoginModalOpen(false)}
-            onLoginSuccess={() => {
-              fetchUserProfile();
+            onLoginSuccess={async () => {
+              await fetchUserProfile();
               const redirectUrl = sessionStorage.getItem('redirect_after_login');
               if (redirectUrl) {
                 sessionStorage.removeItem('redirect_after_login');
                 navigate(redirectUrl);
-              } else {
-                navigate('/account');
               }
             }}
           />

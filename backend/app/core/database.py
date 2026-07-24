@@ -96,6 +96,11 @@ async def init_db():
             await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP WITH TIME ZONE;"))
             await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR;"))
             await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS addresses JSON;"))
+
+            # Ensure Contacts columns exist for source and status
+            await conn.execute(text("ALTER TABLE contacts ADD COLUMN IF NOT EXISTS source VARCHAR(50) DEFAULT 'general';"))
+            await conn.execute(text("ALTER TABLE contacts ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Pending';"))
+            await conn.execute(text("ALTER TABLE contacts ALTER COLUMN email DROP NOT NULL;"))
         logger.info("Database tables created and migrated successfully")
         
         # Seed default metal prices if none exist

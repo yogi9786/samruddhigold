@@ -43,9 +43,9 @@ async def checkout_order(order: OrderCreate, current_user: dict = Depends(get_cu
         result = await db.execute(select(DBUser).where(DBUser.username == username))
         db_user = result.scalars().first()
         if db_user:
-            if order.contact_phone and not db_user.phone:
+            if order.contact_phone:
                 db_user.phone = order.contact_phone
-            if order.full_name and not db_user.full_name:
+            if order.full_name:
                 db_user.full_name = order.full_name
 
             current_addresses = db_user.addresses or []

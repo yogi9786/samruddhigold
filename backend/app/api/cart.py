@@ -205,3 +205,40 @@ async def clear_cart(user_id: str, db: AsyncSession = Depends(get_db)):
     for item in items:
         await db.delete(item)
     await db.commit()
+
+from pydantic import BaseModel
+
+class CartMergeRequest(BaseModel):
+    guest_user_id: str
+    target_user_id: str
+
+@router.post("/merge")
+async def merge_cart(payload: CartMergeRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Merge guest cart items into logged in user cart upon login.
+    """
+    guest_id = payload.guest_user_id
+    target_id = payload.target_user_id
+    if not guest_id or not target_id or guest_id == target_id:
+        return {"status": "ok", "merged": 0}
+
+    g_res = await db.execute(select(DBCartItem).where(DBCartItem.user_id == guest_id))
+    guest_items = g_res.scalars().all()
+
+    merged_count = 0
+    for g_item in guest_items:
+        t_res = await db.execute(
+            select(DBCartItem)
+            .where(DBCartItem.user_id == target_id)
+            .where(DBCartItem.product_id == g_item.product_id)
+        )
+        existing_t = t_res.scalars().first()
+        if existing_t:
+            existing_t.quantity += g_item.quantity
+            await db.delete(g_item)
+        else:
+            g_item.user_id = target_id
+        merged_count += 1
+
+    await db.commit()
+    return {"status": "ok", "merged": merged_count}

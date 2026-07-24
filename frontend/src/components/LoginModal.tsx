@@ -168,17 +168,15 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
       const token = res.data.access_token;
       localStorage.setItem('access_token', token);
       
-      setSuccessMsg('Google Login Successful! Redirecting...');
+      setSuccessMsg('Google Login Successful!');
       setSuccess(true);
       if (onLoginSuccess) {
         onLoginSuccess(token);
       }
       
-      // Redirect Google Sign-In users to /account to add/confirm their phone number
       setTimeout(() => {
         resetAndClose();
-        window.location.href = '/account';
-      }, 1200);
+      }, 1500);
     } catch (err: any) {
       setError(err.response?.data?.detail || err.message || 'Google Sign-In failed');
     } finally {

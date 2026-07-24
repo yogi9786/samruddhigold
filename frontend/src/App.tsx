@@ -23,6 +23,8 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsAndConditions from './pages/TermsAndConditions';
 import NotFound from './pages/NotFound';
 
+import WeddingCollection from './pages/WeddingCollection';
+
 function App() {
   const [loading, setLoading] = useState(true);
 
@@ -33,6 +35,8 @@ function App() {
         <ScrollToTop />
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/wedding-collection" element={<WeddingCollection />} />
+          <Route path="/wedding" element={<WeddingCollection />} />
           <Route path="/siriadmin" element={
             <ErrorBoundary>
               <AdminPanel />
